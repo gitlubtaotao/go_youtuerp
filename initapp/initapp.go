@@ -59,19 +59,16 @@ func NewApp() *iris.Application {
  * 创建日志文件
  * 必须在main函数中进行操作
  */
-func NewLogFile() *os.File {
-	filename := todayFilename()
+func NewLogFile(fileName string) (f *os.File, err error) {
+	name := todayFilename(fileName)
 	// 打开以当前日期为文件名的文件（不存在则创建文件，存在则追加内容）
-	f, err := os.Create("./log/"+filename)
-	if err != nil {
-		panic(err)
-	}
-	return f
+	return os.Create("./log/" + name)
+	
 }
 
 //根据日期获取文件名，文件日志以最常用的方式工作
 //但这些只是好的命名方式。
-func todayFilename() string {
+func todayFilename(fileName string) string {
 	today := time.Now().Format("2006-01-08")
-	return today + ".log"
+	return today + "-" + fileName + ".log"
 }

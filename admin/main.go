@@ -16,10 +16,13 @@ func main() {
 	app := initapp.NewApp()
 	
 	//将文件记录到log日志中
-	f := initapp.NewLogFile()
+	f, err := initapp.NewLogFile("iris")
+	if err != nil {
+		app.Logger().Error(err)
+	}
 	defer f.Close()
 	app.Logger().AddOutput(io.MultiWriter([]io.Writer{f, os.Stdout}...))
-	err := initDataBase()
+	err = initDataBase()
 	if err != nil {
 		app.Logger().Error(err)
 	}
@@ -41,7 +44,7 @@ func initDataBase() error {
 	}
 	defer Engine.Close()
 	Engine.DB().SetMaxOpenConns(1200)
-	f, err := os.Create("./log/sql.log")
+	f, err := initapp.NewLogFile("sql")
 	if err != nil {
 		return err
 	}
