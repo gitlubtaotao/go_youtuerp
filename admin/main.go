@@ -3,22 +3,31 @@ package main
 import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/kataras/iris/v12"
+	"io"
 	"os"
 	"xorm.io/xorm"
 	"xorm.io/xorm/log"
-	"youtuerp/admin/middleware"
+	"youtuerp/initapp"
 )
 
 var Engine *xorm.Engine
 
 func main() {
-	app := middleware.NewApp()
-	config := iris.WithConfiguration(iris.YAML("../conf/iris.yml"))
+	app := initapp.NewApp()
+	
+	//将文件记录到log日志中
+	f := initapp.NewLogFile()
+	defer f.Close()
+	app.Logger().AddOutput(io.MultiWriter([]io.Writer{f, os.Stdout}...))
 	err := initDataBase()
 	if err != nil {
 		app.Logger().Error(err)
 	}
-	_ = app.Run(iris.Addr(":8081"), config)
+	iris.RegisterOnInterrupt(func() {
+		Engine.Close()
+	})
+	config := iris.WithConfiguration(iris.YAML("../conf/iris.yml"))
+	_ = app.Run(iris.Addr(":8081"), config, iris.WithoutServerError(iris.ErrServerClosed))
 }
 
 /*

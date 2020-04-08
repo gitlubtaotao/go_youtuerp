@@ -1,10 +1,11 @@
-package middleware
+package initapp
 
 import (
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/middleware/logger"
 	"os"
 	"time"
+	"youtuerp/admin/middleware"
 )
 
 /*
@@ -15,6 +16,9 @@ func RequestInfo(ctx iris.Context) {
 	ctx.Next()
 }
 
+/*
+ * @title iris 日志输出的设置
+ */
 func LogConfig() iris.Handler {
 	customLogger := logger.New(logger.Config{
 		//状态显示状态代码
@@ -27,7 +31,8 @@ func LogConfig() iris.Handler {
 		Path: true,
 		// Query将url查询附加到Path。
 		Query: true,
-		//Columns：true，
+		
+		Columns: true,
 		// 如果不为空然后它的内容来自`ctx.Values(),Get("logger_message")
 		//将添加到日志中。
 		MessageContextKeys: []string{"logger_message"},
@@ -41,18 +46,23 @@ func LogConfig() iris.Handler {
  * @title: 初始化app
  */
 func NewApp() *iris.Application {
-	app := iris.Default()
+	app := iris.New()
 	app.Use(RequestInfo)
+	route := middleware.NewRoute(app)
 	app.Use(LogConfig())
-	route := NewRoute(app)
 	route.DefaultRegister()
+	
 	return app
 }
 
+/*
+ * 创建日志文件
+ * 必须在main函数中进行操作
+ */
 func NewLogFile() *os.File {
 	filename := todayFilename()
 	// 打开以当前日期为文件名的文件（不存在则创建文件，存在则追加内容）
-	f, err := os.OpenFile("./log/"+filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	f, err := os.Create("./log/"+filename)
 	if err != nil {
 		panic(err)
 	}
@@ -62,6 +72,6 @@ func NewLogFile() *os.File {
 //根据日期获取文件名，文件日志以最常用的方式工作
 //但这些只是好的命名方式。
 func todayFilename() string {
-	today := time.Now().Format("Jan 02 2006")
+	today := time.Now().Format("2006-01-08")
 	return today + ".log"
 }
