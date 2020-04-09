@@ -1,17 +1,16 @@
 package main
-//通过xorm tool 生成struct
-//xorm reverse mysql root:qweqwe123@tcp\(127.0.0.1:3306\)/go_youtuerp\?parseTime=true ./template
+
 import (
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/jinzhu/gorm"
 	"github.com/kataras/iris/v12"
 	"io"
+	"log"
 	"os"
-	"xorm.io/xorm"
-	"xorm.io/xorm/log"
 	"youtuerp/initapp"
 )
 
-var Engine *xorm.Engine
+var DataEngine *gorm.DB
 
 func main() {
 	app := initapp.NewApp()
@@ -28,7 +27,7 @@ func main() {
 		app.Logger().Error(err)
 	}
 	iris.RegisterOnInterrupt(func() {
-		Engine.Close()
+		DataEngine.Close()
 	})
 	config := iris.WithConfiguration(iris.YAML("../conf/iris.yml"))
 	_ = app.Run(iris.Addr(":8081"), config, iris.WithoutServerError(iris.ErrServerClosed))
@@ -39,17 +38,13 @@ func main() {
  */
 func initDataBase() error {
 	var err error
-	Engine, err = xorm.NewEngine("mysql", "root:qweqwe123@tcp(127.0.0.1:3306)/go_youtuerp?charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=true")
+	DataEngine, err = gorm.Open("mysql", "root:qweqwe123@tcp(127.0.0.1:3306)/go_youtuerp?charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=true")
 	if err != nil {
 		return err
 	}
-	defer Engine.Close()
-	Engine.DB().SetMaxOpenConns(1200)
-	f, err := initapp.NewLogFile("sql")
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	Engine.SetLogger(log.NewSimpleLogger(f))
+	defer DataEngine.Close()
+	DataEngine.DB().SetMaxOpenConns(1200)
+	DataEngine.LogMode(true)
+	DataEngine.SetLogger(log.New(os.Stdout, "\r\n", 0))
 	return nil
 }
