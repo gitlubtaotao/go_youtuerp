@@ -1,4 +1,4 @@
-package initapp
+package initialize
 
 import (
 	"github.com/kataras/iris/v12"
@@ -42,6 +42,8 @@ func LogConfig() iris.Handler {
 	return customLogger
 }
 
+var IrisApp *iris.Application
+
 /*
  * @title: 初始化app
  */
@@ -51,7 +53,7 @@ func NewApp() *iris.Application {
 	route := middleware.NewRoute(app)
 	app.Use(LogConfig())
 	route.DefaultRegister()
-	
+	IrisApp = app
 	return app
 }
 
@@ -69,6 +71,6 @@ func NewLogFile(fileName string) (f *os.File, err error) {
 //根据日期获取文件名，文件日志以最常用的方式工作
 //但这些只是好的命名方式。
 func todayFilename(fileName string) string {
-	today := time.Now().Format("2006-01-08")
+	today := time.Now().Format("2006-01-02")
 	return today + "-" + fileName + ".log"
 }
