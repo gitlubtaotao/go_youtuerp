@@ -1,5 +1,6 @@
 package main
-
+//通过xorm tool 生成struct
+//xorm reverse mysql root:qweqwe123@tcp\(127.0.0.1:3306\)/go_youtuerp\?parseTime=true ./template
 import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/kataras/iris/v12"
@@ -38,7 +39,7 @@ func main() {
  */
 func initDataBase() error {
 	var err error
-	Engine, err = xorm.NewEngine("mysql", "root:qweqwe123@tcp(127.0.0.1:3306)/youtuerp_development_1?charset=utf8&parseTime=true")
+	Engine, err = xorm.NewEngine("mysql", "root:qweqwe123@tcp(127.0.0.1:3306)/go_youtuerp?charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=true")
 	if err != nil {
 		return err
 	}

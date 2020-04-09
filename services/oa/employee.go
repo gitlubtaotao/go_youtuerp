@@ -3,6 +3,7 @@ package oa
 import "youtuerp/repositories"
 
 type IEmployeeService interface {
+
 }
 
 type EmployeeService struct {
