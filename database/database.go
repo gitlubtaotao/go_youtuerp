@@ -1,13 +1,14 @@
-package initialize
+package database
 
 import (
 	"github.com/jinzhu/gorm"
 	"log"
 	"os"
 	"youtuerp/conf"
+	"youtuerp/models"
 )
 
-var DataEngine *gorm.DB
+var dataEngine *gorm.DB
 
 type IDataBase interface {
 	DefaultInit()
@@ -31,25 +32,32 @@ func (d *DataBase) DefaultInit() error {
 	}
 	return nil
 }
+
 func (d *DataBase) InitDataBase() error {
 	var err error
-	DataEngine, err = gorm.Open("mysql", conf.Configuration.DSN)
+	dataEngine, err = gorm.Open("mysql", conf.Configuration.DSN)
 	if err != nil {
 		return err
 	}
-	defer DataEngine.Close()
-	DataEngine.DB().SetMaxOpenConns(1200)
-	DataEngine.LogMode(true)
-	DataEngine.SetLogger(log.New(os.Stdout, "\r\n", 0))
+	dataEngine.DB().SetMaxOpenConns(1200)
+	dataEngine.LogMode(true)
+	dataEngine.SetLogger(log.New(os.Stdout, "\r\n", 0))
 	if err = d.Migration(); err != nil {
 		return err
 	}
 	return nil
 }
 
+func GetDBCon() *gorm.DB {
+	return dataEngine
+}
+
 /*
  * 注册迁移文件
  */
 func (d *DataBase) Migration() error {
+	if GetDBCon().HasTable("companies") {
+		GetDBCon().AutoMigrate(&models.CompanyInfo{})
+	}
 	return nil
 }

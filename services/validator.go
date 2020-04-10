@@ -61,6 +61,8 @@ func (v *ValidatorService) HandlerError(language string) (errorsArray []FieldErr
 				Param:       e.Param(),
 				Namespace:   e.Namespace(),
 				Error:       e.Translate(trans),
+				Kind:        e.Kind(),
+				Type:        e.Type(),
 			}
 			errorsArray = append(errorsArray, attr)
 		}

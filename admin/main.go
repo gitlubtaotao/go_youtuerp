@@ -6,7 +6,10 @@ import (
 	"github.com/kataras/iris/v12"
 	"io"
 	"os"
+	"youtuerp/database"
 	"youtuerp/initialize"
+	
+	
 )
 
 func main() {
@@ -28,15 +31,14 @@ func main() {
 	}
 	app.Logger().Info()
 	//加载数据库操作
-	err = new(initialize.DataBase).DefaultInit()
+	err = new(database.DataBase).DefaultInit()
 	if err != nil {
 		app.Logger().Error(err)
 		panic(err)
 	}
 	iris.RegisterOnInterrupt(func() {
-		initialize.DataEngine.Close()
+		database.GetDBCon().Close()
 	})
-	
 	config := iris.WithConfiguration(iris.YAML("../conf/iris.yaml"))
 	
 	_ = app.Run(iris.Addr(":8081"), config, iris.WithoutServerError(iris.ErrServerClosed))
