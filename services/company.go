@@ -2,7 +2,7 @@ package services
 
 import (
 	"youtuerp/models"
-	"youtuerp/repository"
+	"youtuerp/repositories"
 )
 
 
@@ -14,22 +14,22 @@ type ICompanyService interface {
 }
 
 type CompanyService struct {
-	repo repository.ICompanyRepository
+	repo repositories.ICompanyRepository
 }
 
-////func (c *CompanyService) FindCompany(per, page uint, filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, error) {
-////	return c.repo.FindCompany(per, page, filters, selectKeys, orders)
-////}
-//
-//func (c *CompanyService) AllCompany(filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, error) {
-//	return c.repo.FindCompany(0, 0, filters, selectKeys, orders)
-//}
+func (c *CompanyService) FindCompany(per, page uint, filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, error) {
+	return c.repo.FindCompany(per, page, filters, selectKeys, orders)
+}
+
+func (c *CompanyService) AllCompany(filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, error) {
+	return c.repo.FindCompany(0, 0, filters, selectKeys, orders)
+}
 
 
-//func (c *CompanyService) LimitCompany(limit uint, filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, error) {
-//	return c.repo.FindCompany(limit, 0, filters, selectKeys, orders)
-//}
+func (c *CompanyService) LimitCompany(limit uint, filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, error) {
+	return c.repo.FindCompany(limit, 0, filters, selectKeys, orders)
+}
 
-//func NewCompanyService() ICompanyService {
-//	return &CompanyService{repo: repositories.NewCompanyRepository()}
-//}
+func NewCompanyService() ICompanyService {
+	return &CompanyService{repo: repositories.NewCompanyRepository()}
+}

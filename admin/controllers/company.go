@@ -12,14 +12,14 @@ import (
 //
 type CompanyController struct {
 	Ctx iris.Context
-	services.ICompanyService
+	Service services.ICompanyService
 }
 //
-//func (c *CompanyController) Get() iris.Map {
-//
-//	format := c.Ctx.URLParam("format")
-//	return iris.Map{
-//		"message": "Hello Iris!",
-//		"format":  format,
-//	}
-//}
+func (c *CompanyController) Get() iris.Map {
+
+	format := c.Ctx.URLParam("format")
+	return iris.Map{
+		"message": "Hello Iris!",
+		"format":  format,
+	}
+}

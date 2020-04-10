@@ -4,6 +4,7 @@ import (
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/mvc"
 	"youtuerp/admin/controllers"
+	"youtuerp/services"
 )
 
 //处理路由信息
@@ -33,7 +34,7 @@ func (i *Route) DefaultRegister() {
 
 func (i *Route) MVCRegister() {
 	mvc.New(i.app.Party("/")).Handle(&controllers.HomeController{})
-	mvc.New(i.app.Party("/company")).Handle(&controllers.CompanyController{})
+	mvc.New(i.app.Party("/company")).Handle(&controllers.CompanyController{Service: services.NewCompanyService()})
 }
 
 /*

@@ -1,4 +1,4 @@
-package repository
+package repositories
 
 import (
 	"github.com/jinzhu/gorm"
@@ -49,7 +49,7 @@ func (c *CompanyRepository) FindCompany(per, page uint, attr map[string]interfac
 	return
 }
 //
-//
-//func NewCompanyRepository() ICompanyRepository {
-//	return &CompanyRepository{}
-//}
+
+func NewCompanyRepository() ICompanyRepository {
+	return &CompanyRepository{}
+}

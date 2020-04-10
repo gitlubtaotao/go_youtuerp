@@ -10,6 +10,10 @@ import (
 
 var dataEngine *gorm.DB
 
+func GetDBCon() *gorm.DB {
+	return dataEngine
+}
+
 type IDataBase interface {
 	DefaultInit()
 	Migration()
@@ -46,10 +50,6 @@ func (d *DataBase) InitDataBase() error {
 		return err
 	}
 	return nil
-}
-
-func GetDBCon() *gorm.DB {
-	return dataEngine
 }
 
 /*
