@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/kataras/iris/v12"
 	"io"
@@ -17,14 +18,27 @@ func main() {
 	}
 	defer f.Close()
 	app.Logger().SetOutput(io.MultiWriter(f, os.Stdout))
+	//加载系统配置文件
+	configEnv := flag.String("env", "development", "set env development or production")
+	flag.Parse()
+	err = initialize.InitConfig(*configEnv)
+	if err != nil {
+		app.Logger().Error(err)
+		panic(err)
+	}
+	app.Logger().Info()
+	//加载数据库操作
 	err = new(initialize.DataBase).DefaultInit()
 	if err != nil {
 		app.Logger().Error(err)
+		panic(err)
 	}
 	iris.RegisterOnInterrupt(func() {
 		initialize.DataEngine.Close()
 	})
-	config := iris.WithConfiguration(iris.YAML("../conf/iris.yml"))
+	
+	config := iris.WithConfiguration(iris.YAML("../conf/iris.yaml"))
+	
 	_ = app.Run(iris.Addr(":8081"), config, iris.WithoutServerError(iris.ErrServerClosed))
 	
 }

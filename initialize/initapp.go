@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 	"youtuerp/admin/middleware"
+	"youtuerp/conf"
 )
 
 /*
@@ -65,7 +66,11 @@ func NewLogFile(fileName string) (f *os.File, err error) {
 	name := todayFilename(fileName)
 	// 打开以当前日期为文件名的文件（不存在则创建文件，存在则追加内容）
 	return os.Create("./log/" + name)
-	
+}
+
+
+func InitConfig(env string) error {
+	return conf.NewSysConfig(env)
 }
 
 //根据日期获取文件名，文件日志以最常用的方式工作

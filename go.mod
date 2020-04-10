@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/ajg/form v1.5.1 // indirect
 	github.com/fasthttp-contrib/websocket v0.0.0-20160511215533-1f3b11f56072 // indirect
+	github.com/go-playground/validator/v10 v10.2.0 // indirect
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/go-xorm/cmd/xorm v0.0.0-20190426080617-f87981e709a1 // indirect
 	github.com/gohouse/converter v0.0.3 // indirect
@@ -27,5 +28,6 @@ require (
 	github.com/yudai/gojsondiff v1.0.0 // indirect
 	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
 	github.com/yudai/pp v2.0.1+incompatible // indirect
+	gopkg.in/yaml.v3 v3.0.0-20191120175047-4206685974f2
 	xorm.io/cmd/xorm v0.0.0-20191108140657-006dbf24bb9b // indirect
 )
