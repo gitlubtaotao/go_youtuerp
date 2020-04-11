@@ -9,7 +9,6 @@ import (
 type CompanyController struct {
 	Ctx     iris.Context
 	Service services.ICompanyService
-	Column  services.IColumnService
 	BaseController
 }
 
@@ -25,12 +24,5 @@ func (c *CompanyController) Get() iris.Map {
 }
 
 func (c *CompanyController) GetColumn() iris.Map {
-	column := services.NewColumnService()
-	data, err := column.DefaultColumn(models.UserCompany{})
-	if err != nil {
-		return c.RenderErrorJson(err.Error())
-	}
-	return c.RenderSuccessJson(iris.Map{
-		"column": data,
-	})
+	return c.RenderColumnJson(models.UserCompany{})
 }

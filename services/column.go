@@ -2,12 +2,13 @@ package services
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 	"regexp"
 	"strings"
 	"sync"
 )
+
+var matchAllCap = regexp.MustCompile("([a-z0-9])([A-Z])")
 
 type IColumnService interface {
 	DefaultColumn(model interface{}) (data []interface{}, err error)
@@ -17,7 +18,6 @@ type IColumnService interface {
 	ToSnakeCase(str string) string
 }
 
-
 type ColumnService struct {
 	sy sync.Mutex
 }
@@ -26,7 +26,6 @@ func (c *ColumnService) DefaultColumn(model interface{}) (dataArray []interface{
 	t := reflect.TypeOf(model)
 	hiddenColumn := c.DefaultHiddenColumn(t)
 	if t.Kind() != reflect.Struct {
-		
 		err = errors.New("mode is not struct")
 		return
 	}
@@ -38,12 +37,15 @@ func (c *ColumnService) DefaultColumn(model interface{}) (dataArray []interface{
 			dataArray = append(dataArray, c.ColumnByBase(f)...)
 			continue
 		}
-		//只查询两层结构
-		if f.Type.Kind() == reflect.Struct {
-			attr := make(map[string]interface{})
-			attr[f.Tag.Get("table_name")] = c.ColumnByOther(f)
-			dataArray = append(dataArray, attr)
-			continue
+		//必须补上table_name，表示需要关联对象
+		if f.Tag.Get("table_name") != "" {
+			//只查询两层结构
+			if f.Type.Kind() == reflect.Struct {
+				attr := make(map[string]interface{})
+				attr[f.Tag.Get("table_name")] = c.ColumnByOther(f)
+				dataArray = append(dataArray, attr)
+				continue
+			}
 		}
 		data := f.Tag.Get("json")
 		if data == "" {
@@ -93,8 +95,8 @@ func (c *ColumnService) ColumnByOther(f reflect.StructField) (dataArray []interf
 		}
 		attr := map[string]interface{}{
 			"data":   data,
-			"type":   f.Type.Name(),
 			"select": c.isHiddenColumn(hiddenColumn, data),
+			"type":   f.Type.Name(),
 		}
 		dataArray = append(dataArray, attr)
 	}
@@ -131,12 +133,9 @@ func (c *ColumnService) isHiddenColumn(hiddenColumns interface{}, column string)
 	return true
 }
 
-var matchAllCap = regexp.MustCompile("([a-z0-9])([A-Z])")
-
 func (c *ColumnService) ToSnakeCase(str string) string {
 	snake := matchAllCap.ReplaceAllString(str, "${1}_${2}")
-	fmt.Println(snake)
-	return strings.ToLower(snake)
+	return strings.ToLower(strings.ToLower(snake))
 }
 func NewColumnService() IColumnService {
 	return &ColumnService{}

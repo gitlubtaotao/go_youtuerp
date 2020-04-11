@@ -35,6 +35,7 @@ func (i *Route) DefaultRegister() {
 func (i *Route) MVCRegister() {
 	mvc.New(i.app.Party("/")).Handle(&controllers.HomeController{})
 	mvc.New(i.app.Party("/company")).Handle(&controllers.CompanyController{Service: services.NewCompanyService()})
+	mvc.New(i.app.Party("/user")).Handle(&controllers.EmployeeController{Service: services.NewEmployeeService()})
 }
 
 /*

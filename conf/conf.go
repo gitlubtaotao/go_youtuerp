@@ -2,6 +2,7 @@ package conf
 
 import (
 	"encoding/json"
+	"github.com/kataras/iris/v12"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 )
@@ -12,6 +13,7 @@ import (
  */
 
 var Configuration *EnvironmentConfig
+var IrisApp *iris.Application
 type EnvironmentConfig struct {
 	PerPage uint   `json:"per_page" yaml:"per_page"`
 	DSN     string `json:"dsn" yaml:"dsn"`

@@ -43,7 +43,7 @@ func LogConfig() iris.Handler {
 	return customLogger
 }
 
-var IrisApp *iris.Application
+
 
 /*
  * @title: 初始化app
@@ -54,7 +54,7 @@ func NewApp() *iris.Application {
 	route := middleware.NewRoute(app)
 	app.Use(LogConfig())
 	route.DefaultRegister()
-	IrisApp = app
+	conf.IrisApp = app
 	return app
 }
 
