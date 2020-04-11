@@ -24,7 +24,7 @@ type UserCompany struct {
 	TagGrade          int         `form:"tag_grade" json:"tag_grade"`
 	IsVip             int         `form:"is_vip" json:"is_vip"`                           // 是否为VIP会员
 	FrequentlyUseInfo string      `form:"frequently_use_info" json:"frequently_use_info"` // 公司常用信息
-	Company           CompanyInfo `gorm:"foreignkey:source_id"`
+	Company           CompanyInfo `gorm:"foreignkey:source_id" table_name:"companies"`
 }
 
 //定义公司类型
@@ -34,7 +34,6 @@ const (
 	CustomerSupplier
 	Branch
 )
-
 
 func (*UserCompany) TableName() string {
 	return "user_companies"

@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"database/sql"
 	"github.com/jinzhu/gorm"
 	"youtuerp/database"
 	"youtuerp/models"
@@ -17,17 +18,20 @@ type ICompanyRepository interface {
 
 type CompanyRepository struct {
 }
+
 //
 ////默认查询company
 func (c CompanyRepository) DefaultScope(temp *gorm.DB) *gorm.DB {
 	return temp.Where("company_type = ?", 4)
 }
+
 //
-func (c *CompanyRepository) FindCompany(per, page uint, attr map[string]interface{}, selectKeys []string, orders []string) (companies []*models.UserCompany, err error) {
-	temp := database.GetDBCon()
-	temp = temp.Scopes(c.DefaultScope)
-	if len(attr) > 0 {
-		temp = temp.Where(attr)
+func (c *CompanyRepository) FindCompany(per, page uint, filters map[string]interface{}, selectKeys []string, orders []string) (companies []*models.UserCompany, err error) {
+	var rows *sql.Rows
+	sqlCon := database.GetDBCon()
+	temp := sqlCon.Scopes(c.DefaultScope)
+	if len(filters) > 0 {
+		temp = temp.Where(filters)
 	}
 	temp = temp.Joins("INNER JOIN companies on companies.source_id = user_companies.id")
 	//limit
@@ -38,16 +42,28 @@ func (c *CompanyRepository) FindCompany(per, page uint, attr map[string]interfac
 	}
 	if len(orders) == 0 {
 		temp = temp.Order("id desc")
-	}
-	for _, order := range orders {
-		temp = temp.Order(order)
+	} else {
+		for _, order := range orders {
+			temp = temp.Order(order)
+		}
 	}
 	if len(selectKeys) > 0 {
 		temp = temp.Select(selectKeys)
 	}
-	err = temp.Scan(&companies).Error
+	rows, err = temp.Model(&models.UserCompany{}).Rows()
+	if err != nil {
+		return
+	}
+	for rows.Next() {
+		var userCompany models.UserCompany
+		_ = sqlCon.ScanRows(rows, &userCompany)
+		
+		companies = append(companies, &userCompany)
+	}
 	return
 }
+
+
 //
 
 func NewCompanyRepository() ICompanyRepository {

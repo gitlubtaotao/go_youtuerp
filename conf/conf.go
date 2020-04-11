@@ -12,7 +12,6 @@ import (
  */
 
 var Configuration *EnvironmentConfig
-
 type EnvironmentConfig struct {
 	PerPage uint   `json:"per_page" yaml:"per_page"`
 	DSN     string `json:"dsn" yaml:"dsn"`
