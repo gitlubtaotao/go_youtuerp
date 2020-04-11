@@ -95,7 +95,7 @@ func (v *ValidatorService) registerDefaultTranslations(language string) (err err
 	switch language {
 	case "en":
 		err = en2.RegisterDefaultTranslations(validate, trans)
-	case "zh":
+	case "zh-CN":
 		err = zh2.RegisterDefaultTranslations(validate, trans)
 	default:
 		err = zh2.RegisterDefaultTranslations(validate, trans)

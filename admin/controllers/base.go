@@ -36,3 +36,8 @@ func (b BaseController) RenderColumnJson(model interface{}) iris.Map {
 		"column": data,
 	})
 }
+
+
+
+
+

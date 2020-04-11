@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/kataras/iris/v12"
 	"youtuerp/models"
 	"youtuerp/services"
@@ -11,6 +12,8 @@ type CompanyController struct {
 	Service services.ICompanyService
 	BaseController
 }
+
+
 
 //
 func (c *CompanyController) Get() iris.Map {
@@ -24,5 +27,6 @@ func (c *CompanyController) Get() iris.Map {
 }
 
 func (c *CompanyController) GetColumn() iris.Map {
+	fmt.Println(c.Ctx.GetLocale().Language())
 	return c.RenderColumnJson(models.UserCompany{})
 }

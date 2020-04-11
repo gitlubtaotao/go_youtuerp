@@ -2,6 +2,7 @@ package initialize
 
 import (
 	"github.com/kataras/iris/v12"
+	"github.com/kataras/iris/v12/i18n"
 	"github.com/kataras/iris/v12/middleware/logger"
 	"os"
 	"time"
@@ -31,8 +32,7 @@ func LogConfig() iris.Handler {
 		// Path显示请求路径
 		Path: true,
 		// Query将url查询附加到Path。
-		Query: true,
-		
+		Query:   true,
 		Columns: true,
 		// 如果不为空然后它的内容来自`ctx.Values(),Get("logger_message")
 		//将添加到日志中。
@@ -42,8 +42,6 @@ func LogConfig() iris.Handler {
 	})
 	return customLogger
 }
-
-
 
 /*
  * @title: 初始化app
@@ -68,9 +66,19 @@ func NewLogFile(fileName string) (f *os.File, err error) {
 	return os.Create("./log/" + name)
 }
 
-
 func InitConfig(env string) error {
 	return conf.NewSysConfig(env)
+}
+
+//i18n 国际化
+func I18nInit() (I18n *i18n.I18n, err error) {
+	I18n = i18n.New()
+	err = I18n.Load("../locales/*/*", "en", "zh-CN")
+	if err != nil {
+		return
+	}
+	I18n.SetDefault("zh-CN")
+	return
 }
 
 //根据日期获取文件名，文件日志以最常用的方式工作

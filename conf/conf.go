@@ -12,8 +12,11 @@ import (
  * 设置系统默认的配置文件
  */
 
-var Configuration *EnvironmentConfig
-var IrisApp *iris.Application
+var (
+	Configuration *EnvironmentConfig
+	IrisApp       *iris.Application
+)
+
 type EnvironmentConfig struct {
 	PerPage uint   `json:"per_page" yaml:"per_page"`
 	DSN     string `json:"dsn" yaml:"dsn"`
@@ -41,4 +44,3 @@ func NewSysConfig(env string) (err error) {
 	err = json.Unmarshal(bytes, &Configuration)
 	return err
 }
-
