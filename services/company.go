@@ -15,6 +15,7 @@ type ICompanyService interface {
 
 type CompanyService struct {
 	repo repositories.ICompanyRepository
+	BaseService
 }
 
 func (c *CompanyService) FindCompany(per, page uint, filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, error) {

@@ -11,7 +11,7 @@ type CompanyInfo struct {
 	ZhAddress  string `gorm:"column:address;" form:"address" json:"address"`                   // 地址
 	EnAddress  string `gorm:"column:address2;" form:"address2" json:"address2"`                // 备用地址
 	Website    string `form:"website" json:"website"`                                          // 网站
-	SourceId   int    `gorm:"not null;" form:"source_id" json:"source_id"`        // 数据来源
+	SourceId   int    `gorm:"not null;" form:"source_id"`                     // 数据来源
 	Code       string `form:"code" json:"code"`
 	Email      string `form:"email" json:"email" validate:"email"`
 	Province   string `form:"province" json:"province"` // 省份
@@ -19,6 +19,6 @@ type CompanyInfo struct {
 	District   string `form:"district" json:"district"` // 区
 }
 
-func (*CompanyInfo) TableName() string {
+func (CompanyInfo) TableName() string {
 	return "companies"
 }

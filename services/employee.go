@@ -6,9 +6,10 @@ type IEmployeeService interface {
 }
 
 type EmployeeService struct {
-	repo repositories.IUserRepository
+	repo repositories.IEmployeeRepository
+	BaseService
 }
 
 func NewEmployeeService() IEmployeeService {
-	return &EmployeeService{repo: repositories.NewUserRepository()}
+	return &EmployeeService{repo: repositories.NewEmployeeRepository()}
 }

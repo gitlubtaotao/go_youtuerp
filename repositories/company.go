@@ -17,6 +17,7 @@ type ICompanyRepository interface {
 }
 
 type CompanyRepository struct {
+	BaseRepository
 }
 
 //
@@ -57,12 +58,10 @@ func (c *CompanyRepository) FindCompany(per, page uint, filters map[string]inter
 	for rows.Next() {
 		var userCompany models.UserCompany
 		_ = sqlCon.ScanRows(rows, &userCompany)
-		
 		companies = append(companies, &userCompany)
 	}
 	return
 }
-
 
 //
 

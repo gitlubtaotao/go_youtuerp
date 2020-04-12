@@ -1,3 +1,5 @@
+//管理员工信息
+
 package controllers
 
 import (
@@ -18,5 +20,5 @@ func (e *EmployeeController) Get() iris.Map {
 }
 
 func (e *EmployeeController) GetColumn() iris.Map {
-	return e.RenderColumnJson(models.User{}, e.Ctx.GetLocale())
+	return e.RenderColumnJson(models.Employee{}, e.Ctx.GetLocale())
 }

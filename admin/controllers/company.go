@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/kataras/iris/v12"
 	"youtuerp/models"
 	"youtuerp/services"
@@ -25,7 +24,5 @@ func (c *CompanyController) Get() iris.Map {
 }
 
 func (c *CompanyController) GetColumn() iris.Map {
-	fmt.Println(c.Ctx.Tr("zh-CN","hello_world"),c.Ctx.GetLocale().GetMessage("hello_world"))
-	
 	return c.RenderColumnJson(models.UserCompany{}, c.Ctx.GetLocale())
 }

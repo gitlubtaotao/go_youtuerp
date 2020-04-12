@@ -33,8 +33,15 @@ func (i *Route) DefaultRegister() {
 
 func (i *Route) MVCRegister() {
 	mvc.New(i.app.Party("/")).Handle(&controllers.HomeController{})
+	//公司信息
 	mvc.New(i.app.Party("/company")).Handle(&controllers.CompanyController{Service: services.NewCompanyService()})
-	mvc.New(i.app.Party("/user")).Handle(&controllers.EmployeeController{Service: services.NewEmployeeService()})
+	//员工账户信息
+	mvc.New(i.app.Party("/employee")).Handle(&controllers.EmployeeController{Service: services.NewEmployeeService()})
+	//客户信息
+	mvc.New(i.app.Party("/customer")).Handle(&controllers.CustomerController{Service: services.NewCrmCompanyService()})
+	//供应商信息
+	mvc.New(i.app.Party("/supplier")).Handle(&controllers.SupplierController{})
+	
 }
 
 /*
