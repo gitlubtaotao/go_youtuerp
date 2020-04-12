@@ -31,7 +31,6 @@ func (i *Route) DefaultRegister() {
 	i.V1Register()
 }
 
-
 func (i *Route) MVCRegister() {
 	mvc.New(i.app.Party("/")).Handle(&controllers.HomeController{})
 	mvc.New(i.app.Party("/company")).Handle(&controllers.CompanyController{Service: services.NewCompanyService()})
@@ -43,4 +42,10 @@ func (i *Route) MVCRegister() {
  * @description: api 路由注册方法
  */
 func (i *Route) V1Register() {
+	i.app.Get("/language", func(ctx iris.Context) {
+		hi := ctx.Tr("hello_word")
+		locale := ctx.GetLocale()
+		ctx.Writef("From the language %s translated output: %s", locale.Language(), hi)
+	})
+	
 }

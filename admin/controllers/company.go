@@ -13,8 +13,6 @@ type CompanyController struct {
 	BaseController
 }
 
-
-
 //
 func (c *CompanyController) Get() iris.Map {
 	companies, err := c.Service.AllCompany(map[string]interface{}{
@@ -27,6 +25,7 @@ func (c *CompanyController) Get() iris.Map {
 }
 
 func (c *CompanyController) GetColumn() iris.Map {
-	fmt.Println(c.Ctx.GetLocale().Language())
-	return c.RenderColumnJson(models.UserCompany{})
+	fmt.Println(c.Ctx.Tr("zh-CN","hello_world"),c.Ctx.GetLocale().GetMessage("hello_world"))
+	
+	return c.RenderColumnJson(models.UserCompany{}, c.Ctx.GetLocale())
 }

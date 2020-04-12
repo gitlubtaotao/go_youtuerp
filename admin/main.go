@@ -37,12 +37,11 @@ func main() {
 	iris.RegisterOnInterrupt(func() {
 		database.GetDBCon().Close()
 	})
-	I18n, err := initialize.I18nInit()
+	err = initialize.I18nInit(app)
 	if err != nil {
 		app.Logger().Error(err)
 		panic(err)
 	}
-	app.I18n = I18n
 	config := iris.WithConfiguration(iris.YAML("../conf/iris.yaml"))
 	_ = app.Run(iris.Addr(":8081"), config, iris.WithoutServerError(iris.ErrServerClosed))
 	

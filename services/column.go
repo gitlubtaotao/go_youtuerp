@@ -2,6 +2,8 @@ package services
 
 import (
 	"errors"
+	"fmt"
+	"github.com/kataras/iris/v12/context"
 	"reflect"
 	"regexp"
 	"strings"
@@ -14,23 +16,26 @@ type IColumnService interface {
 	DefaultColumn(model interface{}) (data []interface{}, err error)
 	ColumnByBase(f reflect.StructField) (data []interface{})
 	ColumnByOther(f reflect.StructField) (data []interface{})
-	DefaultHiddenColumn(t reflect.Type, args ...interface{}) (data interface{})
+	DefaultHiddenColumn(t reflect.Value, args ...interface{}) (data interface{})
 	ToSnakeCase(str string) string
 }
 
 type ColumnService struct {
-	sy sync.Mutex
+	sy     sync.Mutex
+	loader context.Locale
 }
 
 func (c *ColumnService) DefaultColumn(model interface{}) (dataArray []interface{}, err error) {
 	t := reflect.TypeOf(model)
-	hiddenColumn := c.DefaultHiddenColumn(t)
+	v := reflect.ValueOf(model)
+	hiddenColumn := c.DefaultHiddenColumn(v)
 	if t.Kind() != reflect.Struct {
 		err = errors.New("mode is not struct")
 		return
 	}
 	c.sy.Lock()
 	defer c.sy.Unlock()
+	tableName := c.tableName(v)
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
 		if f.Type.Name() == "Model" {
@@ -54,6 +59,7 @@ func (c *ColumnService) DefaultColumn(model interface{}) (dataArray []interface{
 		attr := map[string]interface{}{
 			"data":   data,
 			"type":   f.Type.Name(),
+			"title":  c.loader.GetMessage(tableName + "." + data),
 			"select": c.isHiddenColumn(hiddenColumn, data),
 		}
 		dataArray = append(dataArray, attr)
@@ -80,7 +86,7 @@ func (c *ColumnService) ColumnByBase(f reflect.StructField) []interface{} {
 
 func (c *ColumnService) ColumnByOther(f reflect.StructField) (dataArray []interface{}) {
 	t := f.Type
-	hiddenColumn := c.DefaultHiddenColumn(t)
+	hiddenColumn := c.DefaultHiddenColumn(reflect.ValueOf(t))
 	if t.Kind() != reflect.Struct {
 		return
 	}
@@ -104,13 +110,14 @@ func (c *ColumnService) ColumnByOther(f reflect.StructField) (dataArray []interf
 }
 
 //
-func (c *ColumnService) DefaultHiddenColumn(t reflect.Type, args ...interface{}) (data interface{}) {
-	if methodName, ok := t.MethodByName("DefaultHiddenColumn"); ok {
+func (c *ColumnService) DefaultHiddenColumn(v reflect.Value, args ...interface{}) (data interface{}) {
+	methodName := v.MethodByName("DefaultHiddenColumn")
+	if methodName.IsValid() {
 		inputs := make([]reflect.Value, len(args))
 		for i, _ := range args {
 			inputs[i] = reflect.ValueOf(args[i])
 		}
-		returnValue := methodName.Func.Method(methodName.Index).Call(inputs)
+		returnValue := methodName.Call(inputs)
 		data = returnValue[0].Interface()
 	} else {
 		data = []string{}
@@ -137,6 +144,19 @@ func (c *ColumnService) ToSnakeCase(str string) string {
 	snake := matchAllCap.ReplaceAllString(str, "${1}_${2}")
 	return strings.ToLower(strings.ToLower(snake))
 }
-func NewColumnService() IColumnService {
-	return &ColumnService{}
+
+func (c *ColumnService) tableName(v reflect.Value) string {
+	var data string
+	methodName := v.MethodByName("TableName")
+	if methodName.IsValid() {
+		value := methodName.Call([]reflect.Value{})
+		data = value[0].String()
+	} else {
+		data = c.ToSnakeCase(v.Kind().String())
+	}
+	fmt.Println(data)
+	return data
+}
+func NewColumnService(loader context.Locale) IColumnService {
+	return &ColumnService{sy: sync.Mutex{}, loader: loader}
 }

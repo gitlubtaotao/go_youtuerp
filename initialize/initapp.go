@@ -2,7 +2,6 @@ package initialize
 
 import (
 	"github.com/kataras/iris/v12"
-	"github.com/kataras/iris/v12/i18n"
 	"github.com/kataras/iris/v12/middleware/logger"
 	"os"
 	"time"
@@ -71,13 +70,14 @@ func InitConfig(env string) error {
 }
 
 //i18n 国际化
-func I18nInit() (I18n *i18n.I18n, err error) {
-	I18n = i18n.New()
-	err = I18n.Load("../locales/*/*", "en", "zh-CN")
+func I18nInit(app *iris.Application) (err error) {
+	err = app.I18n.Load("../locales/*/*", "en", "zh-CN")
 	if err != nil {
 		return
 	}
-	I18n.SetDefault("zh-CN")
+	app.I18n.SetDefault("zh-CN")
+	app.I18n.Subdomain = true
+	app.I18n.URLParameter ="lang"
 	return
 }
 

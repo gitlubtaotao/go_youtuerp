@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/kataras/iris/v12"
+	"github.com/kataras/iris/v12/context"
 	"youtuerp/services"
 )
 
@@ -26,8 +27,9 @@ func (b BaseController) RenderErrorJson(err string) iris.Map {
 	}
 }
 
-func (b BaseController) RenderColumnJson(model interface{}) iris.Map {
-	column := services.NewColumnService()
+func (b BaseController) RenderColumnJson(model interface{},loader context.Locale) iris.Map {
+	column := services.NewColumnService(loader)
+	
 	data, err := column.DefaultColumn(model)
 	if err != nil {
 		return b.RenderErrorJson(err.Error())

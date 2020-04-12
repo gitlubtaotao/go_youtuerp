@@ -35,6 +35,6 @@ const (
 	Branch
 )
 
-func (*UserCompany) TableName() string {
+func (UserCompany) TableName() string {
 	return "user_companies"
 }

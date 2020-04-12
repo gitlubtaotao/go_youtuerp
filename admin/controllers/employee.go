@@ -18,5 +18,5 @@ func (e *EmployeeController) Get() iris.Map {
 }
 
 func (e *EmployeeController) GetColumn() iris.Map {
-	return e.RenderColumnJson(models.User{})
+	return e.RenderColumnJson(models.User{}, e.Ctx.GetLocale())
 }
