@@ -10,6 +10,7 @@ import (
 	"youtuerp/admin/controllers"
 	"youtuerp/admin/middleware"
 	"youtuerp/conf"
+	"youtuerp/tools"
 )
 
 /*
@@ -111,6 +112,8 @@ func RegisterView(app *iris.Application) {
 	tmpl := iris.HTML("./view", ".html")
 	tmpl.Reload(true)
 	tmpl.Layout("layouts/application.html")
+	helper := tools.Helper{}
+	tmpl.AddFunc("AssetsPublic", helper.AssetsPublic)
 	app.RegisterView(tmpl)
 }
 

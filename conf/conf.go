@@ -21,7 +21,7 @@ type EnvironmentConfig struct {
 	PerPage     uint   `json:"per_page" yaml:"per_page"`
 	DSN         string `json:"dsn" yaml:"dsn"`
 	SessionName string `json:"session_name" yaml:"session_name"`
-	
+	AssetsHost  string `json:"assets_host" yaml:"assets_host"`
 }
 
 /*
