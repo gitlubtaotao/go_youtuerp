@@ -57,11 +57,11 @@ func NewApp() *iris.Application {
 	WebSecureCookie(app)
 	route.DefaultRegister()
 	conf.IrisApp = app
+	RegisterView(app)
 	app.OnErrorCode(iris.StatusNotFound, new(controllers.ErrorsController).NotFound)
 	app.OnErrorCode(iris.StatusInternalServerError, new(controllers.ErrorsController).InternalServerError)
 	return app
 }
-
 
 /*
  * 创建日志文件
@@ -104,6 +104,14 @@ func WebSecureCookie(app *iris.Application) {
 		Expires:      -1,
 	})
 	app.Use(mySessions.Handler())
+}
+
+//进行前端页面的注册
+func RegisterView(app *iris.Application) {
+	tmpl := iris.HTML("./view", ".html")
+	tmpl.Reload(true)
+	tmpl.Layout("layouts/application.html")
+	app.RegisterView(tmpl)
 }
 
 //根据日期获取文件名，文件日志以最常用的方式工作
