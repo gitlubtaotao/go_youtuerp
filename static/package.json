@@ -3,7 +3,7 @@
   "sideEffects": false,
   "version": "1.0.0",
   "description": "webpack is study",
-  "main": "main.js",
+  "main": "index.js",
   "repository": "https://github.com/gitlubtaotao/webpack-config.git",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

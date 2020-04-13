@@ -10,17 +10,13 @@ const commonConfig = require('./webpack.common.js');
 
 const devConfig = {
 	mode:'development',
-	// devtool: 'none',//关闭开发模式 sourceMap
-	devtool:  'cheap-module-eval-source-map',
+	devtool: 'none',//关闭开发模式 sourceMap
+	// devtool:  'cheap-module-eval-source-map',
  	//webpack-dev-server
  	devServer:{
  		contentBase: './dist',
  		open: false, //自动打开游览器
- 		port: 8080, 		
- 		proxy: {
- 			'/api': "http: //localhost: 3000"
- 		},
- 		
+ 		port: 8080,
  		//热模块更新
  		hot: true,
  		hotOnly: true
@@ -33,8 +29,8 @@ const devConfig = {
 
    	// Tree Shaking
    	optimization:{
-   		usedExports: true 
+   		usedExports: false,
    	}
 }
 
-module.exports = merge(commonConfig,devConfig)
+module.exports = merge(commonConfig,devConfig);
