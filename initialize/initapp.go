@@ -1,10 +1,13 @@
 package initialize
 
 import (
+	"github.com/gorilla/securecookie"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/middleware/logger"
+	"github.com/kataras/iris/v12/sessions"
 	"os"
 	"time"
+	"youtuerp/admin/controllers"
 	"youtuerp/admin/middleware"
 	"youtuerp/conf"
 )
@@ -50,10 +53,15 @@ func NewApp() *iris.Application {
 	app.Use(RequestInfo)
 	route := middleware.NewRoute(app)
 	app.Use(LogConfig())
+	//加载web端口对应的web secure cookie
+	WebSecureCookie(app)
 	route.DefaultRegister()
 	conf.IrisApp = app
+	app.OnErrorCode(iris.StatusNotFound, new(controllers.ErrorsController).NotFound)
+	app.OnErrorCode(iris.StatusInternalServerError, new(controllers.ErrorsController).InternalServerError)
 	return app
 }
+
 
 /*
  * 创建日志文件
@@ -77,8 +85,25 @@ func I18nInit(app *iris.Application) (err error) {
 	}
 	app.I18n.SetDefault("zh-CN")
 	app.I18n.Subdomain = true
-	app.I18n.URLParameter ="lang"
+	app.I18n.URLParameter = "lang"
 	return
+}
+
+//登录验证
+//设置session对应的规则
+func WebSecureCookie(app *iris.Application) {
+	sessionName := conf.Configuration.SessionName
+	hashKey := []byte("HDESS***SSS5EP0*")
+	blockKey := []byte("AES-128")
+	secureCookie := securecookie.New(hashKey, blockKey)
+	mySessions := sessions.New(sessions.Config{
+		Cookie:       sessionName,
+		Encode:       secureCookie.Encode,
+		Decode:       secureCookie.Decode,
+		AllowReclaim: true,
+		Expires:      -1,
+	})
+	app.Use(mySessions.Handler())
 }
 
 //根据日期获取文件名，文件日志以最常用的方式工作

@@ -8,11 +8,14 @@ import (
 	"youtuerp/services"
 )
 
+
 type EmployeeController struct {
 	Ctx     iris.Context
 	Service services.IEmployeeService
 	BaseController
 }
+
+
 
 //
 func (e *EmployeeController) Get() iris.Map {

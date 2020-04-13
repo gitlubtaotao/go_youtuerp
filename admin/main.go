@@ -11,23 +11,21 @@ import (
 )
 
 func main() {
+	//加载系统配置文件
+	configEnv := flag.String("env", "development", "set env development or production")
+	flag.Parse()
+	err := initialize.InitConfig(*configEnv)
+	if err != nil {
+		panic(err)
+	}
 	app := initialize.NewApp()
-	//将文件记录到log日志中
 	f, err := initialize.NewLogFile("iris")
 	if err != nil {
 		app.Logger().Error(err)
 	}
 	defer f.Close()
 	app.Logger().SetOutput(io.MultiWriter(f, os.Stdout))
-	//加载系统配置文件
-	configEnv := flag.String("env", "development", "set env development or production")
-	flag.Parse()
-	err = initialize.InitConfig(*configEnv)
-	if err != nil {
-		app.Logger().Error(err)
-		panic(err)
-	}
-	app.Logger().Info()
+	
 	//加载数据库操作
 	err = new(database.DataBase).DefaultInit()
 	if err != nil {
@@ -37,14 +35,15 @@ func main() {
 	iris.RegisterOnInterrupt(func() {
 		database.GetDBCon().Close()
 	})
+	//国际化翻译
 	err = initialize.I18nInit(app)
 	if err != nil {
 		app.Logger().Error(err)
 		panic(err)
 	}
 	config := iris.WithConfiguration(iris.YAML("../conf/iris.yaml"))
-	_ = app.Run(iris.Addr(":8081"), config, iris.WithoutServerError(iris.ErrServerClosed))
 	
+	_ = app.Run(iris.Addr(":8082"), config, iris.WithoutServerError(iris.ErrServerClosed))
 }
 
 /*

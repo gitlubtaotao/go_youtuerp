@@ -3,7 +3,10 @@ package middleware
 import (
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/mvc"
+	"github.com/kataras/iris/v12/sessions"
+	"net/http"
 	"youtuerp/admin/controllers"
+	"youtuerp/conf"
 	"youtuerp/services"
 )
 
@@ -28,19 +31,20 @@ func NewRoute(app *iris.Application) IRoute {
  */
 func (i *Route) DefaultRegister() {
 	i.MVCRegister()
-	i.V1Register()
+	i.OtherRegister()
 }
 
 func (i *Route) MVCRegister() {
-	mvc.New(i.app.Party("/")).Handle(&controllers.HomeController{})
+	
+	mvc.New(i.app.Party("/", authRequired)).Handle(&controllers.HomeController{})
 	//公司信息
-	mvc.New(i.app.Party("/company")).Handle(&controllers.CompanyController{Service: services.NewCompanyService()})
+	mvc.New(i.app.Party("/company", authRequired)).Handle(&controllers.CompanyController{Service: services.NewCompanyService()})
 	//员工账户信息
-	mvc.New(i.app.Party("/employee")).Handle(&controllers.EmployeeController{Service: services.NewEmployeeService()})
+	mvc.New(i.app.Party("/employee", authRequired)).Handle(&controllers.EmployeeController{Service: services.NewEmployeeService()})
 	//客户信息
-	mvc.New(i.app.Party("/customer")).Handle(&controllers.CustomerController{Service: services.NewCrmCompanyService()})
+	mvc.New(i.app.Party("/customer", authRequired)).Handle(&controllers.CustomerController{Service: services.NewCrmCompanyService()})
 	//供应商信息
-	mvc.New(i.app.Party("/supplier")).Handle(&controllers.SupplierController{})
+	mvc.New(i.app.Party("/supplier", authRequired)).Handle(&controllers.SupplierController{})
 	
 }
 
@@ -48,11 +52,21 @@ func (i *Route) MVCRegister() {
  * @title: V1 api 路由注册方法
  * @description: api 路由注册方法
  */
-func (i *Route) V1Register() {
-	i.app.Get("/language", func(ctx iris.Context) {
-		hi := ctx.Tr("hello_word")
-		locale := ctx.GetLocale()
-		ctx.Writef("From the language %s translated output: %s", locale.Language(), hi)
-	})
+func (i *Route) OtherRegister() {
+	session := controllers.SessionController{}
+	i.app.Get("/login", session.Get)
+	i.app.Post("/login",session.Login)
 	
+}
+
+//验证必须进行登录
+func authRequired(ctx iris.Context) {
+	seesionName := conf.Configuration.SessionName
+	data := sessions.Get(ctx).Get(seesionName)
+	if data != nil {
+		conf.IrisApp.Logger().Infof("当前用户对于的session", data)
+		ctx.Next()
+	} else {
+		ctx.Redirect("/login", http.StatusMovedPermanently)
+	}
 }

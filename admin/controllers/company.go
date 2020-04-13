@@ -23,6 +23,8 @@ func (c *CompanyController) Get() iris.Map {
 	return c.RenderErrorJson(err.Error())
 }
 
+
+
 func (c *CompanyController) GetColumn() iris.Map {
 	return c.RenderColumnJson(models.UserCompany{}, c.Ctx.GetLocale())
 }
