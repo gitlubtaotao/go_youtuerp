@@ -1,0 +1,16 @@
+{
+  "name": "youtuerp",
+  "version": "1.0.0",
+  "description": "youtuerp",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "xutaotao",
+  "license": "ISC",
+  "dependencies": {},
+  "devDependencies": {
+    "webpack": "^4.42.1",
+    "webpack-cli": "^3.3.11"
+  }
+}
