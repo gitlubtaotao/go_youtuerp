@@ -1,10 +1,8 @@
 package initialize
 
 import (
-	"github.com/gorilla/securecookie"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/middleware/logger"
-	"github.com/kataras/iris/v12/sessions"
 	"os"
 	"time"
 	"youtuerp/admin/controllers"
@@ -55,7 +53,6 @@ func NewApp() *iris.Application {
 	route := middleware.NewRoute(app)
 	app.Use(LogConfig())
 	//加载web端口对应的web secure cookie
-	WebSecureCookie(app)
 	route.DefaultRegister()
 	conf.IrisApp = app
 	
@@ -95,20 +92,20 @@ func I18nInit(app *iris.Application) (err error) {
 
 //登录验证
 //设置session对应的规则
-func WebSecureCookie(app *iris.Application) {
-	sessionName := conf.Configuration.SessionName
-	hashKey := []byte("HDESS***SSS5EP0*")
-	blockKey := []byte("AES-128")
-	secureCookie := securecookie.New(hashKey, blockKey)
-	mySessions := sessions.New(sessions.Config{
-		Cookie:       sessionName,
-		Encode:       secureCookie.Encode,
-		Decode:       secureCookie.Decode,
-		AllowReclaim: true,
-		Expires:      -1,
-	})
-	app.Use(mySessions.Handler())
-}
+//func WebSecureCookie(app *iris.Application) {
+//	sessionName := conf.Configuration.SessionName
+//	hashKey := []byte("HDESS***SSS5EP0*")
+//	blockKey := []byte("AES-128")
+//	secureCookie := securecookie.New(hashKey, blockKey)
+//	mySessions := sessions.New(sessions.Config{
+//		Cookie:       sessionName,
+//		Encode:       secureCookie.Encode,
+//		Decode:       secureCookie.Decode,
+//		AllowReclaim: true,
+//		Expires:      -1,
+//	})
+//	app.Use(mySessions.Handler())
+//}
 
 //进行前端页面的注册
 func RegisterView(app *iris.Application) {

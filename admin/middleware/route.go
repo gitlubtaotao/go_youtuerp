@@ -6,8 +6,7 @@ import (
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/context"
 	"github.com/kataras/iris/v12/mvc"
-	"github.com/kataras/iris/v12/sessions"
-	"net/http"
+	"strings"
 	"youtuerp/admin/controllers"
 	"youtuerp/conf"
 	"youtuerp/services"
@@ -16,7 +15,6 @@ import (
 //处理路由信息
 type IRoute interface {
 	DefaultRegister()
-	
 	MVCRegister(crs context.Handler)
 	OtherRegister(crs context.Handler)
 }
@@ -35,9 +33,9 @@ func NewRoute(app *iris.Application) IRoute {
  * @description 注册系统的方法
  */
 func (i *Route) DefaultRegister() {
+	allowedOrigins := strings.Split(conf.Configuration.AllowedOrigins, ",")
 	crs := cors.New(cors.Options{
-		AllowedOrigins:   []string{"*"},
-		AllowedMethods:   []string{"HEAD", "GET", "POST", "PUT", "PATCH", "DELETE"},
+		AllowedOrigins:   allowedOrigins,
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: true,
 	})
@@ -45,16 +43,7 @@ func (i *Route) DefaultRegister() {
 	i.OtherRegister(crs)
 }
 
-func myAuthenticatedHandler(ctx iris.Context) {
-	user := ctx.Values().Get("jwt").(*jwt.Token)
-	ctx.Writef("This is an authenticated request\n")
-	ctx.Writef("Claim content:\n")
-	foobar := user.Claims.(jwt.MapClaims)
-	for key, value := range foobar {
-		ctx.Writef("%s = %s", key, value)
-	}
-}
-
+//使用iris mvc 进行路由的注册
 func (i *Route) MVCRegister(crs context.Handler) {
 	j := i.jwtAccess()
 	requiredAuth := i.app.Party("/", crs, j.Serve).AllowMethods(
@@ -68,18 +57,6 @@ func (i *Route) MVCRegister(crs context.Handler) {
 	mvc.New(requiredAuth.Party("/customer")).Handle(&controllers.CustomerController{Service: services.NewCrmCompanyService()})
 	//供应商信息
 	mvc.New(requiredAuth.Party("/supplier")).Handle(&controllers.SupplierController{})
-}
-
-func (i *Route) jwtAccess() *jwt.Middleware {
-	j := jwt.New(jwt.Config{
-		// 通过 "token" URL参数提取。
-		Extractor: jwt.FromParameter("token"),
-		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
-			return []byte(conf.Configuration.TokenSecret), nil
-		},
-		SigningMethod: jwt.SigningMethodHS256,
-	})
-	return j
 }
 
 /*
@@ -98,14 +75,23 @@ func (i *Route) OtherRegister(crs context.Handler) {
 	}
 }
 
-//验证必须进行登录
-func authRequired(ctx iris.Context) {
-	seesionName := conf.Configuration.SessionName
-	data := sessions.Get(ctx).Get(seesionName)
-	if data != nil {
-		conf.IrisApp.Logger().Infof("当前用户对于的session", data)
-		ctx.Next()
-	} else {
-		ctx.Redirect("/login", http.StatusMovedPermanently)
-	}
+//验证jwt token
+func (i *Route) jwtAccess() *jwt.Middleware {
+	j := jwt.New(jwt.Config{
+		// 通过 "token" URL参数提取。
+		Extractor: jwt.FromParameter("token"),
+		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
+			return []byte(conf.Configuration.TokenSecret), nil
+		},
+		ErrorHandler: func(ctx context.Context, err error) {
+			if err == nil {
+				return
+			}
+			ctx.StopExecution()
+			ctx.StatusCode(iris.StatusUnauthorized)
+			_, _ = ctx.JSON(iris.Map{"code": iris.StatusUnauthorized, "message": err.Error()})
+		},
+		SigningMethod: jwt.SigningMethodHS256,
+	})
+	return j
 }

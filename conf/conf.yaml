@@ -1,14 +1,11 @@
 default: &defaults
   per_page: 30
-  session_name: _session_id
-  assets_host: http://localhost:8080/
-  token_secret: HBss*4222JK45QOL
-
+  token_secret: HBss*4222JK45QOL  #jwt的密钥
+  allowed_origins: "http://localhost:9528,*" #allowed_origins
+  expire_time: 2
 development:
   <<: *defaults
   dsn: root:qweqwe123@tcp(127.0.0.1:3306)/go_youtuerp?charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=true
-  assets_host: http://localhost:8080/
   token_secret: HBss*4222JK45QOL
 production:
   <<: *defaults
-  assets_host: http://localhost:8080/

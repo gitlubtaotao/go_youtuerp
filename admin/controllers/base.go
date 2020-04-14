@@ -4,6 +4,7 @@ import (
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/context"
 	"net/http"
+	"youtuerp/models"
 	"youtuerp/services"
 )
 
@@ -12,6 +13,9 @@ type BaseController struct {
 
 // render success to json
 
+func (b BaseController) RenderJson(ctx iris.Context, data iris.Map) {
+	_, _ = ctx.JSON(data)
+}
 func (b BaseController) RenderSuccessJson(data interface{}) iris.Map {
 	m := iris.Map{
 		"code": http.StatusOK,
@@ -21,7 +25,7 @@ func (b BaseController) RenderSuccessJson(data interface{}) iris.Map {
 }
 
 //render error to json
-func (b BaseController) RenderErrorJson(err string, code int) iris.Map {
+func (b BaseController) RenderErrorJson(code int, err string) iris.Map {
 	if code == 0 {
 		code = http.StatusInternalServerError
 	}
@@ -35,9 +39,14 @@ func (b BaseController) RenderColumnJson(model interface{}, loader context.Local
 	column := services.NewColumnService(loader)
 	data, err := column.DefaultColumn(model)
 	if err != nil {
-		return b.RenderErrorJson(err.Error(),0)
+		return b.RenderErrorJson(0, err.Error())
 	}
 	return b.RenderSuccessJson(iris.Map{
 		"column": data,
 	})
+}
+
+//根据token获取当前用户
+func (b BaseController) CurrentUser(ctx iris.Context) (user *models.Employee) {
+	return
 }

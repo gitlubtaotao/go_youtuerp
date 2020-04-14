@@ -18,11 +18,11 @@ var (
 )
 
 type EnvironmentConfig struct {
-	PerPage     uint   `json:"per_page" yaml:"per_page"`
-	DSN         string `json:"dsn" yaml:"dsn"`
-	SessionName string `json:"session_name" yaml:"session_name"`
-	AssetsHost  string `json:"assets_host" yaml:"assets_host"`
-	TokenSecret string `json:"token_secret" yaml:"token_secret"`
+	PerPage        uint   `json:"per_page" yaml:"per_page"`
+	DSN            string `json:"dsn" yaml:"dsn"`
+	TokenSecret    string `json:"token_secret" yaml:"token_secret"`
+	AllowedOrigins string `json:"allowed_origins" yaml:"allowed_origins"`
+	ExpireTime     int    `json:"expire_time" yaml:"expire_time"`
 }
 
 /*

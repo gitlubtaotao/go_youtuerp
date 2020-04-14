@@ -20,10 +20,8 @@ func (c *CompanyController) Get() iris.Map {
 	if err == nil {
 		return c.RenderSuccessJson(companies)
 	}
-	return c.RenderErrorJson(err.Error(),0)
+	return c.RenderErrorJson(0, err.Error())
 }
-
-
 
 func (c *CompanyController) GetColumn() iris.Map {
 	return c.RenderColumnJson(models.UserCompany{}, c.Ctx.GetLocale())

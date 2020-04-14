@@ -3,36 +3,44 @@ package controllers
 import (
 	"github.com/iris-contrib/middleware/jwt"
 	"github.com/kataras/iris/v12"
+	"net/http"
 	"youtuerp/conf"
+	"youtuerp/services"
 )
 
 type login struct {
 	UserName string `json:"username"`
 	Password string `json:"password"`
 }
+
 type SessionController struct {
 	BaseController
+	SService services.ISessionService
+	EService services.IEmployeeService
 }
 
-func (s *SessionController) Get(ctx iris.Context) {
-}
 func (s *SessionController) Login(ctx iris.Context) {
-	//var user login
-	//err := ctx.ReadJSON(&user)
-	//if err != nil {
-	//	_, _ = ctx.JSON(s.RenderErrorJson(err.Error(), 0))
-	//	return
-	//}
-	token := jwt.NewTokenWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"foo": "bar",
-	})
-	// 使用密码签名并获取完整的编码令牌作为字符串
-	secret := conf.Configuration.TokenSecret
-	tokenString, _ := token.SignedString([]byte(secret))
+	var loginInfo login
+	s.initSession(ctx)
+	err := ctx.ReadJSON(&loginInfo)
+	if err != nil {
+		s.RenderJson(ctx, s.RenderErrorJson(http.StatusBadRequest, err.Error()))
+		return
+	}
+	//查询用户是否存在
+	_, err = s.EService.FirstByNameOrEmail(loginInfo.UserName)
+	if err != nil {
+		conf.IrisApp.Logger().Error(err)
+		s.RenderJson(ctx, s.RenderErrorJson(http.StatusBadRequest,
+			ctx.GetLocale().GetMessage("devise.invalid")))
+		return
+	}
+	tokenString, err := s.SService.JwtGenerateToken(map[string]interface{}{})
+	if err != nil {
+		_, _ = ctx.JSON(s.RenderErrorJson(http.StatusBadRequest, err.Error()))
+	}
 	_, _ = ctx.JSON(s.RenderSuccessJson(iris.Map{"token": tokenString}))
 }
-
-
 
 func (s *SessionController) Show(ctx iris.Context) {
 	_, _ = ctx.JSON(s.RenderSuccessJson(iris.Map{"name": "sdsds"}))
@@ -40,5 +48,25 @@ func (s *SessionController) Show(ctx iris.Context) {
 }
 
 func (s *SessionController) Logout(ctx iris.Context) {
+	
+	_, _ = ctx.JSON(s.RenderSuccessJson(iris.Map{"message": "Logout is successful"}))
+}
 
+func (s *SessionController) ResetToken(ctx iris.Context) {
+
+}
+
+func myAuthenticatedHandler(ctx iris.Context) {
+	user := ctx.Values().Get("jwt").(*jwt.Token)
+	ctx.Writef("This is an authenticated request\n")
+	ctx.Writef("Claim content:\n")
+	foobar := user.Claims.(jwt.MapClaims)
+	for key, value := range foobar {
+		ctx.Writef("%s = %s", key, value)
+	}
+}
+
+func (s *SessionController) initSession(ctx iris.Context) {
+	s.SService = services.NewSessionService()
+	s.EService = services.NewEmployeeService()
 }
