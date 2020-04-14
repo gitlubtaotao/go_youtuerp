@@ -1,7 +1,9 @@
 package middleware
 
 import (
+	"github.com/iris-contrib/middleware/cors"
 	"github.com/kataras/iris/v12"
+	"github.com/kataras/iris/v12/context"
 	"github.com/kataras/iris/v12/mvc"
 	"github.com/kataras/iris/v12/sessions"
 	"net/http"
@@ -13,7 +15,9 @@ import (
 //处理路由信息
 type IRoute interface {
 	DefaultRegister()
-	MVCRegister()
+	
+	MVCRegister(crs context.Handler)
+	OtherRegister(crs context.Handler)
 }
 
 //
@@ -30,12 +34,16 @@ func NewRoute(app *iris.Application) IRoute {
  * @description 注册系统的方法
  */
 func (i *Route) DefaultRegister() {
-	i.MVCRegister()
-	i.OtherRegister()
+	crs := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:9528"}, //允许通过的主机名称
+		AllowCredentials: true,
+	})
+	i.MVCRegister(crs)
+	i.OtherRegister(crs)
 }
 
-func (i *Route) MVCRegister() {
-	requiredAuth := i.app.Party("/", authRequired)
+func (i *Route) MVCRegister(crs context.Handler) {
+	requiredAuth := i.app.Party("/", authRequired, crs).AllowMethods(iris.MethodOptions)
 	mvc.New(requiredAuth.Party("/")).Handle(&controllers.HomeController{})
 	//公司信息
 	mvc.New(requiredAuth.Party("/company")).Handle(&controllers.CompanyController{Service: services.NewCompanyService()})
@@ -52,11 +60,12 @@ func (i *Route) MVCRegister() {
  * @title: V1 api 路由注册方法
  * @description: api 路由注册方法
  */
-func (i *Route) OtherRegister() {
+func (i *Route) OtherRegister(crs context.Handler) {
 	session := controllers.SessionController{}
-	i.app.Get("/login", session.Get)
-	i.app.Post("/login", session.Login)
-	
+	users := i.app.Party("user/", crs).AllowMethods(iris.MethodOptions)
+	{
+		users.Post("/login", session.Login)
+	}
 }
 
 //验证必须进行登录
