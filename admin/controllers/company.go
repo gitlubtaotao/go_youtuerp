@@ -20,7 +20,7 @@ func (c *CompanyController) Get() iris.Map {
 	if err == nil {
 		return c.RenderSuccessJson(companies)
 	}
-	return c.RenderErrorJson(err.Error())
+	return c.RenderErrorJson(err.Error(),0)
 }
 
 

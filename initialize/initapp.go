@@ -58,9 +58,12 @@ func NewApp() *iris.Application {
 	WebSecureCookie(app)
 	route.DefaultRegister()
 	conf.IrisApp = app
+	
+	
 	RegisterView(app)
 	app.OnErrorCode(iris.StatusNotFound, new(controllers.ErrorsController).NotFound)
 	app.OnErrorCode(iris.StatusInternalServerError, new(controllers.ErrorsController).InternalServerError)
+	
 	return app
 }
 

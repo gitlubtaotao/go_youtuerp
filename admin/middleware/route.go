@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"github.com/iris-contrib/middleware/cors"
+	"github.com/iris-contrib/middleware/jwt"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/context"
 	"github.com/kataras/iris/v12/mvc"
@@ -33,6 +34,7 @@ func NewRoute(app *iris.Application) IRoute {
  * @title 路由的注册方法
  * @description 注册系统的方法
  */
+
 func (i *Route) DefaultRegister() {
 	crs := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:9528"}, //允许通过的主机名称
@@ -42,8 +44,19 @@ func (i *Route) DefaultRegister() {
 	i.OtherRegister(crs)
 }
 
+func myAuthenticatedHandler(ctx iris.Context) {
+	user := ctx.Values().Get("jwt").(*jwt.Token)
+	ctx.Writef("This is an authenticated request\n")
+	ctx.Writef("Claim content:\n")
+	foobar := user.Claims.(jwt.MapClaims)
+	for key, value := range foobar {
+		ctx.Writef("%s = %s", key, value)
+	}
+}
+
 func (i *Route) MVCRegister(crs context.Handler) {
-	requiredAuth := i.app.Party("/", authRequired, crs).AllowMethods(iris.MethodOptions)
+	j := i.jwtAccess()
+	requiredAuth := i.app.Party("/", crs, j.Serve).AllowMethods(iris.MethodOptions, )
 	mvc.New(requiredAuth.Party("/")).Handle(&controllers.HomeController{})
 	//公司信息
 	mvc.New(requiredAuth.Party("/company")).Handle(&controllers.CompanyController{Service: services.NewCompanyService()})
@@ -53,7 +66,18 @@ func (i *Route) MVCRegister(crs context.Handler) {
 	mvc.New(requiredAuth.Party("/customer")).Handle(&controllers.CustomerController{Service: services.NewCrmCompanyService()})
 	//供应商信息
 	mvc.New(requiredAuth.Party("/supplier")).Handle(&controllers.SupplierController{})
-	
+}
+
+func (i *Route) jwtAccess() *jwt.Middleware {
+	j := jwt.New(jwt.Config{
+		// 通过 "token" URL参数提取。
+		Extractor: jwt.FromParameter("token"),
+		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
+			return []byte("My Secret"), nil
+		},
+		SigningMethod: jwt.SigningMethodHS256,
+	})
+	return j
 }
 
 /*
@@ -61,10 +85,12 @@ func (i *Route) MVCRegister(crs context.Handler) {
  * @description: api 路由注册方法
  */
 func (i *Route) OtherRegister(crs context.Handler) {
+	j := i.jwtAccess()
 	session := controllers.SessionController{}
 	users := i.app.Party("user/", crs).AllowMethods(iris.MethodOptions)
 	{
 		users.Post("/login", session.Login)
+		users.Get("/info", j.Serve, myAuthenticatedHandler)
 	}
 }
 
