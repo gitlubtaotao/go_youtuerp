@@ -22,6 +22,7 @@ type EnvironmentConfig struct {
 	DSN         string `json:"dsn" yaml:"dsn"`
 	SessionName string `json:"session_name" yaml:"session_name"`
 	AssetsHost  string `json:"assets_host" yaml:"assets_host"`
+	TokenSecret string `json:"token_secret" yaml:"token_secret"`
 }
 
 /*

@@ -34,10 +34,11 @@ func NewRoute(app *iris.Application) IRoute {
  * @title 路由的注册方法
  * @description 注册系统的方法
  */
-
 func (i *Route) DefaultRegister() {
 	crs := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:9528"}, //允许通过的主机名称
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"HEAD", "GET", "POST", "PUT", "PATCH", "DELETE"},
+		AllowedHeaders:   []string{"*"},
 		AllowCredentials: true,
 	})
 	i.MVCRegister(crs)
@@ -56,7 +57,8 @@ func myAuthenticatedHandler(ctx iris.Context) {
 
 func (i *Route) MVCRegister(crs context.Handler) {
 	j := i.jwtAccess()
-	requiredAuth := i.app.Party("/", crs, j.Serve).AllowMethods(iris.MethodOptions, )
+	requiredAuth := i.app.Party("/", crs, j.Serve).AllowMethods(
+		iris.MethodGet, iris.MethodPost, iris.MethodPut, iris.MethodDelete, iris.MethodOptions, )
 	mvc.New(requiredAuth.Party("/")).Handle(&controllers.HomeController{})
 	//公司信息
 	mvc.New(requiredAuth.Party("/company")).Handle(&controllers.CompanyController{Service: services.NewCompanyService()})
@@ -73,7 +75,7 @@ func (i *Route) jwtAccess() *jwt.Middleware {
 		// 通过 "token" URL参数提取。
 		Extractor: jwt.FromParameter("token"),
 		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
-			return []byte("My Secret"), nil
+			return []byte(conf.Configuration.TokenSecret), nil
 		},
 		SigningMethod: jwt.SigningMethodHS256,
 	})
@@ -87,10 +89,12 @@ func (i *Route) jwtAccess() *jwt.Middleware {
 func (i *Route) OtherRegister(crs context.Handler) {
 	j := i.jwtAccess()
 	session := controllers.SessionController{}
-	users := i.app.Party("user/", crs).AllowMethods(iris.MethodOptions)
+	users := i.app.Party("user/", crs).AllowMethods(
+		iris.MethodGet, iris.MethodPost, iris.MethodPut, iris.MethodDelete, iris.MethodOptions, )
 	{
 		users.Post("/login", session.Login)
-		users.Get("/info", j.Serve, myAuthenticatedHandler)
+		users.Get("/info", j.Serve, session.Show)
+		users.Post("/logout", j.Serve, session.Logout)
 	}
 }
 
