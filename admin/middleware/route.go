@@ -35,16 +35,16 @@ func (i *Route) DefaultRegister() {
 }
 
 func (i *Route) MVCRegister() {
-	
-	mvc.New(i.app.Party("/", authRequired)).Handle(&controllers.HomeController{})
+	requiredAuth := i.app.Party("/", authRequired)
+	mvc.New(requiredAuth.Party("/")).Handle(&controllers.HomeController{})
 	//公司信息
-	mvc.New(i.app.Party("/company", authRequired)).Handle(&controllers.CompanyController{Service: services.NewCompanyService()})
+	mvc.New(requiredAuth.Party("/company")).Handle(&controllers.CompanyController{Service: services.NewCompanyService()})
 	//员工账户信息
-	mvc.New(i.app.Party("/employee", authRequired)).Handle(&controllers.EmployeeController{Service: services.NewEmployeeService()})
+	mvc.New(requiredAuth.Party("/employee")).Handle(&controllers.EmployeeController{Service: services.NewEmployeeService()})
 	//客户信息
-	mvc.New(i.app.Party("/customer", authRequired)).Handle(&controllers.CustomerController{Service: services.NewCrmCompanyService()})
+	mvc.New(requiredAuth.Party("/customer")).Handle(&controllers.CustomerController{Service: services.NewCrmCompanyService()})
 	//供应商信息
-	mvc.New(i.app.Party("/supplier", authRequired)).Handle(&controllers.SupplierController{})
+	mvc.New(requiredAuth.Party("/supplier")).Handle(&controllers.SupplierController{})
 	
 }
 
@@ -55,7 +55,7 @@ func (i *Route) MVCRegister() {
 func (i *Route) OtherRegister() {
 	session := controllers.SessionController{}
 	i.app.Get("/login", session.Get)
-	i.app.Post("/login",session.Login)
+	i.app.Post("/login", session.Login)
 	
 }
 
