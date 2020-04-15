@@ -5,9 +5,9 @@ import (
 )
 
 type Employee struct {
-	ID                  uint `gorm:"primary_key"`
-	CreatedAt           time.Time
-	UpdatedAt           time.Time
+	ID                  uint `gorm:"primary_key"json:"id"`
+	CreatedAt           time.Time `json:"created_at"`
+	UpdatedAt           time.Time `json:"updated_at"`
 	DeletedAt           *time.Time `sql:"index"`
 	Email               string     `grom:"type:varchar(100);email;unique;not_null;" form:"email" json:"email" validate:"required,email,unique"` // email
 	EncryptedPassword   string

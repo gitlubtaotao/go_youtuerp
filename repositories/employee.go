@@ -7,6 +7,7 @@ import (
 )
 
 type IEmployeeRepository interface {
+	FirstByPhoneAndEmail(phone string, email string) (employee *models.Employee, err error)
 	//通过员工的昵称或者用户信息进行查询
 	FirstByPhoneOrEmail(account string) (employee *models.Employee, err error)
 	UpdateColumnByID(employeeID uint, updateColumn map[string]interface{}) error
@@ -14,6 +15,14 @@ type IEmployeeRepository interface {
 }
 type EmployeeRepository struct {
 	BaseRepository
+}
+
+//通过手机号码和邮箱查询当前用户
+func (e *EmployeeRepository) FirstByPhoneAndEmail(phone string, email string) (employee *models.Employee, err error) {
+	var user models.Employee
+	err = database.GetDBCon().Where(&models.Employee{Phone: phone, Email: email}).First(&user).Error
+	employee = &user
+	return
 }
 
 func (e *EmployeeRepository) UpdateColumnByID(employeeID uint, updateColumn map[string]interface{}) error {

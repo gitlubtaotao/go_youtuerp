@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/iris-contrib/middleware/jwt"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/context"
 	"net/http"
@@ -47,6 +48,12 @@ func (b BaseController) RenderColumnJson(model interface{}, loader context.Local
 }
 
 //根据token获取当前用户
-func (b BaseController) CurrentUser(ctx iris.Context) (user *models.Employee) {
+func (b BaseController) CurrentUser(ctx iris.Context) (employee *models.Employee, err error) {
+	tokenInfo := ctx.Values().Get("jwt").(*jwt.Token)
+	foobar := tokenInfo.Claims.(jwt.MapClaims)
+	email := foobar["email"].(string)
+	phone := foobar["phone"].(string)
+	service := services.NewEmployeeService()
+	employee, err = service.FirstByPhoneAndEmail(phone, email)
 	return
 }

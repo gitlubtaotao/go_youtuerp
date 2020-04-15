@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"github.com/iris-contrib/middleware/jwt"
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"youtuerp/conf"
@@ -28,7 +27,7 @@ func (s *SessionController) Login(ctx iris.Context) {
 		return
 	}
 	//查询用户是否存在
-	user, err := s.EService.FirstByNameOrEmail(loginInfo.UserName)
+	user, err := s.EService.FirstByPhoneOrEmail(loginInfo.UserName)
 	if err != nil {
 		conf.IrisApp.Logger().Error(err)
 		s.RenderJson(ctx, s.RenderErrorJson(http.StatusBadRequest,
@@ -41,7 +40,10 @@ func (s *SessionController) Login(ctx iris.Context) {
 			ctx.GetLocale().GetMessage("devise.invalid")))
 		return
 	}
-	tokenString, err := s.SService.JwtGenerateToken(map[string]interface{}{})
+	tokenString, err := s.SService.JwtGenerateToken(map[string]interface{}{
+		"email": user.Email,
+		"phone": user.Phone,
+	})
 	if err != nil {
 		_, _ = ctx.JSON(s.RenderErrorJson(http.StatusBadRequest, err.Error()))
 	}
@@ -49,7 +51,14 @@ func (s *SessionController) Login(ctx iris.Context) {
 }
 
 func (s *SessionController) Show(ctx iris.Context) {
-	_, _ = ctx.JSON(s.RenderSuccessJson(iris.Map{"name": "sdsds"}))
+	currentUser, err := s.CurrentUser(ctx)
+	if err != nil {
+		conf.IrisApp.Logger().Error(err)
+		_, _ = ctx.JSON(s.RenderErrorJson(http.StatusInternalServerError,
+			ctx.GetLocale().GetMessage("error.inter_error")))
+		return
+	}
+	_, _ = ctx.JSON(s.RenderSuccessJson(currentUser))
 	return
 }
 
@@ -62,17 +71,13 @@ func (s *SessionController) ResetToken(ctx iris.Context) {
 
 }
 
-func myAuthenticatedHandler(ctx iris.Context) {
-	user := ctx.Values().Get("jwt").(*jwt.Token)
-	ctx.Writef("This is an authenticated request\n")
-	ctx.Writef("Claim content:\n")
-	foobar := user.Claims.(jwt.MapClaims)
-	for key, value := range foobar {
-		ctx.Writef("%s = %s", key, value)
-	}
-}
-
 func (s *SessionController) initSession(ctx iris.Context) {
 	s.SService = services.NewSessionService()
 	s.EService = services.NewEmployeeService()
 }
+
+
+
+
+
+

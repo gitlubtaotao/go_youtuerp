@@ -6,13 +6,19 @@ import (
 )
 
 type IEmployeeService interface {
-	FirstByNameOrEmail(account string) (*models.Employee, error)
+	FirstByPhoneAndEmail(phone string, email string) (*models.Employee, error)
+	FirstByPhoneOrEmail(account string) (*models.Employee, error)
 	UpdatePassword(user *models.Employee, password string) error
+	
 }
 
 type EmployeeService struct {
 	repo repositories.IEmployeeRepository
 	BaseService
+}
+
+func (e *EmployeeService) FirstByPhoneAndEmail(phone string, email string) (*models.Employee, error) {
+	return e.repo.FirstByPhoneAndEmail(phone, email)
 }
 
 func (e *EmployeeService) UpdatePassword(user *models.Employee, password string) error {
@@ -22,7 +28,7 @@ func (e *EmployeeService) UpdatePassword(user *models.Employee, password string)
 	return e.repo.UpdateColumn(user, updateColumn)
 }
 
-func (e *EmployeeService) FirstByNameOrEmail(account string) (*models.Employee, error) {
+func (e *EmployeeService) FirstByPhoneOrEmail(account string) (*models.Employee, error) {
 	return e.repo.FirstByPhoneOrEmail(account)
 }
 

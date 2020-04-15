@@ -13,17 +13,23 @@ import (
 var matchAllCap = regexp.MustCompile("([a-z0-9])([A-Z])")
 
 type IColumnService interface {
-	DefaultColumn(model interface{},args ...interface{}) (data []interface{}, err error)
+	DefaultColumn(model interface{}, args ...interface{}) (data []interface{}, err error)
 	ColumnByBase(f reflect.StructField) (data []interface{})
 	ColumnByOther(f reflect.StructField) (data []interface{})
 	DefaultHiddenColumn(t reflect.Value, args ...interface{}) (data interface{})
 	ToSnakeCase(str string) string
+	//将struct转化成对应的map结构
+	StructToMap(currentObject interface{}) map[string]interface{}
 }
 
 type ColumnService struct {
 	sy     sync.Mutex
 	loader context.Locale
 	BaseService
+}
+
+func (c *ColumnService) StructToMap(currentObject interface{}) map[string]interface{} {
+	panic("implement me")
 }
 
 func (c *ColumnService) DefaultColumn(model interface{}, args ...interface{}) (dataArray []interface{}, err error) {
