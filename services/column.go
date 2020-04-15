@@ -8,6 +8,8 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"time"
+	"youtuerp/tools"
 )
 
 var matchAllCap = regexp.MustCompile("([a-z0-9])([A-Z])")
@@ -19,7 +21,7 @@ type IColumnService interface {
 	DefaultHiddenColumn(t reflect.Value, args ...interface{}) (data interface{})
 	ToSnakeCase(str string) string
 	//将struct转化成对应的map结构
-	StructToMap(currentObject interface{}) map[string]interface{}
+	StructToMap(currentObject interface{}) (map[string]interface{}, error)
 }
 
 type ColumnService struct {
@@ -28,8 +30,13 @@ type ColumnService struct {
 	BaseService
 }
 
-func (c *ColumnService) StructToMap(currentObject interface{}) map[string]interface{} {
-	panic("implement me")
+func (c *ColumnService) StructToMap(currentObject interface{}) (map[string]interface{}, error) {
+	if currentObject == nil {
+		return map[string]interface{}{}, errors.New(c.loader.GetMessage("error.params_error"))
+	}
+	c.sy.Lock()
+	defer c.sy.Unlock()
+	return c.structToMap(currentObject), nil
 }
 
 func (c *ColumnService) DefaultColumn(model interface{}, args ...interface{}) (dataArray []interface{}, err error) {
@@ -171,6 +178,35 @@ func (c *ColumnService) tableName(v reflect.Value) string {
 	}
 	fmt.Println(data)
 	return data
+}
+
+//strut value to map value
+func (c *ColumnService) structToMap(currentObject interface{}) map[string]interface{} {
+	res := map[string]interface{}{}
+	v := reflect.TypeOf(currentObject)
+	reflectValue := reflect.ValueOf(currentObject)
+	reflectValue = reflect.Indirect(reflectValue)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+	utils := tools.TimeHelper{}
+	for i := 0; i < v.NumField(); i++ {
+		tag := v.Field(i).Tag.Get("json")
+		if tag != "" {
+			field := reflectValue.Field(i).Interface()
+			temp := v.Field(i).Type
+			if temp.Kind() == reflect.Struct {
+				if temp.Name() == "Time" {
+					res[tag] = utils.DefaultDate(field.(time.Time), c.loader.Language())
+				} else {
+					res[tag] = c.structToMap(field)
+				}
+			} else {
+				res[tag] = field
+			}
+		}
+	}
+	return res
 }
 
 func NewColumnService(loader context.Locale) IColumnService {

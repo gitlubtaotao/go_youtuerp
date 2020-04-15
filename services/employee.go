@@ -9,12 +9,16 @@ type IEmployeeService interface {
 	FirstByPhoneAndEmail(phone string, email string) (*models.Employee, error)
 	FirstByPhoneOrEmail(account string) (*models.Employee, error)
 	UpdatePassword(user *models.Employee, password string) error
-	
+	UpdateColumn(user *models.Employee, updateColumn map[string]interface{}) error
 }
 
 type EmployeeService struct {
 	repo repositories.IEmployeeRepository
 	BaseService
+}
+
+func (e *EmployeeService) UpdateColumn(user *models.Employee, updateColumn map[string]interface{}) error {
+	return e.repo.UpdateColumn(user, updateColumn)
 }
 
 func (e *EmployeeService) FirstByPhoneAndEmail(phone string, email string) (*models.Employee, error) {

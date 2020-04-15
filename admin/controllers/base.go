@@ -57,3 +57,8 @@ func (b BaseController) CurrentUser(ctx iris.Context) (employee *models.Employee
 	employee, err = service.FirstByPhoneAndEmail(phone, email)
 	return
 }
+
+func (b *BaseController) StructToMap(currentObject interface{}, ctx iris.Context) (map[string]interface{},error) {
+	service := services.NewColumnService(ctx.GetLocale())
+	return service.StructToMap(currentObject)
+}

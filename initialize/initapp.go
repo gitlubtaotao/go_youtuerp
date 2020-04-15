@@ -56,7 +56,6 @@ func NewApp() *iris.Application {
 	route.DefaultRegister()
 	conf.IrisApp = app
 	
-	
 	RegisterView(app)
 	app.OnErrorCode(iris.StatusNotFound, new(controllers.ErrorsController).NotFound)
 	app.OnErrorCode(iris.StatusInternalServerError, new(controllers.ErrorsController).InternalServerError)
@@ -112,7 +111,7 @@ func RegisterView(app *iris.Application) {
 	tmpl := iris.HTML("./view", ".html")
 	tmpl.Reload(true)
 	tmpl.Layout("layouts/application.html")
-	helper := tools.Helper{}
+	helper := tools.ViewHelper{}
 	tmpl.AddFunc("AssetsPublic", helper.AssetsPublic)
 	app.RegisterView(tmpl)
 }

@@ -1,16 +1,17 @@
+//对时间格式进行转换
 package tools
 
 import (
 	"time"
 )
 
-type IUtils interface {
+type ITimeHelper interface {
 	DefaultDate(time time.Time, language string) string
 	DefaultDateTime(time time.Time, language string) string
 	TimeFormat(time time.Time, timeFormat string) string
 }
 
-type Utils struct {
+type TimeHelper struct {
 }
 
 const (
@@ -23,11 +24,11 @@ const (
 )
 
 //转化时间
-func (u Utils) TimeFormat(time time.Time, timeFormat string) string {
+func (u TimeHelper) TimeFormat(time time.Time, timeFormat string) string {
 	return time.Format(timeFormat)
 }
 
-func (u Utils) DefaultDate(time time.Time, language string) string {
+func (u TimeHelper) DefaultDate(time time.Time, language string) string {
 	if language == "zh-CN" {
 		return u.TimeFormat(time, ZHDate)
 	} else {
@@ -35,7 +36,7 @@ func (u Utils) DefaultDate(time time.Time, language string) string {
 	}
 }
 
-func (u Utils) DefaultDateTime(time time.Time, language string) string {
+func (u TimeHelper) DefaultDateTime(time time.Time, language string) string {
 	if language == "zh-CN" {
 		return u.TimeFormat(time, ZHDateTime)
 	} else {

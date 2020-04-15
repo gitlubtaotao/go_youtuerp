@@ -3,8 +3,11 @@ package controllers
 import (
 	"github.com/kataras/iris/v12"
 	"net/http"
+	"time"
 	"youtuerp/conf"
+	"youtuerp/models"
 	"youtuerp/services"
+	"youtuerp/tools"
 )
 
 type login struct {
@@ -40,6 +43,12 @@ func (s *SessionController) Login(ctx iris.Context) {
 			ctx.GetLocale().GetMessage("devise.invalid")))
 		return
 	}
+	
+	if err = s.updateLoginInfo(ctx, user);err != nil{
+		s.RenderJson(ctx, s.RenderErrorJson(http.StatusBadRequest,
+			ctx.GetLocale().GetMessage("devise.invalid")))
+		return
+	}
 	tokenString, err := s.SService.JwtGenerateToken(map[string]interface{}{
 		"email": user.Email,
 		"phone": user.Phone,
@@ -58,7 +67,11 @@ func (s *SessionController) Show(ctx iris.Context) {
 			ctx.GetLocale().GetMessage("error.inter_error")))
 		return
 	}
-	_, _ = ctx.JSON(s.RenderSuccessJson(currentUser))
+	userMap, err := s.StructToMap(currentUser, ctx)
+	if err != nil {
+		s.RenderJson(ctx, s.RenderErrorJson(http.StatusInternalServerError, err.Error()))
+	}
+	_, _ = ctx.JSON(s.RenderSuccessJson(userMap))
 	return
 }
 
@@ -76,8 +89,16 @@ func (s *SessionController) initSession(ctx iris.Context) {
 	s.EService = services.NewEmployeeService()
 }
 
-
-
-
-
-
+//保存用户信息
+func (s *SessionController) updateLoginInfo(ctx iris.Context, employee *models.Employee) error {
+	otherHelper := tools.OtherHelper{}
+	ipAddress, _ := otherHelper.GetIPAddress(ctx.Request())
+	updateColumn := map[string]interface{}{
+		"sign_in_count":      employee.SignInCount + 1,
+		"current_sign_in_at": time.Now(),
+		"last_sign_in_at":    employee.CurrentSignInAt,
+		"current_sign_in_ip": ipAddress,
+		"last_sign_in_ip":    employee.CurrentSignInIp,
+	}
+	return s.EService.UpdateColumn(employee, updateColumn)
+}
