@@ -71,8 +71,7 @@ func (s *SessionController) Show(ctx iris.Context) {
 	if err != nil {
 		s.RenderJson(ctx, s.RenderErrorJson(http.StatusInternalServerError, err.Error()))
 	}
-	userMap["avatar"] = "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif?imageView2/1/w/80/h/80"
-	_, _ = ctx.JSON(s.RenderSuccessJson(userMap))
+	_, _ = ctx.JSON(s.RenderSuccessJson(s.handleUserInfo(userMap)))
 	return
 }
 
@@ -102,4 +101,10 @@ func (s *SessionController) updateLoginInfo(ctx iris.Context, employee *models.E
 		"last_sign_in_ip":    employee.CurrentSignInIp,
 	}
 	return s.EService.UpdateColumn(employee, updateColumn)
+}
+
+func (s *SessionController) handleUserInfo(userInfo map[string]interface{}) map[string]interface{} {
+	userInfo["avatar"] = "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif?imageView2/1/w/80/h/80"
+	userInfo["roles"] = []string{"admin"}
+	return userInfo
 }
