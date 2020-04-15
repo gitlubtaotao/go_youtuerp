@@ -44,7 +44,7 @@ func (s *SessionController) Login(ctx iris.Context) {
 		return
 	}
 	
-	if err = s.updateLoginInfo(ctx, user);err != nil{
+	if err = s.updateLoginInfo(ctx, user); err != nil {
 		s.RenderJson(ctx, s.RenderErrorJson(http.StatusBadRequest,
 			ctx.GetLocale().GetMessage("devise.invalid")))
 		return
@@ -71,6 +71,7 @@ func (s *SessionController) Show(ctx iris.Context) {
 	if err != nil {
 		s.RenderJson(ctx, s.RenderErrorJson(http.StatusInternalServerError, err.Error()))
 	}
+	userMap["avatar"] = "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif?imageView2/1/w/80/h/80"
 	_, _ = ctx.JSON(s.RenderSuccessJson(userMap))
 	return
 }
