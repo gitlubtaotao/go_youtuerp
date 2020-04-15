@@ -8,15 +8,26 @@ import (
 
 type IEmployeeRepository interface {
 	//通过员工的昵称或者用户信息进行查询
-	FirstByNameOrEmail(account string) (employee *models.Employee, err error)
+	FirstByPhoneOrEmail(account string) (employee *models.Employee, err error)
+	UpdateColumnByID(employeeID uint, updateColumn map[string]interface{}) error
+	UpdateColumn(employee *models.Employee, updateColumn map[string]interface{}) error
 }
 type EmployeeRepository struct {
 	BaseRepository
 }
 
-func (e *EmployeeRepository) FirstByNameOrEmail(account string) (employee *models.Employee, err error) {
+func (e *EmployeeRepository) UpdateColumnByID(employeeID uint, updateColumn map[string]interface{}) error {
+	user := models.Employee{ID: employeeID}
+	return database.GetDBCon().Model(&user).Updates(updateColumn).Error
+}
+
+func (e *EmployeeRepository) UpdateColumn(employee *models.Employee, updateColumn map[string]interface{}) error {
+	return database.GetDBCon().Model(&employee).Updates(updateColumn).Error
+}
+
+func (e *EmployeeRepository) FirstByPhoneOrEmail(account string) (employee *models.Employee, err error) {
 	var user models.Employee
-	err = database.GetDBCon().Scopes(e.defaultScoped).Where("name = ?", account).Or("email = ?", account).First(&user).Error
+	err = database.GetDBCon().Scopes(e.defaultScoped).Where("phone = ?", account).Or("email = ?", account).First(&user).Error
 	employee = &user
 	return
 }

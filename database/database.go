@@ -59,5 +59,6 @@ func (d *DataBase) Migration() error {
 	if GetDBCon().HasTable("companies") {
 		GetDBCon().AutoMigrate(&models.CompanyInfo{})
 	}
+	GetDBCon().AutoMigrate(&models.Employee{})
 	return nil
 }

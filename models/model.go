@@ -1,6 +1,9 @@
 package models
 
 
+
+
+
 //
 //type Finance_banks struct {
 //	Id int `gorm:"id" json:"id"`

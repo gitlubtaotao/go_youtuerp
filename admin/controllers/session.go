@@ -28,9 +28,15 @@ func (s *SessionController) Login(ctx iris.Context) {
 		return
 	}
 	//查询用户是否存在
-	_, err = s.EService.FirstByNameOrEmail(loginInfo.UserName)
+	user, err := s.EService.FirstByNameOrEmail(loginInfo.UserName)
 	if err != nil {
 		conf.IrisApp.Logger().Error(err)
+		s.RenderJson(ctx, s.RenderErrorJson(http.StatusBadRequest,
+			ctx.GetLocale().GetMessage("devise.invalid")))
+		return
+	}
+	//对比password 是否正确
+	if ok := s.SService.ValidatePassword(loginInfo.Password, user.EncryptedPassword); ok != nil {
 		s.RenderJson(ctx, s.RenderErrorJson(http.StatusBadRequest,
 			ctx.GetLocale().GetMessage("devise.invalid")))
 		return

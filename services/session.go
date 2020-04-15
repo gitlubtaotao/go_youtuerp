@@ -2,14 +2,15 @@ package services
 
 import (
 	"github.com/iris-contrib/middleware/jwt"
+	"golang.org/x/crypto/bcrypt"
 	"sync"
 	"time"
 	"youtuerp/conf"
 )
 
 type ISessionService interface {
-	GeneratePassword(password string) (hashPassword string)
-	ValidatePassword(password string, hashPassword string) bool
+	GeneratePassword(password string) (hashPassword string, err error)
+	ValidatePassword(password string, hashPassword string) error
 	JwtGenerateToken(data map[string]interface{}) (tokenString string, err error)
 }
 
@@ -17,12 +18,14 @@ type SessionService struct {
 	sy sync.Mutex
 }
 
-func (s *SessionService) GeneratePassword(password string) (hashPassword string) {
-	panic("implement me")
+func (s *SessionService) GeneratePassword(password string) (hashPassword string, err error) {
+	var bytes []byte
+	bytes, err = bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	return string(bytes), err
 }
 
-func (s *SessionService) ValidatePassword(password string, hashPassword string) bool {
-	panic("implement me")
+func (s *SessionService) ValidatePassword(password string, hashPassword string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hashPassword), []byte(password))
 }
 
 //通过jwt 插件生成对于的token
