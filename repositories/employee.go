@@ -12,9 +12,14 @@ type IEmployeeRepository interface {
 	FirstByPhoneOrEmail(account string) (employee *models.Employee, err error)
 	UpdateColumnByID(employeeID uint, updateColumn map[string]interface{}) error
 	UpdateColumn(employee *models.Employee, updateColumn map[string]interface{}) error
+	UpdateRecordByModel(employee *models.Employee,updateModel models.Employee) error
 }
 type EmployeeRepository struct {
 	BaseRepository
+}
+
+func (e *EmployeeRepository) UpdateRecordByModel(employee *models.Employee, updateModel models.Employee) error {
+	return database.GetDBCon().Model(&employee).Update(updateModel).Error
 }
 
 //通过手机号码和邮箱查询当前用户

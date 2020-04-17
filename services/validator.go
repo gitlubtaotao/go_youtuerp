@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"github.com/go-playground/locales"
 	"github.com/go-playground/locales/en"
 	"github.com/go-playground/locales/zh"
@@ -44,6 +45,7 @@ func NewValidatorService(model interface{}) IValidatorService {
 }
 
 func (v *ValidatorService) HandlerError(language string) (errorsArray []FieldError, err error) {
+	fmt.Println(v.model)
 	err = validator.New().Struct(v.model)
 	if _err := v.registerLanguageService(language); _err != nil {
 		return errorsArray, _err

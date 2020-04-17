@@ -31,6 +31,7 @@ type Employee struct {
 	Remarks             string      `gorm:"size:65535" json:"remarks" form:"remarks"`
 	Sex                 uint        `gorm:"default:0" json:"sex" form:"sex"`
 	UserCompany         UserCompany `gorm:"foreignkey:user_company_id"`
+	
 }
 
 func (Employee) TableName() string {

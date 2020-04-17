@@ -17,6 +17,12 @@ type login struct {
 	Password string `json:"password"`
 }
 
+//读取密码信息
+type readPassword struct {
+	Password        string `json:"password"`
+	ConfirmPassword string `json:"confirm_password"`
+}
+
 type SessionController struct {
 	BaseController
 	SService services.ISessionService
@@ -88,6 +94,37 @@ func (s *SessionController) Logout(ctx iris.Context) {
 
 func (s *SessionController) ResetToken(ctx iris.Context) {
 
+}
+
+func (s *SessionController) Update(ctx iris.Context) {
+	s.initSession()
+	var userInfo models.Employee
+	err := ctx.ReadJSON(&userInfo)
+	if err != nil {
+		s.RenderErrorJson(ctx, http.StatusBadRequest, err.Error())
+	}
+	var passwordInfo readPassword
+	err = ctx.ReadJSON(&passwordInfo)
+	if err != nil {
+		s.RenderErrorJson(ctx, http.StatusBadRequest, err.Error())
+	}
+	updateModel := models.Employee{Email: userInfo.Email, Name: userInfo.Name, Phone: userInfo.Phone, Address: userInfo.Address}
+	fmt.Println(passwordInfo.Password)
+	if passwordInfo.Password != "" {
+		if passwordInfo.Password != passwordInfo.ConfirmPassword {
+			s.RenderErrorJson(ctx, http.StatusBadRequest, ctx.GetLocale().GetMessage("error.password_error"))
+			return
+		}
+		updateModel.EncryptedPassword, _ = s.SService.GeneratePassword(passwordInfo.Password)
+	}
+	currentUser, _ := s.CurrentUser(ctx)
+	err = s.EService.UpdateRecord(currentUser, updateModel)
+	if err != nil {
+		s.RenderErrorJson(ctx, http.StatusBadRequest, err.Error())
+		return
+	}
+	userMap, _ := s.StructToMap(currentUser, ctx)
+	s.RenderSuccessJson(ctx, s.handleUserInfo(userMap))
 }
 
 //初始化session

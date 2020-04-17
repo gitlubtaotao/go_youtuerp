@@ -73,6 +73,7 @@ func (i *Route) OtherRegister(crs context.Handler) {
 		users.Post("/login", session.Login)
 		users.Get("/info", j.Serve, session.Show)
 		users.Post("/logout", j.Serve, session.Logout)
+		users.Post("/update", j.Serve, session.Update)
 	}
 }
 

@@ -10,11 +10,21 @@ type IEmployeeService interface {
 	FirstByPhoneOrEmail(account string) (*models.Employee, error)
 	UpdatePassword(user *models.Employee, password string) error
 	UpdateColumn(user *models.Employee, updateColumn map[string]interface{}) error
+	UpdateRecord(user *models.Employee, employee models.Employee) error
 }
 
 type EmployeeService struct {
 	repo repositories.IEmployeeRepository
 	BaseService
+}
+
+func (e *EmployeeService) UpdateRecord(user *models.Employee, employee models.Employee) error {
+	//validate := NewValidatorService(user)
+	//errs, _ := validate.HandlerError("zh-CN")
+	//if len(errs) > 0 {
+	//	return errors.New("保存失败")
+	//}
+	return e.repo.UpdateRecordByModel(user, employee)
 }
 
 func (e *EmployeeService) UpdateColumn(user *models.Employee, updateColumn map[string]interface{}) error {
