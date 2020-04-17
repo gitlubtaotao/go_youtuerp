@@ -3,7 +3,6 @@ package controllers
 import (
 	"github.com/iris-contrib/middleware/jwt"
 	"github.com/kataras/iris/v12"
-	"github.com/kataras/iris/v12/context"
 	"net/http"
 	"youtuerp/models"
 	"youtuerp/services"
@@ -12,39 +11,48 @@ import (
 type BaseController struct {
 }
 
-// render success to json
-
-func (b BaseController) RenderJson(ctx iris.Context, data iris.Map) {
-	_, _ = ctx.JSON(data)
-}
-func (b BaseController) RenderSuccessJson(data interface{}) iris.Map {
+func (b BaseController) RenderSuccessJson(ctx iris.Context, data interface{}) {
 	m := iris.Map{
 		"code": http.StatusOK,
 		"data": data,
 	}
-	return m
+	_, _ = ctx.JSON(m)
 }
 
 //render error to json
-func (b BaseController) RenderErrorJson(code int, err string) iris.Map {
+func (b BaseController) RenderErrorJson(ctx iris.Context, code int, err string) {
 	if code == 0 {
 		code = http.StatusInternalServerError
 	}
+	ctx.StatusCode(code)
+	_, _ = ctx.JSON(iris.Map{"code": code, "message": err})
+}
+
+func (b BaseController) RenderColumnMap(ctx iris.Context, model interface{}) iris.Map {
+	column := services.NewColumnService(ctx.GetLocale())
+	data, err := column.DefaultColumn(model)
+	if err != nil {
+		return b.RenderErrorMap(ctx, http.StatusBadRequest, err.Error())
+	}
+	return b.RenderSuccessMap(ctx, data)
+}
+func (b BaseController) RenderSuccessMap(ctx iris.Context, data interface{}) iris.Map {
+	ctx.StatusCode(http.StatusOK)
+	return iris.Map{
+		"code": http.StatusOK,
+		"data": data,
+	}
+}
+
+func (b BaseController) RenderErrorMap(ctx iris.Context, code int, err string) iris.Map {
+	if code == 0 {
+		code = http.StatusInternalServerError
+	}
+	ctx.StatusCode(code)
 	return iris.Map{
 		"code":    code,
 		"message": err,
 	}
-}
-
-func (b BaseController) RenderColumnJson(model interface{}, loader context.Locale) iris.Map {
-	column := services.NewColumnService(loader)
-	data, err := column.DefaultColumn(model)
-	if err != nil {
-		return b.RenderErrorJson(0, err.Error())
-	}
-	return b.RenderSuccessJson(iris.Map{
-		"column": data,
-	})
 }
 
 //根据token获取当前用户
@@ -58,7 +66,7 @@ func (b BaseController) CurrentUser(ctx iris.Context) (employee *models.Employee
 	return
 }
 
-func (b *BaseController) StructToMap(currentObject interface{}, ctx iris.Context) (map[string]interface{},error) {
+func (b *BaseController) StructToMap(currentObject interface{}, ctx iris.Context) (map[string]interface{}, error) {
 	service := services.NewColumnService(ctx.GetLocale())
 	return service.StructToMap(currentObject)
 }

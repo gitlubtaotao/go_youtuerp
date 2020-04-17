@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"errors"
+	"fmt"
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"time"
@@ -23,30 +25,34 @@ type SessionController struct {
 
 func (s *SessionController) Login(ctx iris.Context) {
 	var loginInfo login
-	s.initSession(ctx)
+	s.initSession()
 	err := ctx.ReadJSON(&loginInfo)
 	if err != nil {
-		s.RenderJson(ctx, s.RenderErrorJson(http.StatusBadRequest, err.Error()))
+		s.RenderErrorJson(ctx, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err = s.validateLogin(ctx, loginInfo); err != nil {
+		s.RenderErrorJson(ctx, http.StatusBadRequest, err.Error())
 		return
 	}
 	//查询用户是否存在
 	user, err := s.EService.FirstByPhoneOrEmail(loginInfo.UserName)
 	if err != nil {
 		conf.IrisApp.Logger().Error(err)
-		s.RenderJson(ctx, s.RenderErrorJson(http.StatusBadRequest,
-			ctx.GetLocale().GetMessage("devise.invalid")))
+		s.RenderErrorJson(ctx, http.StatusBadRequest, ctx.GetLocale().GetMessage("devise.invalid"))
 		return
 	}
+	fmt.Printf("sdsdsdsds")
 	//对比password 是否正确
 	if ok := s.SService.ValidatePassword(loginInfo.Password, user.EncryptedPassword); ok != nil {
-		s.RenderJson(ctx, s.RenderErrorJson(http.StatusBadRequest,
-			ctx.GetLocale().GetMessage("devise.invalid")))
+		s.RenderErrorJson(ctx, http.StatusBadRequest,
+			ctx.GetLocale().GetMessage("devise.invalid"))
 		return
 	}
 	
 	if err = s.updateLoginInfo(ctx, user); err != nil {
-		s.RenderJson(ctx, s.RenderErrorJson(http.StatusBadRequest,
-			ctx.GetLocale().GetMessage("devise.invalid")))
+		s.RenderErrorJson(ctx, http.StatusBadRequest,
+			ctx.GetLocale().GetMessage("devise.invalid"))
 		return
 	}
 	tokenString, err := s.SService.JwtGenerateToken(map[string]interface{}{
@@ -54,42 +60,43 @@ func (s *SessionController) Login(ctx iris.Context) {
 		"phone": user.Phone,
 	})
 	if err != nil {
-		_, _ = ctx.JSON(s.RenderErrorJson(http.StatusBadRequest, err.Error()))
+		s.RenderErrorJson(ctx, http.StatusBadRequest, err.Error())
 	}
-	_, _ = ctx.JSON(s.RenderSuccessJson(iris.Map{"token": tokenString}))
+	s.RenderSuccessJson(ctx, iris.Map{"token": tokenString})
 }
 
 func (s *SessionController) Show(ctx iris.Context) {
 	currentUser, err := s.CurrentUser(ctx)
 	if err != nil {
 		conf.IrisApp.Logger().Error(err)
-		_, _ = ctx.JSON(s.RenderErrorJson(http.StatusInternalServerError,
-			ctx.GetLocale().GetMessage("error.inter_error")))
+		s.RenderErrorJson(ctx, http.StatusInternalServerError,
+			ctx.GetLocale().GetMessage("error.inter_error"))
 		return
 	}
 	userMap, err := s.StructToMap(currentUser, ctx)
 	if err != nil {
-		s.RenderJson(ctx, s.RenderErrorJson(http.StatusInternalServerError, err.Error()))
+		s.RenderErrorJson(ctx, http.StatusInternalServerError, err.Error())
 	}
-	_, _ = ctx.JSON(s.RenderSuccessJson(s.handleUserInfo(userMap)))
+	s.RenderSuccessJson(ctx, s.handleUserInfo(userMap))
 	return
 }
 
 func (s *SessionController) Logout(ctx iris.Context) {
 	
-	_, _ = ctx.JSON(s.RenderSuccessJson(iris.Map{"message": "Logout is successful"}))
+	s.RenderSuccessJson(ctx, iris.Map{"message": "Logout is successful"})
 }
 
 func (s *SessionController) ResetToken(ctx iris.Context) {
 
 }
 
-func (s *SessionController) initSession(ctx iris.Context) {
+//初始化session
+func (s *SessionController) initSession() {
 	s.SService = services.NewSessionService()
 	s.EService = services.NewEmployeeService()
 }
 
-//保存用户信息
+//保存当前登录用户的信息
 func (s *SessionController) updateLoginInfo(ctx iris.Context, employee *models.Employee) error {
 	otherHelper := tools.OtherHelper{}
 	ipAddress, _ := otherHelper.GetIPAddress(ctx.Request())
@@ -103,8 +110,20 @@ func (s *SessionController) updateLoginInfo(ctx iris.Context, employee *models.E
 	return s.EService.UpdateColumn(employee, updateColumn)
 }
 
+//获取当前登录用户信息数据进行处理
 func (s *SessionController) handleUserInfo(userInfo map[string]interface{}) map[string]interface{} {
 	userInfo["avatar"] = "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif?imageView2/1/w/80/h/80"
 	userInfo["roles"] = []string{"admin"}
 	return userInfo
+}
+
+//验证登录用户的信息
+func (s *SessionController) validateLogin(ctx iris.Context, login2 login) error {
+	if login2.Password == "" {
+		return errors.New(ctx.GetLocale().GetMessage("devise.invalid"))
+	}
+	if login2.Password == "" {
+		return errors.New(ctx.GetLocale().GetMessage("devise.invalid"))
+	}
+	return nil
 }

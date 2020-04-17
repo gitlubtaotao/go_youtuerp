@@ -16,10 +16,8 @@ type EmployeeController struct {
 
 //
 func (e *EmployeeController) Get() iris.Map {
-	return e.RenderSuccessJson(make(map[string]interface{}))
+	return e.RenderSuccessMap(e.Ctx, make(map[string]interface{}))
 }
 func (e *EmployeeController) GetColumn() iris.Map {
-	return e.RenderColumnJson(models.Employee{}, e.Ctx.GetLocale())
+	return e.RenderColumnMap(e.Ctx, models.Employee{})
 }
-
-

@@ -11,17 +11,13 @@ import (
 	"youtuerp/tools"
 )
 
-/*
- * @title: 处理request info
- */
+//@title: 处理request info
 func RequestInfo(ctx iris.Context) {
 	ctx.Application().Logger().Infof("Runs before %s", ctx.Path())
 	ctx.Next()
 }
 
-/*
- * @title iris 日志输出的设置
- */
+// @title iris 日志输出的设置
 func LogConfig() iris.Handler {
 	customLogger := logger.New(logger.Config{
 		//状态显示状态代码
@@ -44,9 +40,7 @@ func LogConfig() iris.Handler {
 	return customLogger
 }
 
-/*
- * @title: 初始化app
- */
+//@title: 初始化app
 func NewApp() *iris.Application {
 	app := iris.New()
 	app.Use(RequestInfo)
@@ -55,11 +49,9 @@ func NewApp() *iris.Application {
 	//加载web端口对应的web secure cookie
 	route.DefaultRegister()
 	conf.IrisApp = app
-	
 	RegisterView(app)
 	app.OnErrorCode(iris.StatusNotFound, new(controllers.ErrorsController).NotFound)
 	app.OnErrorCode(iris.StatusInternalServerError, new(controllers.ErrorsController).InternalServerError)
-	
 	return app
 }
 

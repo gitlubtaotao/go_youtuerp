@@ -14,5 +14,5 @@ type SupplierController struct {
 }
 
 func (s *SupplierController) GetColumn() iris.Map {
-	return s.RenderColumnJson(&models.CrmCompany{}, s.Ctx.GetLocale())
+	return s.RenderColumnMap(s.Ctx, &models.CrmCompany{})
 }

@@ -14,5 +14,5 @@ type DepartmentController struct {
 }
 
 func (d *DepartmentController) GetColumn() iris.Map {
-	return d.RenderColumnJson(&models.Department{}, d.Ctx.GetLocale())
+	return d.RenderColumnMap(d.Ctx, &models.Department{})
 }

@@ -9,3 +9,7 @@ development:
   token_secret: HBss*4222JK45QOL
 production:
   <<: *defaults
+test:
+  <<: *defaults
+  dsn: root:qweqwe123@tcp(127.0.0.1:3306)/go_youtuerp_test?charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=true
+

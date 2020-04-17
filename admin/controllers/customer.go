@@ -7,7 +7,6 @@ import (
 	"youtuerp/services"
 )
 
-
 type CustomerController struct {
 	Ctx iris.Context
 	BaseController
@@ -15,5 +14,5 @@ type CustomerController struct {
 }
 
 func (c *CustomerController) GetColumn() iris.Map {
-	return c.RenderColumnJson(models.CrmCompany{}, c.Ctx.GetLocale())
+	return c.RenderColumnMap(c.Ctx, models.CrmCompany{})
 }

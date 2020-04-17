@@ -1,4 +1,5 @@
 package controllers
+
 import (
 	"github.com/kataras/iris/v12"
 	"youtuerp/models"
@@ -11,11 +12,10 @@ type ContactController struct {
 	Service services.IContactService
 }
 
-
 func (c *ContactController) Get() iris.Map {
-	return c.RenderSuccessJson(map[string]interface{}{})
+	return c.RenderSuccessMap(c.Ctx, map[string]interface{}{})
 }
 
 func (c *ContactController) GetColumn() iris.Map {
-	return c.RenderColumnJson(models.Contact{}, c.Ctx.GetLocale())
+	return c.RenderColumnMap(c.Ctx, models.Contact{})
 }

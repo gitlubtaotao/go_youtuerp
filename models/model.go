@@ -2216,16 +2216,7 @@ type Base struct {
 //	return "base_data_boat_companies"
 //}
 //
-//type Departments struct {
-//	Id int `gorm:"id" json:"id"`
-//	NameCn string `gorm:"name_cn" json:"name_cn"` // 部门中文名
-//	NameEn string `gorm:"name_en" json:"name_en"` // 部门英文名
-//	CreatedAt string `gorm:"created_at" json:"created_at"`
-//	UpdatedAt string `gorm:"updated_at" json:"updated_at"`
-//	UserCompanyId int `gorm:"user_company_id" json:"user_company_id"`
-//	DeletedAt string `gorm:"deleted_at" json:"deleted_at"`
-//	LockVersion int `gorm:"lock_version" json:"lock_version"`
-//}
+//
 //
 //func (*Departments) TableName() string {
 //	return "departments"

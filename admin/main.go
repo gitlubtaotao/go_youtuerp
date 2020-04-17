@@ -12,6 +12,20 @@ import (
 
 func main() {
 	//加载系统配置文件
+	app := NewAppInfo()
+	f, err := initialize.NewLogFile("iris")
+	if err != nil {
+		app.Logger().Error(err)
+		panic(err)
+	}
+	defer f.Close()
+	app.Logger().SetOutput(io.MultiWriter(f, os.Stdout))
+	config := iris.WithConfiguration(iris.YAML("../conf/iris.yaml"))
+	_ = app.Run(iris.Addr(":8082"), config, iris.WithoutServerError(iris.ErrServerClosed))
+}
+
+//初始化app
+func NewAppInfo() *iris.Application {
 	configEnv := flag.String("env", "development", "set env development or production")
 	flag.Parse()
 	err := initialize.InitConfig(*configEnv)
@@ -19,15 +33,8 @@ func main() {
 		panic(err)
 	}
 	app := initialize.NewApp()
-	f, err := initialize.NewLogFile("iris")
-	if err != nil {
-		app.Logger().Error(err)
-	}
-	defer f.Close()
-	app.Logger().SetOutput(io.MultiWriter(f, os.Stdout))
-	
-	//加载数据库操作
 	err = new(database.DataBase).DefaultInit()
+	//加载数据库操作
 	if err != nil {
 		app.Logger().Error(err)
 		panic(err)
@@ -41,9 +48,7 @@ func main() {
 		app.Logger().Error(err)
 		panic(err)
 	}
-	config := iris.WithConfiguration(iris.YAML("../conf/iris.yaml"))
-	
-	_ = app.Run(iris.Addr(":8082"), config, iris.WithoutServerError(iris.ErrServerClosed))
+	return app
 }
 
 /*

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"github.com/iris-contrib/middleware/cors"
 	"github.com/iris-contrib/middleware/jwt"
 	"github.com/kataras/iris/v12"
@@ -84,6 +85,7 @@ func (i *Route) jwtAccess() *jwt.Middleware {
 			return []byte(conf.Configuration.TokenSecret), nil
 		},
 		ErrorHandler: func(ctx context.Context, err error) {
+			fmt.Printf(ctx.URLParam("token"))
 			if err == nil {
 				return
 			}
