@@ -4,11 +4,13 @@ import (
 	"errors"
 	"github.com/kataras/iris/v12"
 	"net/http"
+	"sync"
 	"time"
 	"youtuerp/conf"
 	"youtuerp/models"
 	"youtuerp/services"
 	"youtuerp/tools"
+	"youtuerp/tools/uploader"
 )
 
 type login struct {
@@ -82,7 +84,7 @@ func (s *SessionController) Show(ctx iris.Context) {
 	if err != nil {
 		s.RenderErrorJson(ctx, http.StatusInternalServerError, err.Error())
 	}
-	s.RenderSuccessJson(ctx, s.handleUserInfo(userMap))
+	s.RenderSuccessJson(ctx, s.handleUserInfo(currentUser, userMap))
 	return
 }
 
@@ -125,11 +127,24 @@ func (s *SessionController) Update(ctx iris.Context) {
 		return
 	}
 	userMap, _ := s.StructToMap(currentUser, ctx)
-	s.RenderSuccessJson(ctx, s.handleUserInfo(userMap))
+	s.RenderSuccessJson(ctx, s.handleUserInfo(currentUser, userMap))
 }
 
 func (s *SessionController) UploadAvatar(ctx iris.Context) {
-
+	s.initSession()
+	value, header, _ := ctx.FormFile("avatar")
+	up := uploader.NewQiNiuUploaderDefault()
+	url, key, err := up.Upload(value, header)
+	if err != nil {
+		conf.IrisApp.Logger().Error(err)
+		s.RenderErrorJson(ctx, http.StatusBadRequest, ctx.GetLocale().GetMessage("error.upload"))
+	}
+	url = up.PrivateReadURL(key)
+	s.RenderSuccessJson(ctx, map[string]interface{}{
+		"url": url,
+	})
+	//	异步保存key
+	s.UpdateAvatar(ctx, key)
 }
 
 //初始化session
@@ -153,8 +168,13 @@ func (s *SessionController) updateLoginInfo(ctx iris.Context, employee *models.E
 }
 
 //获取当前登录用户信息数据进行处理
-func (s *SessionController) handleUserInfo(userInfo map[string]interface{}) map[string]interface{} {
-	userInfo["avatar"] = "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif?imageView2/1/w/80/h/80"
+func (s *SessionController) handleUserInfo(currentUser *models.Employee, userInfo map[string]interface{}) map[string]interface{} {
+	var avatar = "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif?imageView2/1/w/80/h/80"
+	if currentUser.Avatar != "" {
+		upload := uploader.NewQiNiuUploaderDefault()
+		avatar = upload.PrivateReadURL(currentUser.Avatar)
+	}
+	userInfo["avatar"] = avatar
 	userInfo["roles"] = []string{"admin"}
 	return userInfo
 }
@@ -168,4 +188,21 @@ func (s *SessionController) validateLogin(ctx iris.Context, login2 login) error 
 		return errors.New(ctx.GetLocale().GetMessage("devise.invalid"))
 	}
 	return nil
+}
+
+//更新用户上传的头像
+func (s *SessionController) UpdateAvatar(ctx iris.Context, key string) {
+	sy := sync.WaitGroup{}
+	user, err := s.CurrentUser(ctx)
+	if err != nil {
+		return
+	}
+	updateColumn := map[string]interface{}{"avatar": key}
+	sy.Add(1)
+	go func(s *SessionController, user *models.Employee, updateColumn map[string]interface{}) {
+		defer sy.Done()
+		_ = s.EService.UpdateColumn(user, updateColumn)
+	}(s, user, updateColumn)
+	sy.Wait()
+	return
 }

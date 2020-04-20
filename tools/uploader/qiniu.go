@@ -2,13 +2,11 @@ package uploader
 
 import (
 	"context"
-	"github.com/qiniu/api.v7/auth/qbox"
+	"github.com/qiniu/api.v7/v7/auth/qbox"
+	"github.com/qiniu/api.v7/v7/storage"
 	"mime/multipart"
 	"time"
 	"youtuerp/conf"
-)
-import (
-	"github.com/qiniu/api.v7/storage"
 )
 
 type IQiNiuUploader interface {
@@ -33,7 +31,7 @@ type QiNiuUploader struct {
 	Zone          *storage.Zone
 	UseHTTPS      bool
 	UseCdnDomains bool
-	Expires       uint32
+	Expires       uint64
 }
 
 func NewQiNiuUploaderDefault() QiNiuUploader {
@@ -44,7 +42,7 @@ func NewQiNiuUploaderDefault() QiNiuUploader {
 		false, 7200)
 }
 func NewQiNiuUploader(bucket string, fileServer string, zone *storage.Zone, useHttps bool,
-	useCdnDomains bool, expires uint32) QiNiuUploader {
+	useCdnDomains bool, expires uint64) QiNiuUploader {
 	return QiNiuUploader{
 		Bucket:        bucket,
 		FileServer:    fileServer,
