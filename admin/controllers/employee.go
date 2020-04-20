@@ -21,3 +21,5 @@ func (e *EmployeeController) Get() iris.Map {
 func (e *EmployeeController) GetColumn() iris.Map {
 	return e.RenderColumnMap(e.Ctx, models.Employee{})
 }
+
+

@@ -11,4 +11,3 @@ func (h ViewHelper) AssetsPublic(fileName string) string {
 	//return assetHost + fileName
 	return ""
 }
-

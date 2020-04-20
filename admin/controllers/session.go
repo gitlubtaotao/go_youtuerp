@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"errors"
-	"fmt"
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"time"
@@ -48,7 +47,6 @@ func (s *SessionController) Login(ctx iris.Context) {
 		s.RenderErrorJson(ctx, http.StatusBadRequest, ctx.GetLocale().GetMessage("devise.invalid"))
 		return
 	}
-	fmt.Printf("sdsdsdsds")
 	//对比password 是否正确
 	if ok := s.SService.ValidatePassword(loginInfo.Password, user.EncryptedPassword); ok != nil {
 		s.RenderErrorJson(ctx, http.StatusBadRequest,
@@ -57,6 +55,7 @@ func (s *SessionController) Login(ctx iris.Context) {
 	}
 	
 	if err = s.updateLoginInfo(ctx, user); err != nil {
+		conf.IrisApp.Logger().Error(err)
 		s.RenderErrorJson(ctx, http.StatusBadRequest,
 			ctx.GetLocale().GetMessage("devise.invalid"))
 		return
@@ -88,7 +87,6 @@ func (s *SessionController) Show(ctx iris.Context) {
 }
 
 func (s *SessionController) Logout(ctx iris.Context) {
-	
 	s.RenderSuccessJson(ctx, iris.Map{"message": "Logout is successful"})
 }
 
@@ -99,17 +97,19 @@ func (s *SessionController) ResetToken(ctx iris.Context) {
 func (s *SessionController) Update(ctx iris.Context) {
 	s.initSession()
 	var userInfo models.Employee
+	//读取用户信息
 	err := ctx.ReadJSON(&userInfo)
 	if err != nil {
 		s.RenderErrorJson(ctx, http.StatusBadRequest, err.Error())
 	}
+	//读取密码信息
 	var passwordInfo readPassword
 	err = ctx.ReadJSON(&passwordInfo)
 	if err != nil {
 		s.RenderErrorJson(ctx, http.StatusBadRequest, err.Error())
 	}
 	updateModel := models.Employee{Email: userInfo.Email, Name: userInfo.Name, Phone: userInfo.Phone, Address: userInfo.Address}
-	fmt.Println(passwordInfo.Password)
+	//验证密码是否为空
 	if passwordInfo.Password != "" {
 		if passwordInfo.Password != passwordInfo.ConfirmPassword {
 			s.RenderErrorJson(ctx, http.StatusBadRequest, ctx.GetLocale().GetMessage("error.password_error"))
@@ -117,6 +117,7 @@ func (s *SessionController) Update(ctx iris.Context) {
 		}
 		updateModel.EncryptedPassword, _ = s.SService.GeneratePassword(passwordInfo.Password)
 	}
+	//保存客户信息
 	currentUser, _ := s.CurrentUser(ctx)
 	err = s.EService.UpdateRecord(currentUser, updateModel)
 	if err != nil {
@@ -125,6 +126,10 @@ func (s *SessionController) Update(ctx iris.Context) {
 	}
 	userMap, _ := s.StructToMap(currentUser, ctx)
 	s.RenderSuccessJson(ctx, s.handleUserInfo(userMap))
+}
+
+func (s *SessionController) UploadAvatar(ctx iris.Context) {
+
 }
 
 //初始化session

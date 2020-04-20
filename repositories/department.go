@@ -5,5 +5,3 @@ type IDepartmentRepository interface {
 type DepartmentRepository struct {
 	BaseRepository
 }
-
-

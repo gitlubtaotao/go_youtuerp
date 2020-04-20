@@ -48,7 +48,7 @@ func (i *Route) DefaultRegister() {
 func (i *Route) MVCRegister(crs context.Handler) {
 	j := i.jwtAccess()
 	requiredAuth := i.app.Party("/", crs, j.Serve).AllowMethods(
-		iris.MethodGet, iris.MethodPost, iris.MethodPut, iris.MethodDelete, iris.MethodOptions, )
+		iris.MethodGet, iris.MethodPost, iris.MethodPut, iris.MethodDelete, iris.MethodOptions)
 	mvc.New(requiredAuth.Party("/")).Handle(&controllers.HomeController{})
 	//公司信息
 	mvc.New(requiredAuth.Party("/company")).Handle(&controllers.CompanyController{Service: services.NewCompanyService()})
@@ -68,12 +68,13 @@ func (i *Route) OtherRegister(crs context.Handler) {
 	j := i.jwtAccess()
 	session := controllers.SessionController{}
 	users := i.app.Party("user/", crs).AllowMethods(
-		iris.MethodGet, iris.MethodPost, iris.MethodPut, iris.MethodDelete, iris.MethodOptions, )
+		iris.MethodGet, iris.MethodPost, iris.MethodPut, iris.MethodDelete, iris.MethodOptions)
 	{
 		users.Post("/login", session.Login)
 		users.Get("/info", j.Serve, session.Show)
 		users.Post("/logout", j.Serve, session.Logout)
 		users.Post("/update", j.Serve, session.Update)
+		users.Post("upload", j.Serve, session.UploadAvatar)
 	}
 }
 

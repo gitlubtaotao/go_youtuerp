@@ -32,8 +32,6 @@ func TestLogin(t *testing.T) {
 	}).Expect().Status(httptest.StatusOK).Body().Raw()
 }
 
-
-
 func stringToMap(content string) map[string]interface{} {
 	b := []byte(content)
 	m := make(map[string]interface{})

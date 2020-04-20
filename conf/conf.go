@@ -18,11 +18,15 @@ var (
 )
 
 type EnvironmentConfig struct {
-	PerPage        uint   `json:"per_page" yaml:"per_page"`
-	DSN            string `json:"dsn" yaml:"dsn"`
-	TokenSecret    string `json:"token_secret" yaml:"token_secret"`
-	AllowedOrigins string `json:"allowed_origins" yaml:"allowed_origins"`
-	ExpireTime     int    `json:"expire_time" yaml:"expire_time"`
+	PerPage         uint   `json:"per_page" yaml:"per_page"`
+	DSN             string `json:"dsn" yaml:"dsn"`
+	TokenSecret     string `json:"token_secret" yaml:"token_secret"`
+	AllowedOrigins  string `json:"allowed_origins" yaml:"allowed_origins"`
+	ExpireTime      int    `json:"expire_time" yaml:"expire_time"`
+	QiniuAccessKey  string `json:"qiniu_access_key" yaml:"qiniu_access_key"`
+	QiniuSecretKey  string `json:"qiniu_secret_key" yaml:"qiniu_secret_key"`
+	QiniuFileServer string `json:"qiniu_file_server" yaml:"qiniu_file_server"`
+	QiniuBucket     string `yaml:"qiniu_bucket" json:"qiniu_bucket"`
 }
 
 /*

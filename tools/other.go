@@ -27,7 +27,7 @@ func (o OtherHelper) GetIPAddress(r *http.Request) (string, error) {
 	if ip != "" {
 		return ip, nil
 	}
-	
+
 	if ip, _, err := net.SplitHostPort(strings.TrimSpace(r.RemoteAddr)); err == nil {
 		return ip, nil
 	}

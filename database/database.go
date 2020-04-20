@@ -60,6 +60,6 @@ func (d *DataBase) Migration() error {
 		GetDBCon().AutoMigrate(&models.CompanyInfo{})
 	}
 	GetDBCon().AutoMigrate(&models.Employee{}, &models.UserCompany{},
-		&models.Department{})
+		&models.Department{}, &models.CrmCompany{},&models.Contact{},&models.Department{})
 	return nil
 }
