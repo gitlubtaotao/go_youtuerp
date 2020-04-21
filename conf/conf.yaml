@@ -2,7 +2,7 @@ default: &defaults
   per_page: 30
   token_secret: HBss*4222JK45QOL  #jwt的密钥
   allowed_origins: "http://localhost:9528,*" #allowed_origins
-  expire_time: 100
+  expire_time: 1000
   qiniu_access_key: eod8fVA_L4wDR7yOwzdYfOblLp4pCvflQF5BS8JC
   qiniu_secret_key: wsFuW0M4obMFvO9K6GVVTlDWjzVi3doJPrDj5eZh
   qiniu_file_server: http://q7xvlw9i4.bkt.clouddn.com/

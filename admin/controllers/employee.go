@@ -4,7 +4,6 @@ package controllers
 
 import (
 	"github.com/kataras/iris/v12"
-	"youtuerp/models"
 	"youtuerp/services"
 )
 
@@ -19,7 +18,7 @@ func (e *EmployeeController) Get() iris.Map {
 	return e.RenderSuccessMap(e.Ctx, make(map[string]interface{}))
 }
 func (e *EmployeeController) GetColumn() iris.Map {
-	return e.RenderColumnMap(e.Ctx, models.Employee{})
+	return iris.Map{}
 }
 
 

@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"github.com/kataras/iris/v12"
-	"youtuerp/models"
 	"youtuerp/services"
 )
 
@@ -17,5 +16,6 @@ func (c *ContactController) Get() iris.Map {
 }
 
 func (c *ContactController) GetColumn() iris.Map {
-	return c.RenderColumnMap(c.Ctx, models.Contact{})
+	return iris.Map{}
+	//return c.RenderColumnMap(c.Ctx, models.Contact{})
 }

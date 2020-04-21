@@ -62,13 +62,11 @@ func (r *Route) SessionRegister(crs context.Handler) {
 func (r *Route) OaRegister(crs context.Handler) {
 	j := r.jwtAccess()
 	company := controllers.CompanyController{}
-	companyApi := r.app.Party("companies/", crs).AllowMethods(
+	companyApi := r.app.Party("/companies", crs).AllowMethods(
 		iris.MethodGet, iris.MethodPost, iris.MethodPut, iris.MethodDelete, iris.MethodOptions)
 	{
-		companyApi.Post("/", j.Serve, versioning.NewMatcher(versioning.Map{
-			"1.0":               company.Get,
-			versioning.NotFound: r.versionNotFound,
-		}))
+		companyApi.Get("/data", j.Serve, company.Get)
+		companyApi.Get("/column", j.Serve, company.GetColumn)
 		companyApi.Post("/", j.Serve, company.Create)
 	}
 }

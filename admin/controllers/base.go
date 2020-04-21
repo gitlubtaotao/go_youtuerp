@@ -28,14 +28,20 @@ func (b BaseController) RenderErrorJson(ctx iris.Context, code int, err string) 
 	_, _ = ctx.JSON(iris.Map{"code": code, "message": err})
 }
 
-func (b BaseController) RenderColumnMap(ctx iris.Context, model interface{}) iris.Map {
+func (b BaseController) RenderModuleColumn(ctx iris.Context, model interface{}) {
 	column := services.NewColumnService(ctx.GetLocale())
 	data, err := column.DefaultColumn(model)
 	if err != nil {
-		return b.RenderErrorMap(ctx, http.StatusBadRequest, err.Error())
+		b.RenderErrorJson(ctx, http.StatusBadRequest, err.Error())
 	}
-	return b.RenderSuccessMap(ctx, data)
+	b.RenderSuccessJson(ctx, data)
 }
+
+//获取用户的的列设置
+func (b BaseController) GetModelColumn(currentUser *models.Employee, model interface{}) []string {
+	return []string{}
+}
+
 func (b BaseController) RenderSuccessMap(ctx iris.Context, data interface{}) iris.Map {
 	ctx.StatusCode(http.StatusOK)
 	return iris.Map{

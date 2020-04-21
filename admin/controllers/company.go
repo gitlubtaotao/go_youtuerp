@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/kataras/iris/v12"
+	"net/http"
 	"youtuerp/models"
 	"youtuerp/services"
 )
@@ -14,13 +15,23 @@ type CompanyController struct {
 
 //
 func (c *CompanyController) Get(ctx iris.Context) {
-	//companies, err := c.Service.AllCompany(map[string]interface{}{
-	//	"name_nick": "优途互联",
-	//}, []string{"user_companies.name_nick", "user_companies.id"}, []string{})
-	//if err == nil {
-	//	return c.RenderSuccessJson(c.Ctx, companies)
-	//}
-	//return c.RenderErrorMap(c.Ctx, http.StatusInternalServerError, err.Error())
+	c.initService()
+	currentUser, _ := c.CurrentUser(ctx)
+	selectColumn := c.GetModelColumn(currentUser, models.UserCompany{})
+	companies, total, err := c.Service.FindCompany(20, 1, map[string]interface{}{}, selectColumn, []string{}, true)
+	dataArray := make([]map[string]interface{}, len(companies)-1)
+	transportArray := c.Service.TransportTypeArrays(ctx.GetLocale())
+	for k, v := range companies {
+		temp, _ := c.StructToMap(v, ctx)
+		temp["index_col"] = k + 1
+		temp["company_type"] = c.Service.ShowTransportType(ctx.GetLocale(),temp["company_type"],transportArray)
+		dataArray = append(dataArray, temp)
+	}
+	if err == nil {
+		_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": dataArray, "total": total,})
+	} else {
+		c.RenderErrorJson(c.Ctx, http.StatusInternalServerError, err.Error())
+	}
 }
 
 //
@@ -28,6 +39,12 @@ func (c *CompanyController) Create(ctx iris.Context) {
 
 }
 
-func (c *CompanyController) GetColumn() iris.Map {
-	return c.RenderColumnMap(c.Ctx, models.UserCompany{})
+func (c *CompanyController) GetColumn(ctx iris.Context) {
+	c.RenderModuleColumn(ctx, models.UserCompany{})
 }
+
+
+func (c *CompanyController) initService() {
+	c.Service = services.NewCompanyService()
+}
+

@@ -3,7 +3,6 @@ package controllers
 //管理客户信息
 import (
 	"github.com/kataras/iris/v12"
-	"youtuerp/models"
 	"youtuerp/services"
 )
 
@@ -14,5 +13,5 @@ type CustomerController struct {
 }
 
 func (c *CustomerController) GetColumn() iris.Map {
-	return c.RenderColumnMap(c.Ctx, models.CrmCompany{})
+	return iris.Map{}
 }

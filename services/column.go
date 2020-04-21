@@ -47,12 +47,16 @@ func (c *ColumnService) DefaultColumn(model interface{}, args ...interface{}) (d
 		err = errors.New("mode is not struct")
 		return
 	}
+	dataArray = append(dataArray,map[string]interface{}{
+		"data": "index_col",
+		"title": "序号",
+	})
 	c.sy.Lock()
 	defer c.sy.Unlock()
 	tableName := c.tableName(v)
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
-		if f.Type.Name() == "Model" {
+		if f.Type.Name() == "Model" || f.Type.Name() == "Base" {
 			dataArray = append(dataArray, c.ColumnByBase(f)...)
 			continue
 		}
@@ -70,13 +74,14 @@ func (c *ColumnService) DefaultColumn(model interface{}, args ...interface{}) (d
 		if data == "" {
 			continue
 		}
-		attr := map[string]interface{}{
-			"data":   data,
-			"type":   f.Type.Name(),
-			"title":  c.loader.GetMessage(tableName + "." + data),
-			"select": c.isHiddenColumn(hiddenColumn, data),
+		if c.isHiddenColumn(hiddenColumn, data) {
+			attr := map[string]interface{}{
+				"data":  data,
+				"type":  f.Type.Name(),
+				"title": c.loader.GetMessage(tableName + "." + data),
+			}
+			dataArray = append(dataArray, attr)
 		}
-		dataArray = append(dataArray, attr)
 	}
 	return
 }
@@ -184,30 +189,32 @@ func (c *ColumnService) tableName(v reflect.Value) string {
 func (c *ColumnService) structToMap(currentObject interface{}) map[string]interface{} {
 	res := map[string]interface{}{}
 	v := reflect.TypeOf(currentObject)
+	utils := tools.TimeHelper{}
 	reflectValue := reflect.ValueOf(currentObject)
 	reflectValue = reflect.Indirect(reflectValue)
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
-	utils := tools.TimeHelper{}
 	for i := 0; i < v.NumField(); i++ {
+		temp := v.Field(i).Type
+		kind := temp.Kind()
 		tag := v.Field(i).Tag.Get("json")
-		if tag != "" {
-			field := reflectValue.Field(i).Interface()
-			temp := v.Field(i).Type
-			if temp.Kind() == reflect.Struct {
-				if temp.Name() == "Time" {
-					res[tag] = utils.DefaultDate(field.(time.Time), c.loader.Language())
-				} else {
-					res[tag] = c.structToMap(field)
-				}
+		field := reflectValue.Field(i).Interface()
+		if kind == reflect.Struct {
+			if temp.Name() == "Time" {
+				res[tag] = utils.DefaultDate(field.(time.Time), c.loader.Language())
 			} else {
+				res[tag] = c.structToMap(field)
+			}
+		} else {
+			if tag != "" {
 				res[tag] = field
 			}
 		}
 	}
 	return res
 }
+
 
 func NewColumnService(loader context.Locale) IColumnService {
 	return &ColumnService{sy: sync.Mutex{}, loader: loader}

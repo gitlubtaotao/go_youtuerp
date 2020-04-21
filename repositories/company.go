@@ -13,7 +13,7 @@ type ICompanyRepository interface {
 	page: 当前页数
 	attr: 查询公司信息
 	*/
-	FindCompany(per, page uint, attr map[string]interface{}, selectKeys []string, order []string) (companies []*models.UserCompany, err error)
+	FindCompany(per, page uint, attr map[string]interface{}, selectKeys []string, order []string, isCount bool) (companies []*models.UserCompany, total uint, err error)
 }
 
 type CompanyRepository struct {
@@ -27,15 +27,19 @@ func (c CompanyRepository) DefaultScope(temp *gorm.DB) *gorm.DB {
 }
 
 //
-func (c *CompanyRepository) FindCompany(per, page uint, filters map[string]interface{}, selectKeys []string, orders []string) (companies []*models.UserCompany, err error) {
+func (c *CompanyRepository) FindCompany(per, page uint, filters map[string]interface{},
+	selectKeys []string, orders []string,
+	isCount bool) (companies []*models.UserCompany, total uint, err error) {
 	var rows *sql.Rows
 	sqlCon := database.GetDBCon()
 	temp := sqlCon.Scopes(c.DefaultScope)
 	if len(filters) > 0 {
 		temp = temp.Where(filters)
 	}
-	temp = temp.Joins("INNER JOIN companies on companies.source_id = user_companies.id")
 	//limit
+	if isCount{
+		temp.Model(&models.UserCompany{}).Count(&total)
+	}
 	if page == 0 && per > 0 {
 		temp = temp.Limit(per)
 	} else if page > 0 && per > 0 {
@@ -55,6 +59,7 @@ func (c *CompanyRepository) FindCompany(per, page uint, filters map[string]inter
 	if err != nil {
 		return
 	}
+	
 	for rows.Next() {
 		var userCompany models.UserCompany
 		_ = sqlCon.ScanRows(rows, &userCompany)

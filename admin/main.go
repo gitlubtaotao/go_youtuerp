@@ -5,7 +5,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/kataras/iris/v12"
 	"io"
-	_ "net/http/pprof"
 	"os"
 	"runtime/trace"
 	"youtuerp/database"

@@ -3,7 +3,6 @@ package controllers
 
 import (
 	"github.com/kataras/iris/v12"
-	"youtuerp/models"
 	"youtuerp/services"
 )
 
@@ -14,5 +13,5 @@ type SupplierController struct {
 }
 
 func (s *SupplierController) GetColumn() iris.Map {
-	return s.RenderColumnMap(s.Ctx, &models.CrmCompany{})
+	return iris.Map{}
 }

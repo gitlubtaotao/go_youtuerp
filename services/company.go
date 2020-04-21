@@ -1,14 +1,19 @@
 package services
 
 import (
+	"fmt"
+	"github.com/kataras/iris/v12/context"
+	"strconv"
 	"youtuerp/models"
 	"youtuerp/repositories"
 )
 
 type ICompanyService interface {
-	FindCompany(per, page uint, filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, error)
-	AllCompany(filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, error)
-	LimitCompany(limit uint, filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, error)
+	FindCompany(per, page uint, filters map[string]interface{}, selectKeys []string, orders []string, isCount bool) ([]*models.UserCompany, uint, error)
+	AllCompany(filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, uint, error)
+	LimitCompany(limit uint, filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, uint, error)
+	ShowTransportType(loader context.Locale, value interface{}, trans []map[string]interface{}) interface{}
+	TransportTypeArrays(loader context.Locale) []map[string]interface{}
 }
 
 type CompanyService struct {
@@ -16,16 +21,40 @@ type CompanyService struct {
 	BaseService
 }
 
-func (c *CompanyService) FindCompany(per, page uint, filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, error) {
-	return c.repo.FindCompany(per, page, filters, selectKeys, orders)
+func (c *CompanyService) ShowTransportType(loader context.Locale, value interface{}, trans []map[string]interface{}) interface{} {
+	fmt.Println(value,trans)
+	if len(trans) == 0 {
+		trans = c.TransportTypeArrays(loader)
+	}
+	for _, v := range trans {
+		if v["data"] == value {
+			return v["text"]
+		}
+	}
+	return nil
 }
 
-func (c *CompanyService) AllCompany(filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, error) {
-	return c.repo.FindCompany(0, 0, filters, selectKeys, orders)
+func (c *CompanyService) TransportTypeArrays(loader context.Locale) []map[string]interface{} {
+	data := make([]map[string]interface{}, 3)
+	for _, value := range []int{1, 2, 3, 4} {
+		data = append(data, map[string]interface{}{
+			"data": value,
+			"text": loader.GetMessage("transport_type." + strconv.Itoa(value)),
+		})
+	}
+	return data
 }
 
-func (c *CompanyService) LimitCompany(limit uint, filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, error) {
-	return c.repo.FindCompany(limit, 0, filters, selectKeys, orders)
+func (c *CompanyService) FindCompany(per, page uint, filters map[string]interface{}, selectKeys []string, orders []string, isCount bool) ([]*models.UserCompany, uint, error) {
+	return c.repo.FindCompany(per, page, filters, selectKeys, orders, isCount)
+}
+
+func (c *CompanyService) AllCompany(filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, uint, error) {
+	return c.repo.FindCompany(0, 0, filters, selectKeys, orders, false)
+}
+
+func (c *CompanyService) LimitCompany(limit uint, filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, uint, error) {
+	return c.repo.FindCompany(limit, 0, filters, selectKeys, orders, false)
 }
 
 func NewCompanyService() ICompanyService {
