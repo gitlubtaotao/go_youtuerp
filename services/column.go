@@ -181,7 +181,6 @@ func (c *ColumnService) tableName(v reflect.Value) string {
 	} else {
 		data = c.ToSnakeCase(v.Kind().String())
 	}
-	fmt.Println(data)
 	return data
 }
 

@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/jinzhu/gorm"
 	"youtuerp/database"
 	"youtuerp/models"
@@ -33,11 +34,12 @@ func (c *CompanyRepository) FindCompany(per, page uint, filters map[string]inter
 	var rows *sql.Rows
 	sqlCon := database.GetDBCon()
 	temp := sqlCon.Scopes(c.DefaultScope)
+	fmt.Println(len(filters),"sssss")
 	if len(filters) > 0 {
-		temp = temp.Where(filters)
+		temp = c.Ransack(temp, filters)
 	}
 	//limit
-	if isCount{
+	if isCount {
 		temp.Model(&models.UserCompany{}).Count(&total)
 	}
 	if page == 0 && per > 0 {

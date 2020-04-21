@@ -65,7 +65,7 @@ func (r *Route) OaRegister(crs context.Handler) {
 	companyApi := r.app.Party("/companies", crs).AllowMethods(
 		iris.MethodGet, iris.MethodPost, iris.MethodPut, iris.MethodDelete, iris.MethodOptions)
 	{
-		companyApi.Get("/data", j.Serve, company.Get)
+		companyApi.Post("/data", j.Serve, company.Get)
 		companyApi.Get("/column", j.Serve, company.GetColumn)
 		companyApi.Post("/", j.Serve, company.Create)
 	}
