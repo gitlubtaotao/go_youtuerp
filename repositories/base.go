@@ -18,11 +18,6 @@ type BaseRepository struct {
 }
 
 func (b BaseRepository) Ransack(db *gorm.DB, selectColumn map[string]interface{}) *gorm.DB {
-	var (
-		searchString string
-		searchValue  []interface{}
-		count        = 0
-	)
 	for k, v := range selectColumn {
 		splitArray := strings.Split(k, "-")
 		if len(splitArray) > 3 {
@@ -35,48 +30,31 @@ func (b BaseRepository) Ransack(db *gorm.DB, selectColumn map[string]interface{}
 		if !b.isExist(item) {
 			continue
 		}
-		count++
 		key := b.keyString(splitArray)
 		fmt.Println(key)
 		switch item {
 		case "gt":
-			searchString += key + " > ? "
-			searchValue = append(searchValue, v)
+			db = db.Where(key+" > ? ", v)
 		case "gtEq":
-			searchString += key + " >= ?"
-			searchValue = append(searchValue, v)
+			db = db.Where(key+" >= ? ", v)
 		case "lt":
-			searchString += key + " < ?"
-			searchValue = append(searchValue, v)
+			db = db.Where(key+" < ? ", v)
 		case "ltEq":
-			searchString += key + " <=?"
-			searchValue = append(searchValue, v)
+			db = db.Where(key+" <= ?", v)
 		case "in":
-			searchString += key + " IN ?"
-			searchValue = append(searchValue, v)
+			db = db.Where(key+" IN (?)", v)
 		case "eq":
-			searchString += key + " = ?"
-			searchValue = append(searchValue, v)
+			db = db.Where(key+" = ? ", v)
 		case "notEq":
-			searchString += key + " <> ?"
-			searchValue = append(searchValue, v)
+			db = db.Where(key+" <> ? ", v)
 		case "cont":
-			searchString += key + " LIKE ?"
-			searchValue = append(searchValue, "%"+v.(string)+"%")
+			db = db.Where(key+" LIKE ? ", "%"+v.(string)+"%")
 		case "lCount":
-			searchString += key + " LIKE ?"
-			searchValue = append(searchValue, "%"+v.(string))
+			db = db.Where(key+" LIKE ? ", "%"+v.(string))
 		case "rCount":
-			searchString += key + " LIKE ?"
-			searchValue = append(searchValue, v.(string)+"%")
+			db = db.Where(key+" LIKE ? ", v.(string)+"%")
 		}
-		if count < len(selectColumn) {
-			searchString += " and "
-		}
-		
 	}
-	fmt.Println(searchValue, searchString)
-	db = db.Where(searchString, searchValue)
 	return db
 }
 
