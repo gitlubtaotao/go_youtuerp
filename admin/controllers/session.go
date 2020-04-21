@@ -201,7 +201,8 @@ func (s *SessionController) UpdateAvatar(ctx iris.Context, key string) {
 	sy.Add(1)
 	go func(s *SessionController, user *models.Employee, updateColumn map[string]interface{}) {
 		defer sy.Done()
-		_ = s.EService.UpdateColumn(user, updateColumn)
+		err := s.EService.UpdateColumn(user, updateColumn)
+		conf.IrisApp.Logger().Error(err)
 	}(s, user, updateColumn)
 	sy.Wait()
 	return

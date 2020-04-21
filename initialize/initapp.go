@@ -3,6 +3,7 @@ package initialize
 import (
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/middleware/logger"
+	"github.com/kataras/iris/v12/versioning"
 	"os"
 	"time"
 	"youtuerp/admin/controllers"
@@ -14,6 +15,11 @@ import (
 //@title: 处理request info
 func RequestInfo(ctx iris.Context) {
 	ctx.Application().Logger().Infof("Runs before %s", ctx.Path())
+	ctx.Next()
+}
+
+func defaultVersion(ctx iris.Context) {
+	ctx.Values().Set(versioning.Key, ctx.URLParamDefault("version", "1.0"))
 	ctx.Next()
 }
 
@@ -44,6 +50,7 @@ func LogConfig() iris.Handler {
 func NewApp() *iris.Application {
 	app := iris.New()
 	app.Use(RequestInfo)
+	app.Use(defaultVersion)
 	route := middleware.NewRoute(app)
 	app.Use(LogConfig())
 	//加载web端口对应的web secure cookie

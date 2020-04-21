@@ -2,7 +2,7 @@ default: &defaults
   per_page: 30
   token_secret: HBss*4222JK45QOL  #jwt的密钥
   allowed_origins: "http://localhost:9528,*" #allowed_origins
-  expire_time: 2
+  expire_time: 100
   qiniu_access_key: eod8fVA_L4wDR7yOwzdYfOblLp4pCvflQF5BS8JC
   qiniu_secret_key: wsFuW0M4obMFvO9K6GVVTlDWjzVi3doJPrDj5eZh
   qiniu_file_server: http://q7xvlw9i4.bkt.clouddn.com/
@@ -12,9 +12,12 @@ development:
   dsn: root:qweqwe123@tcp(127.0.0.1:3306)/go_youtuerp?charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=true
   token_secret: HBss*4222JK45QOL
   qiniu_bucket: wblog-taotao
+  env: dev
 production:
   <<: *defaults
+  env: pro
 test:
   <<: *defaults
   dsn: root:qweqwe123@tcp(127.0.0.1:3306)/go_youtuerp_test?charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=true
+  env: test
 

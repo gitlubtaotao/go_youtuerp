@@ -5,7 +5,9 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/kataras/iris/v12"
 	"io"
+	_ "net/http/pprof"
 	"os"
+	"runtime/trace"
 	"youtuerp/database"
 	"youtuerp/initialize"
 )
@@ -51,6 +53,10 @@ func NewAppInfo() *iris.Application {
 	return app
 }
 
-/*
- * @title: 初始化数据库
- */
+//Golang 性能测试 (3) 协程追踪术
+func traceMethod() {
+	tr, _ := os.Create("trace.out")
+	defer tr.Close()
+	_ = trace.Start(tr)
+	defer trace.Stop()
+}

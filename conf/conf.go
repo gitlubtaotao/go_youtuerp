@@ -18,6 +18,7 @@ var (
 )
 
 type EnvironmentConfig struct {
+	Env             string `json:"env" yaml:"env"`
 	PerPage         uint   `json:"per_page" yaml:"per_page"`
 	DSN             string `json:"dsn" yaml:"dsn"`
 	TokenSecret     string `json:"token_secret" yaml:"token_secret"`

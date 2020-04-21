@@ -6,18 +6,16 @@ import (
 	"github.com/iris-contrib/middleware/jwt"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/context"
-	"github.com/kataras/iris/v12/mvc"
+	"github.com/kataras/iris/v12/versioning"
+	"net/http"
 	"strings"
 	"youtuerp/admin/controllers"
 	"youtuerp/conf"
-	"youtuerp/services"
 )
 
 //处理路由信息
 type IRoute interface {
 	DefaultRegister()
-	MVCRegister(crs context.Handler)
-	OtherRegister(crs context.Handler)
 }
 
 //
@@ -33,44 +31,27 @@ func NewRoute(app *iris.Application) IRoute {
  * @title 路由的注册方法
  * @description 注册系统的方法
  */
-func (i *Route) DefaultRegister() {
+func (r *Route) DefaultRegister() {
 	allowedOrigins := strings.Split(conf.Configuration.AllowedOrigins, ",")
 	crs := cors.New(cors.Options{
 		AllowedOrigins:   allowedOrigins,
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: true,
 	})
-	i.MVCRegister(crs)
-	i.OtherRegister(crs)
+	r.SessionRegister(crs)
+	r.OaRegister(crs)
 }
 
-//使用iris mvc 进行路由的注册
-func (i *Route) MVCRegister(crs context.Handler) {
-	j := i.jwtAccess()
-	requiredAuth := i.app.Party("/", crs, j.Serve).AllowMethods(
-		iris.MethodGet, iris.MethodPost, iris.MethodPut, iris.MethodDelete, iris.MethodOptions)
-	mvc.New(requiredAuth.Party("/")).Handle(&controllers.HomeController{})
-	//公司信息
-	mvc.New(requiredAuth.Party("/company")).Handle(&controllers.CompanyController{Service: services.NewCompanyService()})
-	//员工账户信息
-	mvc.New(requiredAuth.Party("/employee")).Handle(&controllers.EmployeeController{Service: services.NewEmployeeService()})
-	//客户信息
-	mvc.New(requiredAuth.Party("/customer")).Handle(&controllers.CustomerController{Service: services.NewCrmCompanyService()})
-	//供应商信息
-	mvc.New(requiredAuth.Party("/supplier")).Handle(&controllers.SupplierController{})
-}
-
-/*
- * @title: V1 api 路由注册方法
- * @description: api 路由注册方法
- */
-func (i *Route) OtherRegister(crs context.Handler) {
-	j := i.jwtAccess()
+func (r *Route) SessionRegister(crs context.Handler) {
+	j := r.jwtAccess()
 	session := controllers.SessionController{}
-	users := i.app.Party("user/", crs).AllowMethods(
+	users := r.app.Party("user/", crs).AllowMethods(
 		iris.MethodGet, iris.MethodPost, iris.MethodPut, iris.MethodDelete, iris.MethodOptions)
 	{
-		users.Post("/login", session.Login)
+		users.Post("/login", versioning.NewMatcher(versioning.Map{
+			"1.0":               session.Login,
+			versioning.NotFound: r.versionNotFound,
+		}))
 		users.Get("/info", j.Serve, session.Show)
 		users.Post("/logout", j.Serve, session.Logout)
 		users.Post("/update", j.Serve, session.Update)
@@ -78,8 +59,22 @@ func (i *Route) OtherRegister(crs context.Handler) {
 	}
 }
 
+func (r *Route) OaRegister(crs context.Handler) {
+	j := r.jwtAccess()
+	company := controllers.CompanyController{}
+	companyApi := r.app.Party("companies/", crs).AllowMethods(
+		iris.MethodGet, iris.MethodPost, iris.MethodPut, iris.MethodDelete, iris.MethodOptions)
+	{
+		companyApi.Post("/", j.Serve, versioning.NewMatcher(versioning.Map{
+			"1.0":               company.Get,
+			versioning.NotFound: r.versionNotFound,
+		}))
+		companyApi.Post("/", j.Serve, company.Create)
+	}
+}
+
 //验证jwt token
-func (i *Route) jwtAccess() *jwt.Middleware {
+func (r *Route) jwtAccess() *jwt.Middleware {
 	j := jwt.New(jwt.Config{
 		// 通过 "token" URL参数提取。
 		Extractor: jwt.FromParameter("token"),
@@ -98,4 +93,9 @@ func (i *Route) jwtAccess() *jwt.Middleware {
 		SigningMethod: jwt.SigningMethodHS256,
 	})
 	return j
+}
+
+func (r *Route) versionNotFound(ctx iris.Context) {
+	ctx.StatusCode(404)
+	_, _ = ctx.JSON(iris.Map{"code": http.StatusNotFound})
 }

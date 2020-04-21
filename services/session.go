@@ -37,7 +37,7 @@ func (s *SessionService) JwtGenerateToken(data map[string]interface{}) (tokenStr
 		"iss": "youtuerp",
 		// 签发时间
 		"iat":         time.Now().Unix(),
-		"expire_time": time.Now().Add(time.Minute * time.Duration(exp)).Unix(),
+		"exp": time.Now().Add(time.Minute * time.Duration(exp)).Unix(),
 	}
 	for k, v := range data {
 		mapClaims[k] = v
