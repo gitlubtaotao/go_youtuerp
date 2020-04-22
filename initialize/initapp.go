@@ -18,6 +18,7 @@ import (
 //@title: 处理request info
 func RequestInfo(ctx iris.Context) {
 	ctx.Application().Logger().Infof("Runs before %s", ctx.Path())
+	//ctx.Header("Access-Control-Allow-Origin", "*")
 	ctx.Next()
 }
 

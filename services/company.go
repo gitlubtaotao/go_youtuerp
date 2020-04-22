@@ -9,9 +9,11 @@ import (
 
 type ICompanyService interface {
 	FindCompany(per, page uint, filters map[string]interface{}, selectKeys []string, orders []string, isCount bool) ([]*models.UserCompany, uint, error)
+	FirstCompany(id uint) (*models.UserCompany,error)
 	AllCompany(filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, uint, error)
 	LimitCompany(limit uint, filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, uint, error)
 	CreateCompany(company models.UserCompany) (models.UserCompany, error)
+	UpdateCompany(company *models.UserCompany,readData models.UserCompany) error
 	ShowTransportType(loader context.Locale, value interface{}, trans []map[string]interface{}) interface{}
 	TransportTypeArrays(loader context.Locale) []map[string]interface{}
 }
@@ -19,6 +21,14 @@ type ICompanyService interface {
 type CompanyService struct {
 	repo repositories.ICompanyRepository
 	BaseService
+}
+
+func (c *CompanyService) UpdateCompany(company *models.UserCompany, readData models.UserCompany) error {
+	return c.repo.UpdateCompany(company,readData)
+}
+
+func (c *CompanyService) FirstCompany(id uint)(*models.UserCompany,error) {
+	return c.repo.FirstCompany(id)
 }
 
 func (c *CompanyService) CreateCompany(company models.UserCompany) (models.UserCompany, error) {

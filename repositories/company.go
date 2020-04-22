@@ -16,10 +16,23 @@ type ICompanyRepository interface {
 	*/
 	FindCompany(per, page uint, attr map[string]interface{}, selectKeys []string, order []string, isCount bool) (companies []*models.UserCompany, total uint, err error)
 	Create(company models.UserCompany) (models.UserCompany, error)
+	UpdateCompany(company *models.UserCompany, readData models.UserCompany) error
+	FirstCompany(id uint) (*models.UserCompany, error)
 }
 
 type CompanyRepository struct {
 	BaseRepository
+}
+
+func (c CompanyRepository) UpdateCompany(company *models.UserCompany, readData models.UserCompany) error{
+	return database.GetDBCon().Model(&company).Update(readData).Error
+}
+
+func (c CompanyRepository) FirstCompany(id uint) (company *models.UserCompany, err error) {
+	var  readData models.UserCompany
+	err = database.GetDBCon().First(&readData, id).Error
+	company = &readData
+	return
 }
 
 func (c CompanyRepository) Create(company models.UserCompany) (models.UserCompany, error) {

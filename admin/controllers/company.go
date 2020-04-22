@@ -31,9 +31,7 @@ func (c *CompanyController) Get(ctx iris.Context) {
 	dataArray := make([]map[string]interface{}, 0)
 	transportArray := c.Service.TransportTypeArrays(ctx.GetLocale())
 	for _, v := range companies {
-		temp, _ := c.StructToMap(v, ctx)
-		temp["company_type"] = c.Service.ShowTransportType(ctx.GetLocale(), temp["company_type"], transportArray)
-		dataArray = append(dataArray, temp)
+		dataArray = append(dataArray, c.itemChange(v, transportArray))
 	}
 	
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": dataArray, "total": total,})
@@ -70,9 +68,48 @@ func (c *CompanyController) Create(ctx iris.Context) {
 	c.RenderSuccessJson(ctx, data)
 }
 
+func (c *CompanyController) Edit(ctx iris.Context) {
+	c.initService(ctx)
+	id, err := ctx.Params().GetUint("id")
+	if err != nil {
+		conf.IrisApp.Logger().Error(err)
+		c.RenderErrorJson(ctx, http.StatusBadRequest, ctx.GetLocale().GetMessage("error.error"))
+		return
+	}
+	company, err := c.Service.FirstCompany(id)
+	if err != nil {
+		conf.IrisApp.Logger().Error(err)
+		c.RenderErrorJson(ctx, http.StatusBadRequest, ctx.GetLocale().GetMessage("error.error"))
+		return
+	}
+	c.RenderSuccessJson(ctx, company)
+}
+
+//更新公司信息
 func (c *CompanyController) Update(ctx iris.Context) {
 	c.initService(ctx)
-	c.RenderSuccessJson(ctx,iris.Map{})
+	var readData models.UserCompany
+	err := ctx.ReadJSON(&readData)
+	if err != nil {
+		conf.IrisApp.Logger().Error(err)
+		c.RenderErrorJson(ctx, http.StatusBadRequest, ctx.GetLocale().GetMessage("error.error"))
+		return
+	}
+	id, err := ctx.Params().GetUint("id")
+	if err != nil {
+		conf.IrisApp.Logger().Error(err)
+		c.RenderErrorJson(ctx, http.StatusBadRequest, ctx.GetLocale().GetMessage("error.error"))
+		return
+	}
+	company, _ := c.Service.FirstCompany(id)
+	fmt.Printf("%+v", readData)
+	err = c.Service.UpdateCompany(company, readData)
+	if err != nil {
+		conf.IrisApp.Logger().Error(err)
+		c.RenderErrorJson(ctx, http.StatusBadRequest, ctx.GetLocale().GetMessage("error.error"))
+		return
+	}
+	c.RenderSuccessJson(ctx, c.itemChange(company,c.Service.TransportTypeArrays(ctx.GetLocale())))
 }
 
 func (c *CompanyController) GetColumn(ctx iris.Context) {
@@ -92,6 +129,11 @@ func (c *CompanyController) handlerGetParams() map[string]interface{} {
 	if c.Ctx.URLParamExists("email") && c.Ctx.URLParam("email") != "" {
 		searchColumn["email-cont"] = c.Ctx.URLParam("email")
 	}
-	fmt.Println(searchColumn)
 	return searchColumn
+}
+
+func (c *CompanyController) itemChange(v *models.UserCompany, transportArray []map[string]interface{}) map[string]interface{} {
+	temp, _ := c.StructToMap(v, c.Ctx)
+	temp["company_type"] = c.Service.ShowTransportType(c.Ctx.GetLocale(), temp["company_type"], transportArray)
+	return temp
 }

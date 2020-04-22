@@ -41,7 +41,7 @@ func (r *Route) DefaultRegister() {
 func (r *Route) SessionRegister() {
 	j := r.jwtAccess()
 	session := controllers.SessionController{}
-	fmt.Println(strings.Join(allowMethods,","))
+	fmt.Println(strings.Join(allowMethods, ","))
 	users := r.app.Party("user/")
 	{
 		users.Post("/login", versioning.NewMatcher(versioning.Map{
@@ -63,6 +63,7 @@ func (r *Route) OaRegister() {
 		companyApi.Post("/data", j.Serve, company.Get)
 		companyApi.Get("/column", j.Serve, company.GetColumn)
 		companyApi.Post("/create", j.Serve, company.Create)
+		companyApi.Get("/{id:uint}/edit", j.Serve, company.Edit)
 		companyApi.Patch("/{id:uint}/update", j.Serve, company.Update)
 	}
 }
