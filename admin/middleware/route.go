@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"github.com/iris-contrib/middleware/cors"
 	"github.com/iris-contrib/middleware/jwt"
 	"github.com/kataras/iris/v12"
@@ -67,7 +66,8 @@ func (r *Route) OaRegister(crs context.Handler) {
 	{
 		companyApi.Post("/data", j.Serve, company.Get)
 		companyApi.Get("/column", j.Serve, company.GetColumn)
-		companyApi.Post("/", j.Serve, company.Create)
+		companyApi.Post("/create", j.Serve, company.Create)
+		companyApi.Put("/{id:uint}/update", company.Update)
 	}
 }
 
@@ -75,12 +75,11 @@ func (r *Route) OaRegister(crs context.Handler) {
 func (r *Route) jwtAccess() *jwt.Middleware {
 	j := jwt.New(jwt.Config{
 		// 通过 "token" URL参数提取。
-		Extractor: jwt.FromParameter("token"),
+		Extractor: jwt.FromAuthHeader,
 		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
 			return []byte(conf.Configuration.TokenSecret), nil
 		},
 		ErrorHandler: func(ctx context.Context, err error) {
-			fmt.Printf(ctx.URLParam("token"))
 			if err == nil {
 				return
 			}

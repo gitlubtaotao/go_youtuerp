@@ -53,8 +53,10 @@ func (v *ValidatorService) HandlerError(language string) (errorsArray []FieldErr
 	if _err := v.registerDefaultTranslations(language); _err != nil {
 		return errorsArray, _err
 	}
+	fmt.Println(err,"eeee")
 	if err != nil {
 		errs := err.(validator.ValidationErrors)
+		
 		for _, e := range errs {
 			attr := FieldError{
 				Field:       e.Field(),

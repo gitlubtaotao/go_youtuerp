@@ -15,10 +15,16 @@ type ICompanyRepository interface {
 	attr: 查询公司信息
 	*/
 	FindCompany(per, page uint, attr map[string]interface{}, selectKeys []string, order []string, isCount bool) (companies []*models.UserCompany, total uint, err error)
+	Create(company models.UserCompany) (models.UserCompany, error)
 }
 
 type CompanyRepository struct {
 	BaseRepository
+}
+
+func (c CompanyRepository) Create(company models.UserCompany) (models.UserCompany, error) {
+	err := database.GetDBCon().Create(&company).Error
+	return company, err
 }
 
 //
@@ -34,7 +40,7 @@ func (c *CompanyRepository) FindCompany(per, page uint, filters map[string]inter
 	var rows *sql.Rows
 	sqlCon := database.GetDBCon()
 	temp := sqlCon.Scopes(c.DefaultScope)
-	fmt.Println(len(filters),"sssss")
+	fmt.Println(len(filters), "sssss")
 	if len(filters) > 0 {
 		temp = c.Ransack(temp, filters)
 	}

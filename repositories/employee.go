@@ -41,7 +41,7 @@ func (e *EmployeeRepository) UpdateColumn(employee *models.Employee, updateColum
 
 func (e *EmployeeRepository) FirstByPhoneOrEmail(account string) (employee *models.Employee, err error) {
 	var user models.Employee
-	err = database.GetDBCon().Scopes(e.defaultScoped).Where("phone = ?", account).Or("email = ?", account).First(&user).Error
+	err = database.GetDBCon().Scopes(e.defaultScoped).Where("users.phone = ?", account).Or("users.email = ?", account).First(&user).Error
 	employee = &user
 	return
 }

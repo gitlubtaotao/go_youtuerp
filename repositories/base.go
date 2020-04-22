@@ -3,6 +3,7 @@ package repositories
 import (
 	"fmt"
 	"github.com/jinzhu/gorm"
+	"reflect"
 	"strings"
 )
 
@@ -19,6 +20,9 @@ type BaseRepository struct {
 
 func (b BaseRepository) Ransack(db *gorm.DB, selectColumn map[string]interface{}) *gorm.DB {
 	for k, v := range selectColumn {
+		if b.notSearchValue(v) {
+			continue
+		}
 		splitArray := strings.Split(k, "-")
 		if len(splitArray) > 3 {
 			continue
@@ -58,7 +62,7 @@ func (b BaseRepository) Ransack(db *gorm.DB, selectColumn map[string]interface{}
 	return db
 }
 
-//元素是否存在
+//元素匹配
 func (b BaseRepository) isExist(dst string) bool {
 	for _, item := range RexGrep {
 		if item == dst {
@@ -68,10 +72,24 @@ func (b BaseRepository) isExist(dst string) bool {
 	return false
 }
 
+//返回sql 对应的column
 func (b BaseRepository) keyString(splitArray []string) string {
 	if len(splitArray) == 1 {
 		return splitArray[0]
 	} else {
 		return splitArray[0] + splitArray[1]
 	}
+}
+
+//空值不进行查询处理
+func (b BaseRepository) notSearchValue(value interface{}) bool {
+	v := reflect.ValueOf(value)
+	kind := v.Kind()
+	if kind == reflect.Array || kind == reflect.Struct || kind == reflect.Slice {
+		return value == nil
+	}
+	if kind == reflect.Bool {
+		return false
+	}
+	return value == ""
 }

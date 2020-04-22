@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"github.com/kataras/iris/v12/context"
 	"strconv"
 	"youtuerp/models"
@@ -12,6 +11,7 @@ type ICompanyService interface {
 	FindCompany(per, page uint, filters map[string]interface{}, selectKeys []string, orders []string, isCount bool) ([]*models.UserCompany, uint, error)
 	AllCompany(filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, uint, error)
 	LimitCompany(limit uint, filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, uint, error)
+	CreateCompany(company models.UserCompany) (models.UserCompany, error)
 	ShowTransportType(loader context.Locale, value interface{}, trans []map[string]interface{}) interface{}
 	TransportTypeArrays(loader context.Locale) []map[string]interface{}
 }
@@ -21,8 +21,11 @@ type CompanyService struct {
 	BaseService
 }
 
+func (c *CompanyService) CreateCompany(company models.UserCompany) (models.UserCompany, error) {
+	return c.repo.Create(company)
+}
+
 func (c *CompanyService) ShowTransportType(loader context.Locale, value interface{}, trans []map[string]interface{}) interface{} {
-	fmt.Println(value,trans)
 	if len(trans) == 0 {
 		trans = c.TransportTypeArrays(loader)
 	}

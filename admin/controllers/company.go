@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/kataras/iris/v12"
 	"net/http"
+	"youtuerp/conf"
 	"youtuerp/models"
 	"youtuerp/services"
 )
@@ -23,7 +24,7 @@ func (c *CompanyController) Get(ctx iris.Context) {
 	page := ctx.URLParamIntDefault("page", 1)
 	companies, total, err := c.Service.FindCompany(uint(limit), uint(page), c.handlerGetParams(), selectColumn, []string{}, true)
 	if err != nil {
-		fmt.Println(err)
+		conf.IrisApp.Logger().Error(err)
 		c.RenderErrorJson(c.Ctx, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -42,7 +43,36 @@ func (c *CompanyController) Get(ctx iris.Context) {
 
 //
 func (c *CompanyController) Create(ctx iris.Context) {
+	c.initService(ctx)
+	var company models.UserCompany
+	err := ctx.ReadJSON(&company)
+	if err != nil {
+		conf.IrisApp.Logger().Error(err)
+		c.RenderErrorJson(ctx, http.StatusBadRequest, ctx.GetLocale().GetMessage("error.error"))
+		return
+	}
+	company.CompanyType = 4
+	company.Status = "approved"
+	company.IsHeadOffice = false
+	validator := services.NewValidatorService(&company)
+	errArray, _ := validator.HandlerError(ctx.GetLocale().Language())
+	if len(errArray) > 0 {
+		conf.IrisApp.Logger().Printf("%+v", errArray)
+		c.RenderErrorJson(ctx, http.StatusBadRequest, ctx.GetLocale().GetMessage("error.error"))
+		return
+	}
+	company, err = c.Service.CreateCompany(company)
+	if err != nil {
+		conf.IrisApp.Logger().Error("%+v", err)
+		c.RenderErrorJson(ctx, http.StatusInternalServerError, ctx.GetLocale().GetMessage("error.error"))
+		return
+	}
+	data, _ := c.StructToMap(company, ctx)
+	c.RenderSuccessJson(ctx, data)
+}
 
+func (c *CompanyController) Update(ctx iris.Context) {
+	c.initService(ctx)
 }
 
 func (c *CompanyController) GetColumn(ctx iris.Context) {
