@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/iris-contrib/middleware/cors"
+	"fmt"
 	"github.com/iris-contrib/middleware/jwt"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/context"
@@ -17,6 +17,9 @@ type IRoute interface {
 	DefaultRegister()
 }
 
+var allowMethods = []string{iris.MethodGet, iris.MethodPost, iris.MethodPatch,
+	iris.MethodDelete, iris.MethodOptions}
+
 //
 type Route struct {
 	app *iris.Application
@@ -31,21 +34,15 @@ func NewRoute(app *iris.Application) IRoute {
  * @description 注册系统的方法
  */
 func (r *Route) DefaultRegister() {
-	allowedOrigins := strings.Split(conf.Configuration.AllowedOrigins, ",")
-	crs := cors.New(cors.Options{
-		AllowedOrigins:   allowedOrigins,
-		AllowedHeaders:   []string{"*"},
-		AllowCredentials: true,
-	})
-	r.SessionRegister(crs)
-	r.OaRegister(crs)
+	r.SessionRegister()
+	r.OaRegister()
 }
 
-func (r *Route) SessionRegister(crs context.Handler) {
+func (r *Route) SessionRegister() {
 	j := r.jwtAccess()
 	session := controllers.SessionController{}
-	users := r.app.Party("user/", crs).AllowMethods(
-		iris.MethodGet, iris.MethodPost, iris.MethodPut, iris.MethodDelete, iris.MethodOptions)
+	fmt.Println(strings.Join(allowMethods,","))
+	users := r.app.Party("user/")
 	{
 		users.Post("/login", versioning.NewMatcher(versioning.Map{
 			"1.0":               session.Login,
@@ -58,16 +55,15 @@ func (r *Route) SessionRegister(crs context.Handler) {
 	}
 }
 
-func (r *Route) OaRegister(crs context.Handler) {
+func (r *Route) OaRegister() {
 	j := r.jwtAccess()
 	company := controllers.CompanyController{}
-	companyApi := r.app.Party("/companies", crs).AllowMethods(
-		iris.MethodGet, iris.MethodPost, iris.MethodPut, iris.MethodDelete, iris.MethodOptions)
+	companyApi := r.app.Party("/companies")
 	{
 		companyApi.Post("/data", j.Serve, company.Get)
 		companyApi.Get("/column", j.Serve, company.GetColumn)
 		companyApi.Post("/create", j.Serve, company.Create)
-		companyApi.Put("/{id:uint}/update", company.Update)
+		companyApi.Patch("/{id:uint}/update", j.Serve, company.Update)
 	}
 }
 

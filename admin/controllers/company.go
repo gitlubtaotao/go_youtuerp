@@ -30,9 +30,8 @@ func (c *CompanyController) Get(ctx iris.Context) {
 	}
 	dataArray := make([]map[string]interface{}, 0)
 	transportArray := c.Service.TransportTypeArrays(ctx.GetLocale())
-	for k, v := range companies {
+	for _, v := range companies {
 		temp, _ := c.StructToMap(v, ctx)
-		temp["index_col"] = k + 1
 		temp["company_type"] = c.Service.ShowTransportType(ctx.GetLocale(), temp["company_type"], transportArray)
 		dataArray = append(dataArray, temp)
 	}
@@ -73,6 +72,7 @@ func (c *CompanyController) Create(ctx iris.Context) {
 
 func (c *CompanyController) Update(ctx iris.Context) {
 	c.initService(ctx)
+	c.RenderSuccessJson(ctx,iris.Map{})
 }
 
 func (c *CompanyController) GetColumn(ctx iris.Context) {

@@ -1,10 +1,13 @@
 package initialize
 
 import (
+	"github.com/iris-contrib/middleware/cors"
 	"github.com/kataras/iris/v12"
+	"github.com/kataras/iris/v12/context"
 	"github.com/kataras/iris/v12/middleware/logger"
 	"github.com/kataras/iris/v12/versioning"
 	"os"
+	"strings"
 	"time"
 	"youtuerp/admin/controllers"
 	"youtuerp/admin/middleware"
@@ -53,6 +56,9 @@ func NewApp() *iris.Application {
 	app.Use(defaultVersion)
 	route := middleware.NewRoute(app)
 	app.Use(LogConfig())
+	app.Use(setAllowedMethod())
+	app.AllowMethods(iris.MethodGet, iris.MethodPost, iris.MethodPatch,
+		iris.MethodDelete, iris.MethodOptions)
 	//加载web端口对应的web secure cookie
 	route.DefaultRegister()
 	conf.IrisApp = app
@@ -120,4 +126,16 @@ func RegisterView(app *iris.Application) {
 func todayFilename(fileName string) string {
 	today := time.Now().Format("2006-01-02")
 	return today + "-" + fileName + ".log"
+}
+
+func setAllowedMethod() context.Handler {
+	allowedOrigins := strings.Split(conf.Configuration.AllowedOrigins, ",")
+	crs := cors.New(cors.Options{
+		AllowedOrigins: allowedOrigins,
+		AllowedHeaders: []string{"*"},
+		AllowedMethods: []string{iris.MethodGet, iris.MethodPost, iris.MethodPatch,
+			iris.MethodDelete, iris.MethodOptions},
+		AllowCredentials: true,
+	})
+	return crs
 }

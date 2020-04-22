@@ -47,10 +47,6 @@ func (c *ColumnService) DefaultColumn(model interface{}, args ...interface{}) (d
 		err = errors.New("mode is not struct")
 		return
 	}
-	dataArray = append(dataArray,map[string]interface{}{
-		"data": "index_col",
-		"title": "序号",
-	})
 	c.sy.Lock()
 	defer c.sy.Unlock()
 	tableName := c.tableName(v)
