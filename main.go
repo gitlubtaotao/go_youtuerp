@@ -21,7 +21,7 @@ func main() {
 	}
 	defer f.Close()
 	app.Logger().SetOutput(io.MultiWriter(f, os.Stdout))
-	config := iris.WithConfiguration(iris.YAML("../conf/iris.yaml"))
+	config := iris.WithConfiguration(iris.YAML("./conf/iris.yaml"))
 	_ = app.Run(iris.Addr(":8082"), config, iris.WithoutServerError(iris.ErrServerClosed))
 }
 

@@ -1,10 +1,10 @@
 package database
 
 import (
+	"fmt"
 	"github.com/jinzhu/gorm"
 	"log"
 	"os"
-	"youtuerp/conf"
 	"youtuerp/models"
 )
 
@@ -39,7 +39,11 @@ func (d *DataBase) DefaultInit() error {
 
 func (d *DataBase) InitDataBase() error {
 	var err error
-	dataEngine, err = gorm.Open("mysql", conf.Configuration.DSN)
+	password := os.Getenv("MYSQL_ROOT_PASSWORD")
+	database := os.Getenv("MYSQL_DATABASE")
+	fmt.Print(password, database, "ssss")
+	dsn := "root:qweqwe123@tcp(db:3306)/go_youtuerp?charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=true"
+	dataEngine, err = gorm.Open("mysql", dsn)
 	if err != nil {
 		return err
 	}
@@ -60,6 +64,6 @@ func (d *DataBase) Migration() error {
 		GetDBCon().AutoMigrate(&models.CompanyInfo{})
 	}
 	GetDBCon().AutoMigrate(&models.Employee{}, &models.UserCompany{},
-		&models.Department{}, &models.CrmCompany{},&models.Contact{},&models.Department{})
+		&models.Department{}, &models.CrmCompany{}, &models.Contact{}, &models.Department{})
 	return nil
 }
