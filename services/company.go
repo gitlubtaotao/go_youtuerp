@@ -9,11 +9,12 @@ import (
 
 type ICompanyService interface {
 	FindCompany(per, page uint, filters map[string]interface{}, selectKeys []string, orders []string, isCount bool) ([]*models.UserCompany, uint, error)
-	FirstCompany(id uint) (*models.UserCompany,error)
+	FirstCompany(id uint) (*models.UserCompany, error)
 	AllCompany(filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, uint, error)
 	LimitCompany(limit uint, filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, uint, error)
-	CreateCompany(company models.UserCompany) (models.UserCompany, error)
-	UpdateCompany(company *models.UserCompany,readData models.UserCompany) error
+	Create(company models.UserCompany) (models.UserCompany, error)
+	Update(company *models.UserCompany, readData models.UserCompany) error
+	Delete(id uint) error
 	ShowTransportType(loader context.Locale, value interface{}, trans []map[string]interface{}) interface{}
 	TransportTypeArrays(loader context.Locale) []map[string]interface{}
 }
@@ -23,16 +24,20 @@ type CompanyService struct {
 	BaseService
 }
 
-func (c *CompanyService) UpdateCompany(company *models.UserCompany, readData models.UserCompany) error {
-	return c.repo.UpdateCompany(company,readData)
+func (c *CompanyService) Delete(id uint) error {
+	return c.repo.DeleteCompany(id)
 }
 
-func (c *CompanyService) FirstCompany(id uint)(*models.UserCompany,error) {
+func (c *CompanyService) Update(company *models.UserCompany, readData models.UserCompany) error {
+	return c.repo.UpdateCompany(company, readData)
+}
+
+func (c *CompanyService) FirstCompany(id uint) (*models.UserCompany, error) {
 	return c.repo.FirstCompany(id)
 }
 
-func (c *CompanyService) CreateCompany(company models.UserCompany) (models.UserCompany, error) {
-	return c.repo.Create(company)
+func (c *CompanyService) Create(company models.UserCompany) (models.UserCompany, error) {
+	return c.repo.CreateCompany(company)
 }
 
 func (c *CompanyService) ShowTransportType(loader context.Locale, value interface{}, trans []map[string]interface{}) interface{} {

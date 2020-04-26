@@ -58,7 +58,7 @@ func (c *CompanyController) Create(ctx iris.Context) {
 		c.RenderErrorJson(ctx, http.StatusBadRequest, ctx.GetLocale().GetMessage("error.error"))
 		return
 	}
-	company, err = c.Service.CreateCompany(company)
+	company, err = c.Service.Create(company)
 	if err != nil {
 		conf.IrisApp.Logger().Error("%+v", err)
 		c.RenderErrorJson(ctx, http.StatusInternalServerError, ctx.GetLocale().GetMessage("error.error"))
@@ -103,18 +103,36 @@ func (c *CompanyController) Update(ctx iris.Context) {
 	}
 	company, _ := c.Service.FirstCompany(id)
 	fmt.Printf("%+v", readData)
-	err = c.Service.UpdateCompany(company, readData)
+	err = c.Service.Update(company, readData)
 	if err != nil {
 		conf.IrisApp.Logger().Error(err)
 		c.RenderErrorJson(ctx, http.StatusBadRequest, ctx.GetLocale().GetMessage("error.error"))
 		return
 	}
-	c.RenderSuccessJson(ctx, c.itemChange(company,c.Service.TransportTypeArrays(ctx.GetLocale())))
+	c.RenderSuccessJson(ctx, c.itemChange(company, c.Service.TransportTypeArrays(ctx.GetLocale())))
 }
 
 func (c *CompanyController) GetColumn(ctx iris.Context) {
 	c.RenderModuleColumn(ctx, models.UserCompany{})
 }
+
+func (c *CompanyController) Delete(ctx iris.Context) {
+	c.initService(ctx)
+	id, err := ctx.Params().GetUint("id")
+	if err != nil {
+		conf.IrisApp.Logger().Error(err)
+		c.RenderErrorJson(ctx, http.StatusBadRequest, ctx.GetLocale().GetMessage("error.error"))
+		return
+	}
+	err = c.Service.Delete(id)
+	if err != nil{
+		conf.IrisApp.Logger().Error(err)
+		c.RenderErrorJson(ctx, http.StatusBadRequest, ctx.GetLocale().GetMessage("error.error"))
+	}else{
+		c.RenderSuccessJson(ctx,iris.Map{})
+	}
+}
+
 
 func (c *CompanyController) initService(ctx iris.Context) {
 	c.Service = services.NewCompanyService()

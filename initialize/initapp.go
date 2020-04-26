@@ -50,6 +50,9 @@ func LogConfig() iris.Handler {
 	return customLogger
 }
 
+var allowMethods = []string{iris.MethodGet, iris.MethodPost, iris.MethodPatch,
+	iris.MethodDelete, iris.MethodOptions}
+
 //@title: 初始化app
 func NewApp() *iris.Application {
 	app := iris.New()
@@ -58,8 +61,7 @@ func NewApp() *iris.Application {
 	route := middleware.NewRoute(app)
 	app.Use(LogConfig())
 	app.Use(setAllowedMethod())
-	app.AllowMethods(iris.MethodGet, iris.MethodPost, iris.MethodPatch,
-		iris.MethodDelete, iris.MethodOptions)
+	app.AllowMethods(allowMethods...)
 	//加载web端口对应的web secure cookie
 	route.DefaultRegister()
 	conf.IrisApp = app
@@ -132,10 +134,9 @@ func todayFilename(fileName string) string {
 func setAllowedMethod() context.Handler {
 	allowedOrigins := strings.Split(conf.Configuration.AllowedOrigins, ",")
 	crs := cors.New(cors.Options{
-		AllowedOrigins: allowedOrigins,
-		AllowedHeaders: []string{"*"},
-		AllowedMethods: []string{iris.MethodGet, iris.MethodPost, iris.MethodPatch,
-			iris.MethodDelete, iris.MethodOptions},
+		AllowedOrigins:   allowedOrigins,
+		AllowedHeaders:   []string{"*"},
+		AllowedMethods:   allowMethods,
 		AllowCredentials: true,
 	})
 	return crs

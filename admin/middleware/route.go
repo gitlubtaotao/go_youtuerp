@@ -65,6 +65,7 @@ func (r *Route) OaRegister() {
 		companyApi.Post("/create", j.Serve, company.Create)
 		companyApi.Get("/{id:uint}/edit", j.Serve, company.Edit)
 		companyApi.Patch("/{id:uint}/update", j.Serve, company.Update)
+		companyApi.Delete("/{id:uint}/delete", j.Serve, company.Delete)
 	}
 }
 

@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-	"fmt"
 	"github.com/kataras/iris/v12/context"
 	"reflect"
 	"regexp"
@@ -170,7 +169,6 @@ func (c *ColumnService) ToSnakeCase(str string) string {
 func (c *ColumnService) tableName(v reflect.Value) string {
 	var data string
 	methodName := v.MethodByName("TableName")
-	fmt.Println(v.NumMethod())
 	if methodName.IsValid() {
 		value := methodName.Call([]reflect.Value{})
 		data = value[0].String()

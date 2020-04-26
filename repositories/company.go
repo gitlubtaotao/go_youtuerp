@@ -15,27 +15,33 @@ type ICompanyRepository interface {
 	attr: 查询公司信息
 	*/
 	FindCompany(per, page uint, attr map[string]interface{}, selectKeys []string, order []string, isCount bool) (companies []*models.UserCompany, total uint, err error)
-	Create(company models.UserCompany) (models.UserCompany, error)
-	UpdateCompany(company *models.UserCompany, readData models.UserCompany) error
 	FirstCompany(id uint) (*models.UserCompany, error)
+	CreateCompany(company models.UserCompany) (models.UserCompany, error)
+	UpdateCompany(company *models.UserCompany, readData models.UserCompany) error
+	DeleteCompany(id uint) error
 }
 
 type CompanyRepository struct {
 	BaseRepository
 }
 
-func (c CompanyRepository) UpdateCompany(company *models.UserCompany, readData models.UserCompany) error{
+func (c CompanyRepository) DeleteCompany(id uint) error {
+	var readData models.UserCompany
+	return database.GetDBCon().Find(&readData).Delete(&readData).Error
+}
+
+func (c CompanyRepository) UpdateCompany(company *models.UserCompany, readData models.UserCompany) error {
 	return database.GetDBCon().Model(&company).Update(readData).Error
 }
 
 func (c CompanyRepository) FirstCompany(id uint) (company *models.UserCompany, err error) {
-	var  readData models.UserCompany
+	var readData models.UserCompany
 	err = database.GetDBCon().First(&readData, id).Error
 	company = &readData
 	return
 }
 
-func (c CompanyRepository) Create(company models.UserCompany) (models.UserCompany, error) {
+func (c CompanyRepository) CreateCompany(company models.UserCompany) (models.UserCompany, error) {
 	err := database.GetDBCon().Create(&company).Error
 	return company, err
 }
