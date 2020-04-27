@@ -7,59 +7,94 @@ import (
 	"strings"
 )
 
-type IBaseRepository interface {
-	//将map函数解析成对应的where查询条件
-	Ransack(db *gorm.DB, selectColumn map[string]interface{}) *gorm.DB
-}
-
 var RexGrep = [...]string{"gt", "gtEq", "lt", "ltEq", "in",
 	"eq", "notEq", "cont", "lCont", "rCont"}
+
+type IBaseRepository interface {
+	//将map函数解析成对应的where查询条件
+	Ransack(selectColumn map[string]interface{}) func(db *gorm.DB) *gorm.DB
+	//分页方法
+	Paginate(per, page uint) func(db *gorm.DB) *gorm.DB
+	//进行数据的排序
+	OrderBy(orders []string) func(db *gorm.DB) *gorm.DB
+}
 
 type BaseRepository struct {
 }
 
-func (b BaseRepository) Ransack(db *gorm.DB, selectColumn map[string]interface{}) *gorm.DB {
-	for k, v := range selectColumn {
-		if b.notSearchValue(v) {
-			continue
+//抽象查询方法
+func (b BaseRepository) Ransack(selectColumn map[string]interface{}) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		for k, v := range selectColumn {
+			if b.notSearchValue(v) {
+				continue
+			}
+			splitArray := strings.Split(k, "-")
+			if len(splitArray) > 3 {
+				continue
+			}
+			n := len(splitArray) - 1
+			item := splitArray[n]
+			splitArray = splitArray[:n]
+			if !b.isExist(item) {
+				continue
+			}
+			key := b.keyString(splitArray)
+			fmt.Println(key)
+			switch item {
+			case "gt":
+				db = db.Where(key+" > ? ", v)
+			case "gtEq":
+				db = db.Where(key+" >= ? ", v)
+			case "lt":
+				db = db.Where(key+" < ? ", v)
+			case "ltEq":
+				db = db.Where(key+" <= ?", v)
+			case "in":
+				db = db.Where(key+" IN (?)", v)
+			case "eq":
+				db = db.Where(key+" = ? ", v)
+			case "notEq":
+				db = db.Where(key+" <> ? ", v)
+			case "cont":
+				db = db.Where(key+" LIKE ? ", "%"+v.(string)+"%")
+			case "lCount":
+				db = db.Where(key+" LIKE ? ", "%"+v.(string))
+			case "rCount":
+				db = db.Where(key+" LIKE ? ", v.(string)+"%")
+			}
 		}
-		splitArray := strings.Split(k, "-")
-		if len(splitArray) > 3 {
-			continue
-		}
-		n := len(splitArray) - 1
-		item := splitArray[n]
-		splitArray = splitArray[:n]
-		fmt.Println(splitArray)
-		if !b.isExist(item) {
-			continue
-		}
-		key := b.keyString(splitArray)
-		fmt.Println(key)
-		switch item {
-		case "gt":
-			db = db.Where(key+" > ? ", v)
-		case "gtEq":
-			db = db.Where(key+" >= ? ", v)
-		case "lt":
-			db = db.Where(key+" < ? ", v)
-		case "ltEq":
-			db = db.Where(key+" <= ?", v)
-		case "in":
-			db = db.Where(key+" IN (?)", v)
-		case "eq":
-			db = db.Where(key+" = ? ", v)
-		case "notEq":
-			db = db.Where(key+" <> ? ", v)
-		case "cont":
-			db = db.Where(key+" LIKE ? ", "%"+v.(string)+"%")
-		case "lCount":
-			db = db.Where(key+" LIKE ? ", "%"+v.(string))
-		case "rCount":
-			db = db.Where(key+" LIKE ? ", v.(string)+"%")
+		return db
+	}
+}
+
+//分页方法
+//page = 0 表示不进行分页
+//默认的分页方法
+func (b BaseRepository) Paginate(per, page uint) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		if page == 0 && per > 0 {
+			return db.Limit(per)
+		} else if page > 0 && per > 0 {
+			return db.Limit(per).Offset((page - 1) * per)
+		} else {
+			return db
 		}
 	}
-	return db
+}
+
+//order by
+//进行排序
+func (b BaseRepository) OrderBy(orders []string) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		if len(orders) == 0 {
+			return db.Order("id desc")
+		}
+		for _, order := range orders {
+			db = db.Order(order)
+		}
+		return db
+	}
 }
 
 //元素匹配

@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"database/sql"
-	"fmt"
 	"github.com/jinzhu/gorm"
 	"youtuerp/database"
 	"youtuerp/models"
@@ -14,7 +13,8 @@ type ICompanyRepository interface {
 	page: 当前页数
 	attr: 查询公司信息
 	*/
-	FindCompany(per, page uint, attr map[string]interface{}, selectKeys []string, order []string, isCount bool) (companies []*models.UserCompany, total uint, err error)
+	FindCompany(per, page uint, attr map[string]interface{}, selectKeys []string, order []string, isCount bool) (companies []*models.UserCompany,
+		total uint, err error)
 	FirstCompany(id uint) (*models.UserCompany, error)
 	CreateCompany(company models.UserCompany) (models.UserCompany, error)
 	UpdateCompany(company *models.UserCompany, readData models.UserCompany) error
@@ -59,9 +59,8 @@ func (c *CompanyRepository) FindCompany(per, page uint, filters map[string]inter
 	var rows *sql.Rows
 	sqlCon := database.GetDBCon()
 	temp := sqlCon.Scopes(c.DefaultScope)
-	fmt.Println(len(filters), "sssss")
 	if len(filters) > 0 {
-		temp = c.Ransack(temp, filters)
+		temp = temp.Scopes(c.Ransack(filters))
 	}
 	//limit
 	if isCount {

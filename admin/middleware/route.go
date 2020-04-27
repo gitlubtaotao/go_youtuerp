@@ -36,6 +36,7 @@ func NewRoute(app *iris.Application) IRoute {
 func (r *Route) DefaultRegister() {
 	r.SessionRegister()
 	r.OaRegister()
+	r.selectRegister()
 }
 
 func (r *Route) SessionRegister() {
@@ -67,6 +68,17 @@ func (r *Route) OaRegister() {
 		companyApi.Patch("/{id:uint}/update", j.Serve, company.Update)
 		companyApi.Delete("/{id:uint}/delete", j.Serve, company.Delete)
 	}
+	department := controllers.DepartmentController{}
+	r.app.PartyFunc("/departments", func(c iris.Party) {
+		c.Use(department.Before)
+		c.Get("/column", j.Serve, department.GetColumn)
+		c.Post("/data", j.Serve, department.Get)
+	})
+}
+
+func (r *Route) selectRegister() {
+	j := r.jwtAccess()
+	r.app.Post("/select/data", j.Serve, new(controllers.SelectController).Get)
 }
 
 //验证jwt token

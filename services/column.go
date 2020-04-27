@@ -33,8 +33,6 @@ func (c *ColumnService) StructToMap(currentObject interface{}) (map[string]inter
 	if currentObject == nil {
 		return map[string]interface{}{}, errors.New(c.loader.GetMessage("error.params_error"))
 	}
-	c.sy.Lock()
-	defer c.sy.Unlock()
 	return c.structToMap(currentObject), nil
 }
 
@@ -185,6 +183,8 @@ func (c *ColumnService) structToMap(currentObject interface{}) map[string]interf
 	utils := tools.TimeHelper{}
 	reflectValue := reflect.ValueOf(currentObject)
 	reflectValue = reflect.Indirect(reflectValue)
+	c.sy.Lock()
+	defer c.sy.Unlock()
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
@@ -207,7 +207,6 @@ func (c *ColumnService) structToMap(currentObject interface{}) map[string]interf
 	}
 	return res
 }
-
 
 func NewColumnService(loader context.Locale) IColumnService {
 	return &ColumnService{sy: sync.Mutex{}, loader: loader}
