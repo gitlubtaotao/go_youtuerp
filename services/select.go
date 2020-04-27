@@ -6,7 +6,7 @@ import (
 )
 
 type ISelectService interface {
-	Find(tableName string, scope map[string]interface{}, selectKey []string) (selectResult []map[string]interface{}, err error)
+	FindModel(model interface{}, scope map[string]interface{}, selectKey []string) (selectResult []map[string]interface{}, err error)
 }
 
 type SelectService struct {
@@ -14,21 +14,21 @@ type SelectService struct {
 	ctx  iris.Context
 }
 
-func (s *SelectService) Find(tableName string, scope map[string]interface{}, selectKey []string) (selectResult []map[string]interface{}, err error) {
-	result, err := s.repo.Find(tableName, scope, selectKey)
+func (s *SelectService) FindModel(model interface{}, scope map[string]interface{}, selectKey []string) (selectResult []map[string]interface{}, err error) {
+	result, err := s.repo.FindModel(model, scope, selectKey)
 	if err != nil {
 		return nil, err
 	}
 	columnService := NewColumnService(s.ctx.GetLocale())
 	for _, v := range result {
 		temp, _ := columnService.StructToMap(v)
-		temp = s.handlerData(tableName, temp)
+		temp = s.afterHandler(temp)
 		selectResult = append(selectResult, temp)
 	}
 	return selectResult, nil
 }
 
-func (s *SelectService) handlerData(tableName string, dest map[string]interface{}) (out map[string]interface{}) {
+func (s *SelectService) afterHandler(dest map[string]interface{}) (out map[string]interface{}) {
 	out = make(map[string]interface{})
 	out["value"] = dest["id"]
 	if value := dest["name"]; value.(string) != "" {

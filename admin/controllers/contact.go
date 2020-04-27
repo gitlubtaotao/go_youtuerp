@@ -11,9 +11,9 @@ type ContactController struct {
 	Service services.IContactService
 }
 
-func (c *ContactController) Get() iris.Map {
-	return c.RenderSuccessMap(c.Ctx, map[string]interface{}{})
-}
+//func (c *ContactController) Get() iris.Map {
+//	//return c.RenderSuccessMap(c.Ctx, map[string]interface{}{})
+//}
 
 func (c *ContactController) GetColumn() iris.Map {
 	return iris.Map{}

@@ -8,7 +8,7 @@ import (
 )
 
 var RexGrep = [...]string{"gt", "gtEq", "lt", "ltEq", "in",
-	"eq", "notEq", "cont", "lCont", "rCont"}
+	"eq", "notEq", "cont", "lCount", "rCount"}
 
 type IBaseRepository interface {
 	//将map函数解析成对应的where查询条件
@@ -40,7 +40,6 @@ func (b BaseRepository) Ransack(selectColumn map[string]interface{}) func(db *go
 				continue
 			}
 			key := b.keyString(splitArray)
-			fmt.Println(key)
 			switch item {
 			case "gt":
 				db = db.Where(key+" > ? ", v)
@@ -61,6 +60,7 @@ func (b BaseRepository) Ransack(selectColumn map[string]interface{}) func(db *go
 			case "lCount":
 				db = db.Where(key+" LIKE ? ", "%"+v.(string))
 			case "rCount":
+				fmt.Println("33333")
 				db = db.Where(key+" LIKE ? ", v.(string)+"%")
 			}
 		}

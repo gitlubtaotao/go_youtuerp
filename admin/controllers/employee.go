@@ -14,9 +14,9 @@ type EmployeeController struct {
 }
 
 //
-func (e *EmployeeController) Get() iris.Map {
-	return e.RenderSuccessMap(e.Ctx, make(map[string]interface{}))
-}
+//func (e *EmployeeController) Get() iris.Map {
+//	return e.RenderSuccessMap(e.Ctx, make(map[string]interface{}))
+//}
 func (e *EmployeeController) GetColumn() iris.Map {
 	return iris.Map{}
 }

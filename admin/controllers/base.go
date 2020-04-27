@@ -42,25 +42,6 @@ func (b BaseController) GetModelColumn(currentUser *models.Employee, model inter
 	return []string{}
 }
 
-func (b BaseController) RenderSuccessMap(ctx iris.Context, data interface{}) iris.Map {
-	ctx.StatusCode(http.StatusOK)
-	return iris.Map{
-		"code": http.StatusOK,
-		"data": data,
-	}
-}
-
-func (b BaseController) RenderErrorMap(ctx iris.Context, code int, err string) iris.Map {
-	if code == 0 {
-		code = http.StatusInternalServerError
-	}
-	ctx.StatusCode(code)
-	return iris.Map{
-		"code":    code,
-		"message": err,
-	}
-}
-
 //根据token获取当前用户
 func (b BaseController) CurrentUser(ctx iris.Context) (employee *models.Employee, err error) {
 	tokenInfo := ctx.Values().Get("jwt").(*jwt.Token)
@@ -72,7 +53,15 @@ func (b BaseController) CurrentUser(ctx iris.Context) (employee *models.Employee
 	return
 }
 
+//将struct 转化成map
 func (b *BaseController) StructToMap(currentObject interface{}, ctx iris.Context) (map[string]interface{}, error) {
 	service := services.NewColumnService(ctx.GetLocale())
 	return service.StructToMap(currentObject)
+}
+
+func (b *BaseController) GetPage(ctx iris.Context) uint {
+	return uint(ctx.URLParamIntDefault("page", 1))
+}
+func (b *BaseController) GetPer(ctx iris.Context) uint {
+	return uint(ctx.URLParamIntDefault("per", 20))
 }

@@ -8,11 +8,16 @@ import (
 type IDepartmentService interface {
 	Find(per, page uint, attr map[string]interface{}, selectKeys []string,
 		order []string, isCount bool) ([]*models.Department, uint, error)
+	Create(department models.Department) (models.Department, error)
 }
 
 type DepartmentService struct {
 	repo repositories.IDepartmentRepository
 	BaseService
+}
+
+func (d *DepartmentService) Create(department models.Department) (models.Department, error) {
+	return d.repo.Create(department)
 }
 
 func NewDepartmentService() IDepartmentService {

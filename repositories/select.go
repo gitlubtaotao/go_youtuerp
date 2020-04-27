@@ -6,7 +6,7 @@ import (
 )
 
 type ISelectRepository interface {
-	Find(tableName string, scope map[string]interface{}, selectKey []string) (selectResult []models.SelectResult, err error)
+	FindModel(model interface{}, scope map[string]interface{}, selectKey []string) (selectResult []models.SelectResult, err error)
 }
 
 type SelectRepository struct {
@@ -18,17 +18,12 @@ func NewSelectRepository() ISelectRepository {
 	return &SelectRepository{}
 }
 
-func (s *SelectRepository) Find(tableName string, scope map[string]interface{}, selectKey []string) (selectResult []models.SelectResult, err error) {
-	temp := database.GetDBCon().Table(tableName)
+func (s *SelectRepository) FindModel(model interface{}, scope map[string]interface{}, selectKey []string) (selectResult []models.SelectResult, err error) {
+	temp := database.GetDBCon().Model(model)
 	sqlCon := database.GetDBCon()
-	if len(selectKey) > 0 {
-		selectKey = append(selectKey, "id")
-		temp = temp.Select(selectKey)
-	} else {
-		temp = temp.Select("*")
-	}
+	selectKey = append(selectKey, "id")
 	if len(scope) > 0 {
-		temp = temp.Where(scope)
+		temp = temp.Scopes(s.Ransack(scope))
 	}
 	temp = temp.Scopes(s.Paginate(20, 1))
 	rows, err := temp.Rows()

@@ -72,13 +72,18 @@ func (r *Route) OaRegister() {
 	r.app.PartyFunc("/departments", func(c iris.Party) {
 		c.Use(department.Before)
 		c.Get("/column", j.Serve, department.GetColumn)
+		c.Post("/create",j.Serve,department.Create)
 		c.Post("/data", j.Serve, department.Get)
 	})
 }
 
 func (r *Route) selectRegister() {
 	j := r.jwtAccess()
-	r.app.Post("/select/data", j.Serve, new(controllers.SelectController).Get)
+	selectData := controllers.SelectController{}
+	selectApi := r.app.Party("/select")
+	{
+		selectApi.Post("/companies", j.Serve, selectData.GetCompany)
+	}
 }
 
 //验证jwt token
