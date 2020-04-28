@@ -72,9 +72,21 @@ func (r *Route) OaRegister() {
 	r.app.PartyFunc("/departments", func(c iris.Party) {
 		c.Use(department.Before)
 		c.Get("/column", j.Serve, department.GetColumn)
-		c.Post("/create",j.Serve,department.Create)
+		c.Post("/create", j.Serve, department.Create)
 		c.Post("/data", j.Serve, department.Get)
+		c.Patch("/{id:uint}/update", j.Serve, department.Update)
+		c.Delete("/{id:uint}/delete", j.Serve, department.Delete)
 	})
+	employee := controllers.EmployeeController{}
+	r.app.PartyFunc("/employees", func(c iris.Party) {
+		c.Use(employee.Before)
+		c.Get("/column", j.Serve, employee.GetColumn)
+		c.Post("/create", j.Serve, employee.Create)
+		c.Post("/data", j.Serve, employee.Get)
+		c.Patch("/{id:uint}/update", j.Serve, employee.Update)
+		c.Delete("/{id:uint}/delete", j.Serve, employee.Delete)
+	})
+	
 }
 
 func (r *Route) selectRegister() {

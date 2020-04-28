@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"fmt"
 	"github.com/jinzhu/gorm"
 	"youtuerp/database"
 	"youtuerp/models"
@@ -13,9 +14,43 @@ type IEmployeeRepository interface {
 	UpdateColumnByID(employeeID uint, updateColumn map[string]interface{}) error
 	UpdateColumn(employee *models.Employee, updateColumn map[string]interface{}) error
 	UpdateRecordByModel(employee *models.Employee, updateModel models.Employee) error
+	Find(per, page uint, filter map[string]interface{}, selectKeys []string, order []string, isCount bool) (employees []models.ResultEmployee,
+		total uint, err error)
 }
 type EmployeeRepository struct {
 	BaseRepository
+}
+
+func (e *EmployeeRepository) Find(per, page uint, filter map[string]interface{},
+	selectKeys []string, order []string, isCount bool) (
+	employees []models.ResultEmployee, total uint, err error) {
+	sqlCon := database.GetDBCon().Model(&models.Employee{})
+	sqlCon = sqlCon.Scopes(e.defaultScoped)
+	if len(filter) > 0 {
+		sqlCon = sqlCon.Scopes(e.Ransack(filter))
+	}
+	if isCount {
+		err = sqlCon.Count(&total).Error
+		if err != nil {
+			return
+		}
+	}
+	if len(selectKeys) == 0 {
+		selectKeys = []string{"users.*", "user_companies.name_nick as user_companies_name_nick",
+			"departments.name_cn as departments_name_cn",
+		}
+	}
+	rows, err := sqlCon.Scopes(e.Paginate(per, page), e.OrderBy(order)).Select(selectKeys).Rows()
+	if err != nil {
+		fmt.Printf("%v", err)
+	}
+	
+	for rows.Next() {
+		var data models.ResultEmployee
+		_ = sqlCon.ScanRows(rows, &data)
+		employees = append(employees, data)
+	}
+	return
 }
 
 func (e *EmployeeRepository) UpdateRecordByModel(employee *models.Employee, updateModel models.Employee) error {
@@ -47,7 +82,9 @@ func (e *EmployeeRepository) FirstByPhoneOrEmail(account string) (employee *mode
 }
 
 func (e *EmployeeRepository) defaultScoped(db *gorm.DB) *gorm.DB {
-	return db.Joins("inner join user_companies on user_companies.id = users.user_company_id and user_companies.company_type = 4")
+	db = db.Joins("inner join user_companies on user_companies.id = users.user_company_id and user_companies.company_type = 4")
+	db = db.Joins("inner join departments on departments.id = users.department_id")
+	return db
 }
 
 func NewEmployeeRepository() IEmployeeRepository {

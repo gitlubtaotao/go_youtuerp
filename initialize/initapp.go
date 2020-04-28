@@ -137,6 +137,8 @@ func setAllowedMethod() context.Handler {
 		AllowedHeaders:   []string{"*"},
 		AllowedMethods:   allowMethods,
 		AllowCredentials: true,
+		Debug:            true,
+		
 	})
 	return crs
 }

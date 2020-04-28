@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"youtuerp/conf"
@@ -19,7 +18,7 @@ type CompanyController struct {
 func (c *CompanyController) Get(ctx iris.Context) {
 	c.initService(ctx)
 	currentUser, _ := c.CurrentUser(ctx)
-	selectColumn := c.GetModelColumn(currentUser, models.UserCompany{})
+	selectColumn := c.GetCustomerColumn(currentUser, models.UserCompany{})
 	limit := ctx.URLParamIntDefault("limit", 20)
 	page := ctx.URLParamIntDefault("page", 1)
 	companies, total, err := c.Service.FindCompany(uint(limit), uint(page), c.handlerGetParams(), selectColumn, []string{}, true)
@@ -33,9 +32,7 @@ func (c *CompanyController) Get(ctx iris.Context) {
 	for _, v := range companies {
 		dataArray = append(dataArray, c.itemChange(v, transportArray))
 	}
-	
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": dataArray, "total": total,})
-	
 }
 
 //
@@ -102,7 +99,6 @@ func (c *CompanyController) Update(ctx iris.Context) {
 		return
 	}
 	company, _ := c.Service.FirstCompany(id)
-	fmt.Printf("%+v", readData)
 	err = c.Service.Update(company, readData)
 	if err != nil {
 		conf.IrisApp.Logger().Error(err)
@@ -120,7 +116,6 @@ func (c *CompanyController) Delete(ctx iris.Context) {
 	c.initService(ctx)
 	id, err := ctx.Params().GetUint("id")
 	if err != nil {
-		conf.IrisApp.Logger().Error(err)
 		c.RenderErrorJson(ctx, http.StatusBadRequest, ctx.GetLocale().GetMessage("error.error"))
 		return
 	}

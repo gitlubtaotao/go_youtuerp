@@ -11,11 +11,16 @@ type IEmployeeService interface {
 	UpdatePassword(user *models.Employee, password string) error
 	UpdateColumn(user *models.Employee, updateColumn map[string]interface{}) error
 	UpdateRecord(user *models.Employee, employee models.Employee) error
+	Find(per, page uint, filter map[string]interface{}, selectKeys []string, order []string, isCount bool) ([]models.ResultEmployee, uint, error)
 }
 
 type EmployeeService struct {
 	repo repositories.IEmployeeRepository
 	BaseService
+}
+
+func (e *EmployeeService) Find(per, page uint, filter map[string]interface{}, selectKeys []string, order []string, isCount bool) ([]models.ResultEmployee, uint, error) {
+	return e.repo.Find(per, page, filter, selectKeys, order, isCount)
 }
 
 func (e *EmployeeService) UpdateRecord(user *models.Employee, employee models.Employee) error {

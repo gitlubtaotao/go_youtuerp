@@ -7,13 +7,28 @@ import (
 
 type IDepartmentService interface {
 	Find(per, page uint, attr map[string]interface{}, selectKeys []string,
-		order []string, isCount bool) ([]*models.Department, uint, error)
+		order []string, isCount bool) ([]interface{}, uint, error)
+	First(id uint) (*models.Department, error)
+	Update(department *models.Department, updateData models.Department) error
 	Create(department models.Department) (models.Department, error)
+	Delete(id uint) error
 }
 
 type DepartmentService struct {
 	repo repositories.IDepartmentRepository
 	BaseService
+}
+
+func (d *DepartmentService) Delete(id uint) error {
+	return d.repo.Delete(id)
+}
+
+func (d *DepartmentService) Update(department *models.Department, updateData models.Department) error {
+	return d.repo.Update(department, updateData)
+}
+
+func (d *DepartmentService) First(id uint) (*models.Department, error) {
+	return d.repo.First(id)
 }
 
 func (d *DepartmentService) Create(department models.Department) (models.Department, error) {
@@ -25,6 +40,7 @@ func NewDepartmentService() IDepartmentService {
 }
 
 func (d *DepartmentService) Find(per, page uint, attr map[string]interface{}, selectKeys []string,
-	order []string, isCount bool) ([]*models.Department, uint, error) {
+	order []string, isCount bool) ([]interface{}, uint, error) {
 	return d.repo.Find(per, page, attr, selectKeys, order, isCount)
+	
 }

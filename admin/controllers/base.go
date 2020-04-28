@@ -22,7 +22,10 @@ func (b BaseController) RenderSuccessJson(ctx iris.Context, data interface{}) {
 //render error to json
 func (b BaseController) RenderErrorJson(ctx iris.Context, code int, err string) {
 	if code == 0 {
-		code = http.StatusInternalServerError
+		code = http.StatusBadRequest
+	}
+	if err == "" {
+		err = ctx.GetLocale().GetMessage("error.params_error")
 	}
 	ctx.StatusCode(code)
 	_, _ = ctx.JSON(iris.Map{"code": code, "message": err})
@@ -30,7 +33,7 @@ func (b BaseController) RenderErrorJson(ctx iris.Context, code int, err string) 
 
 func (b BaseController) RenderModuleColumn(ctx iris.Context, model interface{}) {
 	column := services.NewColumnService(ctx.GetLocale())
-	data, err := column.DefaultColumn(model)
+	data, err := column.StructColumn(model)
 	if err != nil {
 		b.RenderErrorJson(ctx, http.StatusBadRequest, err.Error())
 	}
@@ -38,7 +41,7 @@ func (b BaseController) RenderModuleColumn(ctx iris.Context, model interface{}) 
 }
 
 //获取用户的的列设置
-func (b BaseController) GetModelColumn(currentUser *models.Employee, model interface{}) []string {
+func (b BaseController) GetCustomerColumn(currentUser *models.Employee, model interface{}) []string {
 	return []string{}
 }
 

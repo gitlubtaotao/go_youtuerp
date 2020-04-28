@@ -17,7 +17,7 @@ type DepartmentController struct {
 }
 
 func (d *DepartmentController) GetColumn(ctx iris.Context) {
-	d.RenderModuleColumn(ctx, models.Department{})
+	d.RenderModuleColumn(ctx, models.ResultDepartment{})
 }
 
 func (d *DepartmentController) Get(ctx iris.Context) () {
@@ -29,6 +29,7 @@ func (d *DepartmentController) Get(ctx iris.Context) () {
 	}
 	dataArray := make([]map[string]interface{}, 0)
 	for _, v := range departments {
+		fmt.Printf("%v", v)
 		result, _ := d.StructToMap(v, ctx)
 		dataArray = append(dataArray, result)
 	}
@@ -46,20 +47,72 @@ func (d *DepartmentController) Create(ctx iris.Context) {
 		return
 	}
 	valid := services.NewValidatorService(department)
-	fmt.Print(ctx.GetLocale().Language())
 	errString := valid.ResultError(ctx.GetLocale().Language())
-	if errString != ""{
-		conf.IrisApp.Logger().Errorf("create department is err %s",errString)
-		d.RenderErrorJson(ctx,http.StatusBadRequest,errString)
+	if errString != "" {
+		conf.IrisApp.Logger().Errorf("create department is err %s", errString)
+		d.RenderErrorJson(ctx, http.StatusBadRequest, errString)
 		return
 	}
 	department, err = d.Service.Create(department)
-	if err != nil{
-		d.RenderErrorJson(ctx,http.StatusInternalServerError,err.Error())
+	if err != nil {
+		d.RenderErrorJson(ctx, http.StatusInternalServerError, err.Error())
 		return
 	}
 	data, _ := d.StructToMap(department, ctx)
 	d.RenderSuccessJson(ctx, data)
+}
+
+func (d *DepartmentController) Update(ctx iris.Context) {
+	var (
+		id       int
+		err      error
+		readData models.Department
+	)
+	id, err = ctx.Params().GetInt("id")
+	if err != nil {
+		d.RenderErrorJson(ctx, 0, "")
+		return
+	}
+	err = ctx.ReadJSON(&readData)
+	if err != nil {
+		d.RenderErrorJson(ctx, 0, "")
+		return
+	}
+	department, err := d.Service.First(uint(id))
+	if err != nil {
+		d.RenderErrorJson(ctx, 0, "")
+		return
+	}
+	valid := services.NewValidatorService(readData)
+	errString := valid.ResultError(ctx.GetLocale().Language())
+	if errString != "" {
+		d.RenderErrorJson(ctx, http.StatusBadRequest, errString)
+		return
+	}
+	err = d.Service.Update(department, readData)
+	if err != nil {
+		conf.IrisApp.Logger().Error(err)
+		d.RenderErrorJson(ctx, http.StatusInternalServerError, ctx.GetLocale().GetMessage("error.inter_error"))
+		return
+	}
+	returnData, _ := d.StructToMap(department, ctx)
+	d.RenderSuccessJson(ctx, returnData)
+	return
+}
+
+func (d *DepartmentController) Delete(ctx iris.Context) {
+	id, err := ctx.Params().GetUint("id")
+	if err != nil {
+		d.RenderErrorJson(ctx, 0, "")
+		return
+	}
+	err = d.Service.Delete(id)
+	if err != nil{
+		conf.IrisApp.Logger().Error(err)
+		d.RenderErrorJson(ctx, http.StatusInternalServerError, ctx.GetLocale().GetMessage("error.inter_error"))
+	}else{
+		d.RenderSuccessJson(ctx,iris.Map{})
+	}
 }
 
 func (d *DepartmentController) handlerGetParams() map[string]interface{} {

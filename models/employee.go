@@ -20,9 +20,8 @@ type Employee struct {
 	CurrentSignInIp     string    `json:"current_sign_in_ip" validate:"ip"`
 	LastSignInIp        string    `json:"last_sign_in_ip" validate:"ip"`
 	UserCompanyId       int       `form:"user_company_id" json:"user_company_id"`
-	
-	DepartmentId        int    `form:"department_id" json:"department_id"`
-	Name                string `form:"name" json:"name" validate:"required,unique"` // 姓名
+	DepartmentId        int       `form:"department_id" json:"department_id"`
+	Name                string    `form:"name" json:"name" validate:"required,unique"` // 姓名
 	AuthenticationToken string
 	IsAdmin             bool        `gorm:"default:false" form:"is_admin" json:"is_admin"` // 是否为超级管理人员(系统默认只有一位)
 	UserNo              string      `form:"user_no" json:"user_no"`                        // 工号
@@ -31,9 +30,29 @@ type Employee struct {
 	Remarks             string      `gorm:"size:65535" json:"remarks" form:"remarks"`
 	Sex                 uint        `gorm:"default:0" json:"sex" form:"sex"`
 	UserCompany         UserCompany `gorm:"foreignkey:user_company_id"`
+	Department          Department  `gorm:"foreignkey:department_id"`
 	Avatar              string      `gorm:"size:255" json:"avatar" yaml:"avatar"`
 }
 
+type ResultEmployee struct {
+	CreatedAt             time.Time `json:"created_at"`
+	Email                 string `json:"email"`
+	SignInCount           int `json:"sign_in_count"`
+	LastSignInAt          time.Time `json:"last_sign_in_at"`
+	LastSignInIp          string `json:"last_sign_in_ip"`
+	UserCompanyId         int `json:"user_company_id"`
+	UserCompaniesNameNick string `json:"user_companies_name_nick"`
+	DepartmentId          int `json:"department_id"`
+	DepartmentsNameCN     string `json:"departments_name_cn"`
+	Name                  string `json:"name"`
+	UserNo                string  `json:"user_no"`
+	Phone                 string `json:"phone"`
+}
+
 func (Employee) TableName() string {
+	return "users"
+}
+
+func (ResultEmployee) TableName() string {
 	return "users"
 }

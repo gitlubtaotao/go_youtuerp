@@ -14,12 +14,7 @@ import (
 var matchAllCap = regexp.MustCompile("([a-z0-9])([A-Z])")
 
 type IColumnService interface {
-	DefaultColumn(model interface{}, args ...interface{}) (data []interface{}, err error)
-	ColumnByBase(f reflect.StructField) (data []interface{})
-	ColumnByOther(f reflect.StructField) (data []interface{})
-	DefaultHiddenColumn(t reflect.Value, args ...interface{}) (data interface{})
-	ToSnakeCase(str string) string
-	//将struct转化成对应的map结构
+	StructColumn(model interface{}, args ...interface{}) (data []interface{}, err error)
 	StructToMap(currentObject interface{}) (map[string]interface{}, error)
 }
 
@@ -36,10 +31,10 @@ func (c *ColumnService) StructToMap(currentObject interface{}) (map[string]inter
 	return c.structToMap(currentObject), nil
 }
 
-func (c *ColumnService) DefaultColumn(model interface{}, args ...interface{}) (dataArray []interface{}, err error) {
+func (c *ColumnService) StructColumn(model interface{}, args ...interface{}) (dataArray []interface{}, err error) {
 	t := reflect.TypeOf(model)
 	v := reflect.ValueOf(model)
-	hiddenColumn := c.DefaultHiddenColumn(v)
+	hiddenColumn := c.defaultHiddenColumn(v)
 	if t.Kind() != reflect.Struct {
 		err = errors.New("mode is not struct")
 		return
@@ -49,19 +44,8 @@ func (c *ColumnService) DefaultColumn(model interface{}, args ...interface{}) (d
 	tableName := c.tableName(v)
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
-		if f.Type.Name() == "Model" || f.Type.Name() == "Base" {
-			dataArray = append(dataArray, c.ColumnByBase(f)...)
+		if f.Type.Kind() == reflect.Struct && f.Type.Name() != "Time" {
 			continue
-		}
-		//必须补上table_name，表示需要关联对象
-		if f.Tag.Get("table_name") != "" {
-			//只查询两层结构
-			if f.Type.Kind() == reflect.Struct {
-				attr := make(map[string]interface{})
-				attr[f.Tag.Get("table_name")] = c.ColumnByOther(f)
-				dataArray = append(dataArray, attr)
-				continue
-			}
 		}
 		data := f.Tag.Get("json")
 		if data == "" {
@@ -70,64 +54,16 @@ func (c *ColumnService) DefaultColumn(model interface{}, args ...interface{}) (d
 		if c.isHiddenColumn(hiddenColumn, data) {
 			attr := map[string]interface{}{
 				"data":  data,
-				"type":  f.Type.Name(),
 				"title": c.loader.GetMessage(tableName + "." + data),
 			}
 			dataArray = append(dataArray, attr)
 		}
 	}
+	dataArray = append(dataArray, c.structAddColumn(v, tableName)...)
 	return
 }
 
-// 获取gorm.Model 默认的列
-func (c *ColumnService) ColumnByBase(f reflect.StructField) []interface{} {
-	dataArray := make([]interface{}, 0)
-	stringArray := []string{"ID", "CreatedAt", "UpdatedAt"}
-	for i := 0; i < len(stringArray); i++ {
-		if field, ok := f.Type.FieldByName(stringArray[i]); ok {
-			data := c.ToSnakeCase(field.Name)
-			attr := map[string]interface{}{
-				"data":   data,
-				"type":   field.Type.Name(),
-				"title":  c.loader.GetMessage("base." + data),
-				"select": true,
-			}
-			dataArray = append(dataArray, attr)
-		}
-	}
-	return dataArray
-}
-
-func (c *ColumnService) ColumnByOther(f reflect.StructField) (dataArray []interface{}) {
-	t := f.Type
-	value := reflect.New(t)
-	tableName := c.tableName(value)
-	hiddenColumn := c.DefaultHiddenColumn(value)
-	if t.Kind() != reflect.Struct {
-		return
-	}
-	for i := 0; i < t.NumField(); i++ {
-		f := t.Field(i)
-		if f.Type.Name() == "Model" {
-			continue
-		}
-		data := f.Tag.Get("json")
-		if data == "" {
-			continue
-		}
-		attr := map[string]interface{}{
-			"data":   data,
-			"select": c.isHiddenColumn(hiddenColumn, data),
-			"type":   f.Type.Name(),
-			"title":  c.loader.GetMessage(tableName + "." + data),
-		}
-		dataArray = append(dataArray, attr)
-	}
-	return
-}
-
-//
-func (c *ColumnService) DefaultHiddenColumn(v reflect.Value, args ...interface{}) (data interface{}) {
+func (c *ColumnService) defaultHiddenColumn(v reflect.Value, args ...interface{}) (data interface{}) {
 	methodName := v.MethodByName("DefaultHiddenColumn")
 	if methodName.IsValid() {
 		inputs := make([]reflect.Value, len(args))
@@ -140,6 +76,28 @@ func (c *ColumnService) DefaultHiddenColumn(v reflect.Value, args ...interface{}
 		data = []string{}
 	}
 	return
+}
+func (c *ColumnService) structAddColumn(v reflect.Value, tableName string) []interface{} {
+	methodName := v.MethodByName("DefaultAddColumn")
+	if !methodName.IsValid() {
+		return nil
+	}
+	inputs := make([]reflect.Value, 0)
+	returnValue := methodName.Call(inputs)
+	dataColumn := returnValue[0].Interface()
+	if reflect.ValueOf(dataColumn).Type().Kind() != reflect.Slice {
+		return nil
+	}
+	stringColumn := dataColumn.([]string)
+	dataArray := make([]interface{}, 0, len(stringColumn))
+	for _, col := range stringColumn {
+		attr := map[string]interface{}{
+			"data":  col,
+			"title": c.loader.GetMessage(tableName + "." + col),
+		}
+		dataArray = append(dataArray, attr)
+	}
+	return dataArray
 }
 
 // 是否默认隐藏column
@@ -158,7 +116,7 @@ func (c *ColumnService) isHiddenColumn(hiddenColumns interface{}, column string)
 }
 
 //将蛇形字符转换成_风格
-func (c *ColumnService) ToSnakeCase(str string) string {
+func (c *ColumnService) toSnakeCase(str string) string {
 	snake := matchAllCap.ReplaceAllString(str, "${1}_${2}")
 	return strings.ToLower(strings.ToLower(snake))
 }
@@ -171,7 +129,7 @@ func (c *ColumnService) tableName(v reflect.Value) string {
 		value := methodName.Call([]reflect.Value{})
 		data = value[0].String()
 	} else {
-		data = c.ToSnakeCase(v.Kind().String())
+		data = c.toSnakeCase(v.Kind().String())
 	}
 	return data
 }
@@ -190,6 +148,9 @@ func (c *ColumnService) structToMap(currentObject interface{}) map[string]interf
 		temp := v.Field(i).Type
 		kind := temp.Kind()
 		tag := v.Field(i).Tag.Get("json")
+		if tag == ""{
+			tag = c.toSnakeCase(v.Field(i).Name)
+		}
 		field := reflectValue.Field(i).Interface()
 		if kind == reflect.Struct {
 			if temp.Name() == "Time" {
