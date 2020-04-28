@@ -64,7 +64,7 @@ func (e *EmployeeController) handlerGetParams() map[string]interface{} {
 	searchColumn["name-rCount"] = e.ctx.URLParamDefault("name", "")
 	searchColumn["phone-rCount"] = e.ctx.URLParamDefault("phone", "")
 	searchColumn["email-rCount"] = e.ctx.URLParamDefault("email", "")
-	searchColumn["user_company_id-eq"] = e.ctx.URLParamDefault("user_company_id", "")
-	searchColumn["department_id-eq"] = e.ctx.URLParamDefault("department_id", "")
+	searchColumn["users.user_company_id-eq"] = e.ctx.URLParamDefault("user_company_id", "")
+	searchColumn["users.department_id-eq"] = e.ctx.URLParamDefault("department_id", "")
 	return searchColumn
 }
