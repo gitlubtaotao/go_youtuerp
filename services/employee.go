@@ -6,17 +6,32 @@ import (
 )
 
 type IEmployeeService interface {
+	First(id uint) (*models.Employee, error)
 	FirstByPhoneAndEmail(phone string, email string) (*models.Employee, error)
 	FirstByPhoneOrEmail(account string) (*models.Employee, error)
 	UpdatePassword(user *models.Employee, password string) error
 	UpdateColumn(user *models.Employee, updateColumn map[string]interface{}) error
 	UpdateRecord(user *models.Employee, employee models.Employee) error
 	Find(per, page uint, filter map[string]interface{}, selectKeys []string, order []string, isCount bool) ([]models.ResultEmployee, uint, error)
+	Create(employee models.Employee) (models.Employee, error)
+	Delete(id uint) error
 }
 
 type EmployeeService struct {
 	repo repositories.IEmployeeRepository
 	BaseService
+}
+
+func (e *EmployeeService) Delete(id uint) error {
+	return e.repo.Delete(id)
+}
+
+func (e *EmployeeService) First(id uint) (*models.Employee, error) {
+	return e.repo.First(id)
+}
+
+func (e *EmployeeService) Create(employee models.Employee) (models.Employee, error) {
+	return e.repo.Create(employee)
 }
 
 func (e *EmployeeService) Find(per, page uint, filter map[string]interface{}, selectKeys []string, order []string, isCount bool) ([]models.ResultEmployee, uint, error) {

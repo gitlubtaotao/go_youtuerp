@@ -18,11 +18,7 @@ type login struct {
 	Password string `json:"password"`
 }
 
-//读取密码信息
-type readPassword struct {
-	Password        string `json:"password"`
-	ConfirmPassword string `json:"confirm_password"`
-}
+
 
 type SessionController struct {
 	BaseController
@@ -105,7 +101,7 @@ func (s *SessionController) Update(ctx iris.Context) {
 		s.RenderErrorJson(ctx, http.StatusBadRequest, err.Error())
 	}
 	//读取密码信息
-	var passwordInfo readPassword
+	var passwordInfo models.ReadPassword
 	err = ctx.ReadJSON(&passwordInfo)
 	if err != nil {
 		s.RenderErrorJson(ctx, http.StatusBadRequest, err.Error())

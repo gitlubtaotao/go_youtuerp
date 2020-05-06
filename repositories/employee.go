@@ -10,15 +10,37 @@ import (
 type IEmployeeRepository interface {
 	FirstByPhoneAndEmail(phone string, email string) (employee *models.Employee, err error)
 	//通过员工的昵称或者用户信息进行查询
+	First(id uint) (*models.Employee, error)
 	FirstByPhoneOrEmail(account string) (employee *models.Employee, err error)
 	UpdateColumnByID(employeeID uint, updateColumn map[string]interface{}) error
 	UpdateColumn(employee *models.Employee, updateColumn map[string]interface{}) error
 	UpdateRecordByModel(employee *models.Employee, updateModel models.Employee) error
 	Find(per, page uint, filter map[string]interface{}, selectKeys []string, order []string, isCount bool) (employees []models.ResultEmployee,
 		total uint, err error)
+	Create(employee models.Employee) (models.Employee, error)
+	Delete(id uint) error
 }
 type EmployeeRepository struct {
 	BaseRepository
+}
+
+func (e *EmployeeRepository) Delete(id uint) error {
+	var readData models.Employee
+	return database.GetDBCon().Find(&readData).Delete(&readData).Error
+}
+
+func (e *EmployeeRepository) First(id uint) (*models.Employee, error) {
+	var data models.Employee
+	err := database.GetDBCon().First(&data, "id = ?", id).Error
+	return &data, err
+}
+
+func (e *EmployeeRepository) Create(employee models.Employee) (models.Employee, error) {
+	err := database.GetDBCon().Set("gorm:association_autocreate", false).Create(&employee).Error
+	if err != nil {
+		return models.Employee{}, err
+	}
+	return employee, err
 }
 
 func (e *EmployeeRepository) Find(per, page uint, filter map[string]interface{},

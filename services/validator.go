@@ -34,8 +34,8 @@ type FieldError struct {
 
 type IValidatorService interface {
 	//处理validator 信息
-	HandlerError(language string) ([]FieldError, error)
 	ResultError(language string) string
+	HandlerError(language string) ([]FieldError, error)
 }
 
 type ValidatorService struct {
@@ -58,8 +58,11 @@ func (v *ValidatorService) ResultError(language string) string {
 }
 
 func (v *ValidatorService) HandlerError(language string) (errorsArray []FieldError, err error) {
-	fmt.Println(v.model)
 	err = validator.New().Struct(v.model)
+	fmt.Printf("222222222")
+	if err != nil{
+		return errorsArray, err
+	}
 	if _err := v.registerLanguageService(language); _err != nil {
 		return errorsArray, _err
 	}

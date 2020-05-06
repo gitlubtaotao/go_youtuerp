@@ -83,6 +83,7 @@ func (r *Route) OaRegister() {
 		c.Get("/column", j.Serve, employee.GetColumn)
 		c.Post("/create", j.Serve, employee.Create)
 		c.Post("/data", j.Serve, employee.Get)
+		c.Get("/{id:uint}/edit", j.Serve, employee.Edit)
 		c.Patch("/{id:uint}/update", j.Serve, employee.Update)
 		c.Delete("/{id:uint}/delete", j.Serve, employee.Delete)
 	})

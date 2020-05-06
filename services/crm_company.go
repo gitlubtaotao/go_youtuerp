@@ -1,12 +1,9 @@
 package services
-
-import "youtuerp/repositories"
-
 type ICrmCompanyService interface {
 }
 
 type CrmCompanyService struct {
-	repo repositories.ICrmCompanyRepository
+	//repo repositories.ICrmCompanyRepository
 	BaseService
 }
 
