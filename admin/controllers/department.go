@@ -2,7 +2,6 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"youtuerp/conf"
@@ -29,7 +28,6 @@ func (d *DepartmentController) Get(ctx iris.Context) () {
 	}
 	dataArray := make([]map[string]interface{}, 0)
 	for _, v := range departments {
-		fmt.Printf("%v", v)
 		result, _ := d.StructToMap(v, ctx)
 		dataArray = append(dataArray, result)
 	}

@@ -21,9 +21,9 @@ func (s *SelectService) FindModel(model interface{}, scope map[string]interface{
 	}
 	columnService := NewColumnService(s.ctx.GetLocale())
 	for _, v := range result {
-		temp, _ := columnService.StructToMap(v)
-		temp = s.afterHandler(temp)
-		selectResult = append(selectResult, temp)
+		src, _ := columnService.StructToMap(v)
+		dst := s.afterHandler(src)
+		selectResult = append(selectResult, dst)
 	}
 	return selectResult, nil
 }

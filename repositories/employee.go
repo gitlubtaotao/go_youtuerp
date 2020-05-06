@@ -84,7 +84,7 @@ func (e *EmployeeRepository) FirstByPhoneOrEmail(account string) (employee *mode
 
 func (e *EmployeeRepository) defaultScoped(db *gorm.DB) *gorm.DB {
 	db = db.Joins("inner join user_companies on user_companies.id = users.user_company_id and user_companies.company_type = 4")
-	db = db.Joins("inner join departments on departments.id = users.department_id")
+	db = db.Joins("left join departments on departments.id = users.department_id")
 	return db
 }
 
