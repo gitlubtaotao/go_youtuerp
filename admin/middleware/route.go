@@ -37,6 +37,7 @@ func (r *Route) DefaultRegister() {
 	r.SessionRegister()
 	r.OaRegister()
 	r.selectRegister()
+	
 }
 
 func (r *Route) SessionRegister() {
@@ -61,12 +62,14 @@ func (r *Route) OaRegister() {
 	company := controllers.CompanyController{}
 	companyApi := r.app.Party("/companies")
 	{
+		companyApi.Use(company.Before)
 		companyApi.Post("/data", j.Serve, company.Get)
 		companyApi.Get("/column", j.Serve, company.GetColumn)
 		companyApi.Post("/create", j.Serve, company.Create)
 		companyApi.Get("/{id:uint}/edit", j.Serve, company.Edit)
 		companyApi.Patch("/{id:uint}/update", j.Serve, company.Update)
 		companyApi.Delete("/{id:uint}/delete", j.Serve, company.Delete)
+		companyApi.Get("/{id:uint}/show",j.Serve,company.Show)
 	}
 	department := controllers.DepartmentController{}
 	r.app.PartyFunc("/departments", func(c iris.Party) {
@@ -86,6 +89,16 @@ func (r *Route) OaRegister() {
 		c.Get("/{id:uint}/edit", j.Serve, employee.Edit)
 		c.Patch("/{id:uint}/update", j.Serve, employee.Update)
 		c.Delete("/{id:uint}/delete", j.Serve, employee.Delete)
+	})
+	account := controllers.AccountController{}
+	r.app.PartyFunc("/accounts", func(c iris.Party) {
+		c.Use(account.Before)
+		c.Get("/column", j.Serve, account.GetColumn)
+		c.Post("/create", j.Serve, account.Create)
+		c.Post("/data", j.Serve, account.Get)
+		c.Get("/{id:uint}/edit", j.Serve, account.Edit)
+		c.Patch("/{id:uint}/update", j.Serve, account.Update)
+		c.Delete("/{id:uint}/delete", j.Serve, account.Delete)
 	})
 	
 }

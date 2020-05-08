@@ -18,8 +18,6 @@ type login struct {
 	Password string `json:"password"`
 }
 
-
-
 type SessionController struct {
 	BaseController
 	SService services.ISessionService

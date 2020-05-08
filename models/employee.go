@@ -65,3 +65,4 @@ func (e *Employee) BeforeCreate(scope *gorm.Scope) (err error) {
 	e.LastSignInAt = time.Now()
 	return
 }
+

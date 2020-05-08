@@ -56,10 +56,14 @@ func (d *DataBase) InitDataBase() error {
  * 注册迁移文件
  */
 func (d *DataBase) Migration() error {
-	if GetDBCon().HasTable("companies") {
-		GetDBCon().AutoMigrate(&models.CompanyInfo{})
+	db := GetDBCon()
+	if !db.HasTable("companies") {
+		db.AutoMigrate(&models.CompanyInfo{})
 	}
-	GetDBCon().AutoMigrate(&models.Employee{}, &models.UserCompany{},
-		&models.Department{}, &models.CrmCompany{},&models.Contact{},&models.Department{})
+	db.AutoMigrate(&models.Employee{}, &models.UserCompany{},
+		&models.Department{}, &models.CrmCompany{}, &models.Contact{}, &models.Department{})
+	if !db.HasTable("accounts") {
+		db.AutoMigrate(&models.Account{})
+	}
 	return nil
 }

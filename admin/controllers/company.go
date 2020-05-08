@@ -16,7 +16,6 @@ type CompanyController struct {
 
 //
 func (c *CompanyController) Get(ctx iris.Context) {
-	c.initService(ctx)
 	currentUser, _ := c.CurrentUser(ctx)
 	selectColumn := c.GetCustomerColumn(currentUser, models.UserCompany{})
 	limit := ctx.URLParamIntDefault("limit", 20)
@@ -27,6 +26,7 @@ func (c *CompanyController) Get(ctx iris.Context) {
 		c.RenderErrorJson(c.Ctx, http.StatusInternalServerError, err.Error())
 		return
 	}
+	
 	dataArray := make([]map[string]interface{}, 0)
 	transportArray := c.Service.TransportTypeArrays(ctx.GetLocale())
 	for _, v := range companies {
@@ -37,7 +37,6 @@ func (c *CompanyController) Get(ctx iris.Context) {
 
 //
 func (c *CompanyController) Create(ctx iris.Context) {
-	c.initService(ctx)
 	var company models.UserCompany
 	err := ctx.ReadJSON(&company)
 	if err != nil {
@@ -66,7 +65,6 @@ func (c *CompanyController) Create(ctx iris.Context) {
 }
 
 func (c *CompanyController) Edit(ctx iris.Context) {
-	c.initService(ctx)
 	id, err := ctx.Params().GetUint("id")
 	if err != nil {
 		conf.IrisApp.Logger().Error(err)
@@ -84,7 +82,6 @@ func (c *CompanyController) Edit(ctx iris.Context) {
 
 //更新公司信息
 func (c *CompanyController) Update(ctx iris.Context) {
-	c.initService(ctx)
 	var readData models.UserCompany
 	err := ctx.ReadJSON(&readData)
 	if err != nil {
@@ -113,25 +110,28 @@ func (c *CompanyController) GetColumn(ctx iris.Context) {
 }
 
 func (c *CompanyController) Delete(ctx iris.Context) {
-	c.initService(ctx)
 	id, err := ctx.Params().GetUint("id")
 	if err != nil {
 		c.RenderErrorJson(ctx, http.StatusBadRequest, ctx.GetLocale().GetMessage("error.error"))
 		return
 	}
-	err = c.Service.Delete(id)
-	if err != nil{
+	if err = c.Service.Delete(id); err != nil {
 		conf.IrisApp.Logger().Error(err)
 		c.RenderErrorJson(ctx, http.StatusBadRequest, ctx.GetLocale().GetMessage("error.error"))
-	}else{
-		c.RenderSuccessJson(ctx,iris.Map{})
+	} else {
+		c.RenderSuccessJson(ctx, iris.Map{})
 	}
 }
 
 
-func (c *CompanyController) initService(ctx iris.Context) {
+func (c *CompanyController) Show(ctx iris.Context) {
+
+}
+
+func (c *CompanyController) Before(ctx iris.Context) {
 	c.Service = services.NewCompanyService()
 	c.Ctx = ctx
+	ctx.Next()
 }
 
 func (c *CompanyController) handlerGetParams() map[string]interface{} {

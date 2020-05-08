@@ -24,18 +24,18 @@ type EmployeeRepository struct {
 	BaseRepository
 }
 
-func (e *EmployeeRepository) Delete(id uint) error {
+func (e EmployeeRepository) Delete(id uint) error {
 	var readData models.Employee
 	return database.GetDBCon().Find(&readData).Delete(&readData).Error
 }
 
-func (e *EmployeeRepository) First(id uint) (*models.Employee, error) {
+func (e EmployeeRepository) First(id uint) (*models.Employee, error) {
 	var data models.Employee
 	err := database.GetDBCon().First(&data, "id = ?", id).Error
 	return &data, err
 }
 
-func (e *EmployeeRepository) Create(employee models.Employee) (models.Employee, error) {
+func (e EmployeeRepository) Create(employee models.Employee) (models.Employee, error) {
 	err := database.GetDBCon().Set("gorm:association_autocreate", false).Create(&employee).Error
 	if err != nil {
 		return models.Employee{}, err
@@ -43,7 +43,7 @@ func (e *EmployeeRepository) Create(employee models.Employee) (models.Employee, 
 	return employee, err
 }
 
-func (e *EmployeeRepository) Find(per, page uint, filter map[string]interface{},
+func (e EmployeeRepository) Find(per, page uint, filter map[string]interface{},
 	selectKeys []string, order []string, isCount bool) (
 	employees []models.ResultEmployee, total uint, err error) {
 	sqlCon := database.GetDBCon().Model(&models.Employee{})
@@ -76,35 +76,35 @@ func (e *EmployeeRepository) Find(per, page uint, filter map[string]interface{},
 	return
 }
 
-func (e *EmployeeRepository) UpdateRecordByModel(employee *models.Employee, updateModel models.Employee) error {
+func (e EmployeeRepository) UpdateRecordByModel(employee *models.Employee, updateModel models.Employee) error {
 	return database.GetDBCon().Model(&employee).Update(updateModel).Error
 }
 
 //通过手机号码和邮箱查询当前用户
-func (e *EmployeeRepository) FirstByPhoneAndEmail(phone string, email string) (employee *models.Employee, err error) {
+func (e EmployeeRepository) FirstByPhoneAndEmail(phone string, email string) (employee *models.Employee, err error) {
 	var user models.Employee
 	err = database.GetDBCon().Where(&models.Employee{Phone: phone, Email: email}).First(&user).Error
 	employee = &user
 	return
 }
 
-func (e *EmployeeRepository) UpdateColumnByID(employeeID uint, updateColumn map[string]interface{}) error {
+func (e EmployeeRepository) UpdateColumnByID(employeeID uint, updateColumn map[string]interface{}) error {
 	user := models.Employee{ID: employeeID}
 	return database.GetDBCon().Model(&user).Updates(updateColumn).Error
 }
 
-func (e *EmployeeRepository) UpdateColumn(employee *models.Employee, updateColumn map[string]interface{}) error {
+func (e EmployeeRepository) UpdateColumn(employee *models.Employee, updateColumn map[string]interface{}) error {
 	return database.GetDBCon().Model(&employee).Updates(updateColumn).Error
 }
 
-func (e *EmployeeRepository) FirstByPhoneOrEmail(account string) (employee *models.Employee, err error) {
+func (e EmployeeRepository) FirstByPhoneOrEmail(account string) (employee *models.Employee, err error) {
 	var user models.Employee
 	err = database.GetDBCon().Scopes(e.defaultScoped).Where("users.phone = ?", account).Or("users.email = ?", account).First(&user).Error
 	employee = &user
 	return
 }
 
-func (e *EmployeeRepository) defaultScoped(db *gorm.DB) *gorm.DB {
+func (e EmployeeRepository) defaultScoped(db *gorm.DB) *gorm.DB {
 	db = db.Joins("inner join user_companies on user_companies.id = users.user_company_id and user_companies.company_type = 4")
 	db = db.Joins("left join departments on departments.id = users.department_id")
 	return db

@@ -52,9 +52,13 @@ func (c *ColumnService) StructColumn(model interface{}, args ...interface{}) (da
 			continue
 		}
 		if c.isHiddenColumn(hiddenColumn, data) {
+			title := c.loader.GetMessage(tableName + "." + data)
+			if title == "" {
+				continue
+			}
 			attr := map[string]interface{}{
 				"data":  data,
-				"title": c.loader.GetMessage(tableName + "." + data),
+				"title": title,
 			}
 			dataArray = append(dataArray, attr)
 		}
@@ -91,9 +95,13 @@ func (c *ColumnService) structAddColumn(v reflect.Value, tableName string) []int
 	stringColumn := dataColumn.([]string)
 	dataArray := make([]interface{}, 0, len(stringColumn))
 	for _, col := range stringColumn {
+		title := c.loader.GetMessage(tableName + "." + col)
+		if title == "" {
+			continue
+		}
 		attr := map[string]interface{}{
 			"data":  col,
-			"title": c.loader.GetMessage(tableName + "." + col),
+			"title": title,
 		}
 		dataArray = append(dataArray, attr)
 	}
@@ -148,7 +156,7 @@ func (c *ColumnService) structToMap(currentObject interface{}) map[string]interf
 		temp := v.Field(i).Type
 		kind := temp.Kind()
 		tag := v.Field(i).Tag.Get("json")
-		if tag == ""{
+		if tag == "" {
 			tag = c.toSnakeCase(v.Field(i).Name)
 		}
 		field := reflectValue.Field(i).Interface()

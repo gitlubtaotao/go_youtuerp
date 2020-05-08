@@ -107,7 +107,6 @@ func (e *EmployeeController) Update(ctx iris.Context) {
 		e.RenderErrorJson(ctx, 0, "")
 		return
 	}
-	fmt.Printf("id is %v", id)
 	if err = ctx.ReadJSON(&readData); err != nil {
 		conf.IrisApp.Logger().Error(err)
 		e.RenderErrorJson(ctx, 0, "")
