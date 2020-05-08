@@ -123,9 +123,26 @@ func (c *CompanyController) Delete(ctx iris.Context) {
 	}
 }
 
-
 func (c *CompanyController) Show(ctx iris.Context) {
-
+	var (
+		id      int
+		err     error
+		company models.UserCompany
+	)
+	id, err = ctx.Params().GetInt("id")
+	if err != nil {
+		c.RenderErrorJson(ctx, 0, "")
+		return
+	}
+	company, err = c.Service.FirstCompanyByRelated(uint(id), "Employees", "Accounts", "Departments")
+	if err != nil {
+		conf.IrisApp.Logger().Error(err)
+		c.RenderErrorJson(ctx, 0, "")
+		return
+	}
+	data, _ := c.StructToMap(company, ctx)
+	c.RenderSuccessJson(ctx, data)
+	
 }
 
 func (c *CompanyController) Before(ctx iris.Context) {

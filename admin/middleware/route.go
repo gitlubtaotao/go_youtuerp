@@ -69,7 +69,7 @@ func (r *Route) OaRegister() {
 		companyApi.Get("/{id:uint}/edit", j.Serve, company.Edit)
 		companyApi.Patch("/{id:uint}/update", j.Serve, company.Update)
 		companyApi.Delete("/{id:uint}/delete", j.Serve, company.Delete)
-		companyApi.Get("/{id:uint}/show",j.Serve,company.Show)
+		companyApi.Get("/{id:uint}/show", j.Serve, company.Show)
 	}
 	department := controllers.DepartmentController{}
 	r.app.PartyFunc("/departments", func(c iris.Party) {

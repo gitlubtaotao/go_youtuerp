@@ -10,6 +10,7 @@ import (
 type ICompanyService interface {
 	FindCompany(per, page uint, filters map[string]interface{}, selectKeys []string, orders []string, isCount bool) ([]*models.UserCompany, uint, error)
 	FirstCompany(id uint) (*models.UserCompany, error)
+	FirstCompanyByRelated(id uint, related ...string) (models.UserCompany, error)
 	AllCompany(filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, uint, error)
 	LimitCompany(limit uint, filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, uint, error)
 	Create(company models.UserCompany) (models.UserCompany, error)
@@ -23,6 +24,11 @@ type CompanyService struct {
 	repo repositories.ICompanyRepository
 	BaseService
 }
+
+func (c *CompanyService) FirstCompanyByRelated(id uint, related ...string) (models.UserCompany, error) {
+	return  c.repo.FirstCompanyByRelated(id,related...)
+}
+
 
 func (c *CompanyService) Delete(id uint) error {
 	return c.repo.DeleteCompany(id)

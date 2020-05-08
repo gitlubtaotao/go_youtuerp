@@ -16,6 +16,7 @@ type ICompanyRepository interface {
 	FindCompany(per, page uint, attr map[string]interface{}, selectKeys []string, order []string, isCount bool) (companies []*models.UserCompany,
 		total uint, err error)
 	FirstCompany(id uint) (*models.UserCompany, error)
+	FirstCompanyByRelated(id uint, related ...string)(models.UserCompany,error)
 	CreateCompany(company models.UserCompany) (models.UserCompany, error)
 	UpdateCompany(company *models.UserCompany, readData models.UserCompany) error
 	DeleteCompany(id uint) error
@@ -24,6 +25,17 @@ type ICompanyRepository interface {
 type CompanyRepository struct {
 	BaseRepository
 }
+
+func (c CompanyRepository) FirstCompanyByRelated(id uint, related ...string) (models.UserCompany, error) {
+	sqlCon := database.GetDBCon()
+	var company models.UserCompany
+	for _, re := range related {
+		sqlCon = sqlCon.Preload(re)
+	}
+	err := sqlCon.Find(&company, "id = ?", id).Error
+	return company, err
+}
+
 
 func (c CompanyRepository) DeleteCompany(id uint) error {
 	var readData models.UserCompany
