@@ -54,3 +54,5 @@ func NewSysConfig(env string) (err error) {
 	err = json.Unmarshal(bytes, &Configuration)
 	return err
 }
+
+
