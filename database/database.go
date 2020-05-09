@@ -65,5 +65,6 @@ func (d *DataBase) Migration() error {
 	if !db.HasTable("accounts") {
 		db.AutoMigrate(&models.Account{})
 	}
+	db.AutoMigrate(&models.Setting{})
 	return nil
 }

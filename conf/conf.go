@@ -2,6 +2,7 @@ package conf
 
 import (
 	"encoding/json"
+	"github.com/go-redis/redis/v7"
 	"github.com/kataras/iris/v12"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
@@ -15,6 +16,7 @@ import (
 var (
 	Configuration *EnvironmentConfig
 	IrisApp       *iris.Application
+	ReisCon       *redis.Client
 )
 
 type EnvironmentConfig struct {

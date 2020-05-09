@@ -5,7 +5,7 @@ default: &defaults
   expire_time: 1000
   qiniu_access_key: eod8fVA_L4wDR7yOwzdYfOblLp4pCvflQF5BS8JC
   qiniu_secret_key: wsFuW0M4obMFvO9K6GVVTlDWjzVi3doJPrDj5eZh
-  qiniu_file_server: http://q7xvlw9i4.bkt.clouddn.com/
+  qiniu_file_server: http://taotao.bb-link.top/
 
 development:
   <<: *defaults

@@ -37,6 +37,7 @@ func (r *Route) DefaultRegister() {
 	r.SessionRegister()
 	r.OaRegister()
 	r.selectRegister()
+	r.otherRegister()
 	
 }
 
@@ -110,6 +111,16 @@ func (r *Route) selectRegister() {
 	{
 		selectApi.Post("/companies", j.Serve, selectData.GetCompany)
 	}
+}
+
+func (r *Route) otherRegister() {
+	j := r.jwtAccess()
+	uploader := controllers.UploadController{}
+	setting := controllers.SettingController{}
+	r.app.Post("/upload", j.Serve, uploader.Upload)
+	r.app.Post("/setting/update_system", j.Serve, setting.UpdateSystem)
+	r.app.Post("/setting/update_user", j.Serve, setting.UpdateUser)
+	
 }
 
 //验证jwt token

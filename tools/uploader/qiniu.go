@@ -79,6 +79,7 @@ func (d *QiNiuUploader) FilerUpload(file multipart.File, fileHeader *multipart.F
 	uploader := storage.NewFormUploader(&cfg)
 	putExtra := storage.PutExtra{}
 	err = uploader.PutWithoutKey(context.Background(), &ret, token, file, size, &putExtra)
+	
 	if err != nil {
 		return
 	}

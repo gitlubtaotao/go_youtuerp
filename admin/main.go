@@ -7,8 +7,10 @@ import (
 	"io"
 	"os"
 	"runtime/trace"
+	"youtuerp/conf"
 	"youtuerp/database"
 	"youtuerp/initialize"
+	"youtuerp/redis"
 )
 
 func main() {
@@ -40,8 +42,10 @@ func NewAppInfo() *iris.Application {
 		app.Logger().Error(err)
 		panic(err)
 	}
+	conf.ReisCon = redis.Connect()
 	iris.RegisterOnInterrupt(func() {
 		database.GetDBCon().Close()
+		conf.ReisCon.Close()
 	})
 	//国际化翻译
 	err = initialize.I18nInit(app)
