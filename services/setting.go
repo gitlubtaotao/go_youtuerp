@@ -9,12 +9,17 @@ import (
 
 type ISettingService interface {
 	UpdateSystem(key string, setting []models.ResultSetting) error
+	Find(key string) ([]models.Setting, error)
 }
 
 type SettingService struct {
 	BaseService
 	repo repositories.ISettingRepository
 	sy   sync.Mutex
+}
+
+func (s SettingService) Find(key string) ([]models.Setting, error) {
+	return s.repo.Find(key)
 }
 
 func (s SettingService) UpdateSystem(key string, setting []models.ResultSetting) error {

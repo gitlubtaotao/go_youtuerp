@@ -7,11 +7,23 @@ import (
 )
 
 type ISettingRepository interface {
+	Find(key string) ([]models.Setting, error)
 	UpdateSystemSetting(key string, setting []models.ResultSetting) error
 }
 
 type SettingRepository struct {
 }
+
+func (s SettingRepository) Find(key string) ([]models.Setting, error) {
+	var result []models.Setting
+	if key == "system" {
+		err := database.GetDBCon().Where("user_id = 0").Find(&result).Error
+		return result, err
+	} else {
+		return result, nil
+	}
+}
+
 type Value []interface{}
 
 func (s SettingRepository) UpdateSystemSetting(key string, setting []models.ResultSetting) error {

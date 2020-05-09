@@ -120,7 +120,7 @@ func (r *Route) otherRegister() {
 	r.app.Post("/upload", j.Serve, uploader.Upload)
 	r.app.Post("/setting/update_system", j.Serve, setting.UpdateSystem)
 	r.app.Post("/setting/update_user", j.Serve, setting.UpdateUser)
-	
+	r.app.Post("/setting/data",j.Serve,setting.Get)
 }
 
 //验证jwt token
