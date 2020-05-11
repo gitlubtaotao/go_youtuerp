@@ -59,10 +59,6 @@ func (v *ValidatorService) ResultError(language string) string {
 
 func (v *ValidatorService) HandlerError(language string) (errorsArray []FieldError, err error) {
 	err = validator.New().Struct(v.model)
-	fmt.Printf("222222222")
-	if err != nil{
-		return errorsArray, err
-	}
 	if _err := v.registerLanguageService(language); _err != nil {
 		return errorsArray, _err
 	}

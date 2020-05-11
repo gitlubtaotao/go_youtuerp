@@ -101,6 +101,14 @@ func (r *Route) OaRegister() {
 		c.Patch("/{id:uint}/update", j.Serve, account.Update)
 		c.Delete("/{id:uint}/delete", j.Serve, account.Delete)
 	})
+	numberSetting := controllers.NumberSettingController{}
+	r.app.PartyFunc("/number_settings", func(c iris.Party) {
+		c.Use(numberSetting.Before)
+		c.Get("/column", j.Serve, numberSetting.GetColumn)
+		c.Post("/create", j.Serve, numberSetting.Create)
+		c.Post("/data", j.Serve, numberSetting.Get)
+		c.Delete("/{id:uint}/delete", j.Serve, numberSetting.Delete)
+	})
 	
 }
 
