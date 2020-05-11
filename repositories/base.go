@@ -5,6 +5,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"reflect"
 	"strings"
+	"youtuerp/database"
 )
 
 var RexGrep = [...]string{"gt", "gtEq", "lt", "ltEq", "in",
@@ -20,52 +21,12 @@ type IBaseRepository interface {
 }
 
 type BaseRepository struct {
+	crud
 }
 
 //抽象查询方法
 func (b BaseRepository) Ransack(selectColumn map[string]interface{}) func(db *gorm.DB) *gorm.DB {
-	return func(db *gorm.DB) *gorm.DB {
-		for k, v := range selectColumn {
-			if b.notSearchValue(v) {
-				continue
-			}
-			splitArray := strings.Split(k, "-")
-			if len(splitArray) > 3 {
-				continue
-			}
-			n := len(splitArray) - 1
-			item := splitArray[n]
-			splitArray = splitArray[:n]
-			if !b.isExist(item) {
-				continue
-			}
-			key := b.keyString(splitArray)
-			switch item {
-			case "gt":
-				db = db.Where(key+" > ? ", v)
-			case "gtEq":
-				db = db.Where(key+" >= ? ", v)
-			case "lt":
-				db = db.Where(key+" < ? ", v)
-			case "ltEq":
-				db = db.Where(key+" <= ?", v)
-			case "in":
-				db = db.Where(key+" IN (?)", v)
-			case "eq":
-				db = db.Where(key+" = ? ", v)
-			case "notEq":
-				db = db.Where(key+" <> ? ", v)
-			case "cont":
-				db = db.Where(key+" LIKE ? ", "%"+v.(string)+"%")
-			case "lCount":
-				db = db.Where(key+" LIKE ? ", "%"+v.(string))
-			case "rCount":
-				fmt.Println("33333")
-				db = db.Where(key+" LIKE ? ", v.(string)+"%")
-			}
-		}
-		return db
-	}
+	return b.crud.ransack(selectColumn)
 }
 
 //分页方法
@@ -97,8 +58,86 @@ func (b BaseRepository) OrderBy(orders []string) func(db *gorm.DB) *gorm.DB {
 	}
 }
 
+type crud struct {
+}
+
+func (c crud) Delete(value interface{}, id uint) error {
+	return database.GetDBCon().Delete(value, "id = ?", id).Error
+}
+
+func (c crud) First(value interface{}, id uint) error {
+	return database.GetDBCon().First(value, "id = ?", id).Error
+}
+
+func (c crud) Create(value interface{}) error {
+	return database.GetDBCon().Create(value).Error
+}
+
+func (c crud) Where(sqlCon *gorm.DB, filter map[string]interface{}, selectKeys []string, funcs ...func(*gorm.DB) *gorm.DB) *gorm.DB {
+	if len(filter) > 0 {
+		sqlCon = sqlCon.Scopes(c.ransack(filter))
+	}
+	sqlCon = sqlCon.Scopes(funcs...)
+	sqlCon = sqlCon.Select(selectKeys)
+	return sqlCon
+}
+
+func (c crud) Count(sqlCon *gorm.DB, filter map[string]interface{}, funcs ...func(*gorm.DB) *gorm.DB) (count uint, err error) {
+	if len(filter) > 0 {
+		sqlCon = sqlCon.Scopes(c.ransack(filter))
+	}
+	sqlCon = sqlCon.Scopes(funcs...)
+	err = sqlCon.Count(&count).Error
+	return
+}
+
+func (c crud) ransack(selectColumn map[string]interface{}) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		for k, v := range selectColumn {
+			if c.notSearchValue(v) {
+				continue
+			}
+			splitArray := strings.Split(k, "-")
+			if len(splitArray) > 3 {
+				continue
+			}
+			n := len(splitArray) - 1
+			item := splitArray[n]
+			splitArray = splitArray[:n]
+			if !c.isExist(item) {
+				continue
+			}
+			key := c.keyString(splitArray)
+			switch item {
+			case "gt":
+				db = db.Where(key+" > ? ", v)
+			case "gtEq":
+				db = db.Where(key+" >= ? ", v)
+			case "lt":
+				db = db.Where(key+" < ? ", v)
+			case "ltEq":
+				db = db.Where(key+" <= ?", v)
+			case "in":
+				db = db.Where(key+" IN (?)", v)
+			case "eq":
+				db = db.Where(key+" = ? ", v)
+			case "notEq":
+				db = db.Where(key+" <> ? ", v)
+			case "cont":
+				db = db.Where(key+" LIKE ? ", "%"+v.(string)+"%")
+			case "lCount":
+				db = db.Where(key+" LIKE ? ", "%"+v.(string))
+			case "rCount":
+				fmt.Println("33333")
+				db = db.Where(key+" LIKE ? ", v.(string)+"%")
+			}
+		}
+		return db
+	}
+}
+
 //元素匹配
-func (b BaseRepository) isExist(dst string) bool {
+func (c crud) isExist(dst string) bool {
 	for _, item := range RexGrep {
 		if item == dst {
 			return true
@@ -108,7 +147,7 @@ func (b BaseRepository) isExist(dst string) bool {
 }
 
 //返回sql 对应的column
-func (b BaseRepository) keyString(splitArray []string) string {
+func (c crud) keyString(splitArray []string) string {
 	if len(splitArray) == 1 {
 		return splitArray[0]
 	} else {
@@ -117,7 +156,7 @@ func (b BaseRepository) keyString(splitArray []string) string {
 }
 
 //空值不进行查询处理
-func (b BaseRepository) notSearchValue(value interface{}) bool {
+func (c crud) notSearchValue(value interface{}) bool {
 	v := reflect.ValueOf(value)
 	kind := v.Kind()
 	if kind == reflect.Array || kind == reflect.Struct || kind == reflect.Slice {
