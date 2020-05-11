@@ -2,8 +2,6 @@ package controllers
 
 import (
 	"github.com/kataras/iris/v12"
-	"net/http"
-	"youtuerp/conf"
 	"youtuerp/models"
 	"youtuerp/services"
 )
@@ -30,8 +28,7 @@ func (a *AccountController) Get(ctx iris.Context) {
 	} else {
 	}
 	if err != nil {
-		conf.IrisApp.Logger().Errorf("account is err (%v)", err)
-		a.RenderErrorJson(ctx, http.StatusInternalServerError, ctx.GetLocale().GetMessage("error.inter_error"))
+		a.Render500(ctx,err,"")
 		return
 	}
 	dataArray := make([]map[string]interface{}, 0)
@@ -51,14 +48,12 @@ func (a *AccountController) Create(ctx iris.Context) {
 		err     error
 	)
 	if err = ctx.ReadJSON(&account); err != nil {
-		conf.IrisApp.Logger().Error(err)
-		a.RenderErrorJson(ctx, 0, "")
+		a.Render400(ctx,err,err.Error())
 		return
 	}
 	account, err = a.service.Create(account, ctx.GetLocale().Language())
 	if err != nil {
-		conf.IrisApp.Logger().Error(err)
-		a.RenderErrorJson(ctx, http.StatusInternalServerError, ctx.GetLocale().GetMessage("error.inter_error"))
+		a.Render500(ctx,err, ctx.GetLocale().GetMessage("error.inter_error"))
 		return
 	}
 	data, _ := a.StructToMap(account, ctx)
@@ -73,18 +68,15 @@ func (a *AccountController) Update(ctx iris.Context) {
 		id            int
 	)
 	if id, err = ctx.Params().GetInt("id"); err != nil {
-		a.RenderErrorJson(ctx, 0, "")
+		a.Render400(ctx,err,err.Error())
 		return
 	}
 	if err = ctx.ReadJSON(&updateContent); err != nil {
-		conf.IrisApp.Logger().Error(err)
-		a.RenderErrorJson(ctx, 0, "")
+		a.Render400(ctx,err,err.Error())
 		return
 	}
 	if account, err = a.service.UpdateById(uint(id), updateContent, ctx.GetLocale().Language()); err != nil {
-		conf.IrisApp.Logger().Error(err)
-		a.RenderErrorJson(ctx, http.StatusInternalServerError, ctx.GetLocale().GetMessage("error.inter_error"))
-		return
+		a.Render500(ctx,err,"")
 	}
 	returnData, _ := a.StructToMap(account, ctx)
 	a.RenderSuccessJson(ctx, returnData)
@@ -96,13 +88,11 @@ func (a *AccountController) Edit(ctx iris.Context) {
 func (a *AccountController) Delete(ctx iris.Context) {
 	id, err := ctx.Params().GetInt("id")
 	if err != nil {
-		conf.IrisApp.Logger().Warn("account is delete id err %v", err)
-		a.RenderErrorJson(ctx, 0, "")
+		a.Render400(ctx,err,err.Error())
 		return
 	}
 	if err = a.service.Delete(uint(id)); err != nil {
-		conf.IrisApp.Logger().Warn("account is delete id err %v", err)
-		a.RenderErrorJson(ctx, 0, "")
+		a.Render500(ctx,err,"")
 	} else {
 		a.RenderSuccessJson(ctx, iris.Map{})
 	}

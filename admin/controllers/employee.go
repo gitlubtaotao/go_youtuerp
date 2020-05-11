@@ -3,10 +3,7 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/kataras/iris/v12"
-	"net/http"
-	"youtuerp/conf"
 	"youtuerp/models"
 	"youtuerp/services"
 )
@@ -24,8 +21,7 @@ func (e *EmployeeController) GetColumn(ctx iris.Context) {
 func (e *EmployeeController) Get(ctx iris.Context) {
 	employees, total, err := e.service.Find(e.GetPer(ctx), e.GetPage(ctx), e.handlerGetParams(), []string{}, []string{}, true)
 	if err != nil {
-		conf.IrisApp.Logger().Errorf("employee is err (%v)", err)
-		e.RenderErrorJson(ctx, http.StatusInternalServerError, ctx.GetLocale().GetMessage("error.inter_error"))
+		e.Render500(ctx, err, ctx.GetLocale().GetMessage("error.inter_error"))
 		return
 	}
 	dataArray := make([]map[string]interface{}, 0)
@@ -49,12 +45,12 @@ func (e *EmployeeController) Create(ctx iris.Context) {
 		err          error
 	)
 	if err = ctx.ReadJSON(&employee); err != nil {
-		e.RenderErrorJson(ctx, 0, "")
+		e.Render500(ctx, err, "")
 		return
 	}
 	valid := services.NewValidatorService(employee)
 	if message := valid.ResultError(ctx.GetLocale().Language()); message != "" {
-		e.RenderErrorJson(ctx, 0, message)
+		e.Render400(ctx, nil, message)
 		return
 	}
 	_ = ctx.ReadJSON(&readPassword)
@@ -63,15 +59,14 @@ func (e *EmployeeController) Create(ctx iris.Context) {
 		readPassword.Password = "qweqwe123"
 	} else {
 		if readPassword.Password != readPassword.ConfirmPassword {
-			e.RenderErrorJson(ctx, http.StatusBadRequest, ctx.GetLocale().GetMessage("error.password_error"))
+			e.Render400(ctx, nil, ctx.GetLocale().GetMessage("error.password_error"))
 			return
 		}
 	}
 	employee.EncryptedPassword, _ = e.generatePassword(readPassword.Password)
 	employee, err = e.service.Create(employee)
 	if err != nil {
-		conf.IrisApp.Logger().Error(err)
-		e.RenderErrorJson(ctx, http.StatusInternalServerError, ctx.GetLocale().GetMessage("error.inter_error"))
+		e.Render500(ctx, err, ctx.GetLocale().GetMessage("error.inter_error"))
 		return
 	}
 	data, _ := e.StructToMap(employee, ctx)
@@ -85,11 +80,11 @@ func (e *EmployeeController) Edit(ctx iris.Context) {
 		err      error
 	)
 	if id, err = ctx.Params().GetInt("id"); err != nil {
-		e.RenderErrorJson(ctx, 0, "")
+		e.Render400(ctx, err, "")
 		return
 	}
 	if employee, err = e.service.First(uint(id)); err != nil {
-		e.RenderErrorJson(ctx, 0, "")
+		e.Render400(ctx, err, "")
 		return
 	}
 	e.RenderSuccessJson(ctx, employee)
@@ -104,38 +99,34 @@ func (e *EmployeeController) Update(ctx iris.Context) {
 		employee     *models.Employee
 	)
 	if id, err = ctx.Params().GetInt("id"); err != nil {
-		e.RenderErrorJson(ctx, 0, "")
+		e.Render400(ctx, err, err.Error())
 		return
 	}
 	if err = ctx.ReadJSON(&readData); err != nil {
-		conf.IrisApp.Logger().Error(err)
-		e.RenderErrorJson(ctx, 0, "")
+		e.Render400(ctx, err, err.Error())
 		return
 	}
-	fmt.Printf("employee is %v", readData)
 	valid := services.NewValidatorService(readData)
 	errString := valid.ResultError(ctx.GetLocale().Language())
 	if errString != "" {
-		conf.IrisApp.Logger().Error(errString)
-		e.RenderErrorJson(ctx, http.StatusBadRequest, errString)
+		e.Render400(ctx, nil, errString)
 		return
 	}
 	_ = ctx.ReadJSON(&readPassword)
 	//设置初始密码
 	if readPassword.Password != "" {
 		if readPassword.Password != readPassword.ConfirmPassword {
-			e.RenderErrorJson(ctx, http.StatusBadRequest, ctx.GetLocale().GetMessage("error.password_error"))
+			e.Render400(ctx, nil, ctx.GetLocale().GetMessage("error.password_error"))
 			return
 		}
 		readData.EncryptedPassword, _ = e.generatePassword(readPassword.Password)
 	}
 	if employee, err = e.service.First(uint(id)); err != nil {
-		e.RenderErrorJson(ctx, 0, "")
+		e.Render400(ctx, err, "")
 		return
 	}
 	if err = e.service.UpdateRecord(employee, readData); err != nil {
-		conf.IrisApp.Logger().Error(err)
-		e.RenderErrorJson(ctx, http.StatusInternalServerError, ctx.GetLocale().GetMessage("error.inter_error"))
+		e.Render500(ctx, err, "")
 		return
 	}
 	returnData, _ := e.StructToMap(employee, ctx)
@@ -149,12 +140,11 @@ func (e *EmployeeController) Delete(ctx iris.Context) {
 		err error
 	)
 	if id, err = ctx.Params().GetInt("id"); err != nil {
-		e.RenderErrorJson(ctx, 0, "")
+		e.Render400(ctx, err, err.Error())
 		return
 	}
 	if err = e.service.Delete(uint(id)); err != nil {
-		conf.IrisApp.Logger().Error(err)
-		e.RenderErrorJson(ctx, http.StatusInternalServerError, ctx.GetLocale().GetMessage("error.inter_error"))
+		e.Render500(ctx, err,"")
 		return
 	}
 	e.RenderSuccessJson(ctx, iris.Map{})

@@ -3,7 +3,6 @@ package controllers
 import (
 	"errors"
 	"github.com/kataras/iris/v12"
-	"net/http"
 	"sync"
 	"time"
 	"youtuerp/conf"
@@ -29,30 +28,28 @@ func (s *SessionController) Login(ctx iris.Context) {
 	s.initSession()
 	err := ctx.ReadJSON(&loginInfo)
 	if err != nil {
-		s.RenderErrorJson(ctx, http.StatusBadRequest, err.Error())
+		s.Render400(ctx, err, err.Error())
 		return
 	}
 	if err = s.validateLogin(ctx, loginInfo); err != nil {
-		s.RenderErrorJson(ctx, http.StatusBadRequest, err.Error())
+		s.Render400(ctx, err, err.Error())
 		return
 	}
 	//查询用户是否存在
 	user, err := s.EService.FirstByPhoneOrEmail(loginInfo.UserName)
 	if err != nil {
-		conf.IrisApp.Logger().Error(err)
-		s.RenderErrorJson(ctx, http.StatusBadRequest, ctx.GetLocale().GetMessage("devise.invalid"))
+		s.Render400(ctx, err, ctx.GetLocale().GetMessage("devise.invalid"))
 		return
 	}
 	//对比password 是否正确
 	if ok := s.SService.ValidatePassword(loginInfo.Password, user.EncryptedPassword); ok != nil {
-		s.RenderErrorJson(ctx, http.StatusBadRequest,
+		s.Render400(ctx, nil,
 			ctx.GetLocale().GetMessage("devise.invalid"))
 		return
 	}
 	
 	if err = s.updateLoginInfo(ctx, user); err != nil {
-		conf.IrisApp.Logger().Error(err)
-		s.RenderErrorJson(ctx, http.StatusBadRequest,
+		s.Render400(ctx, err,
 			ctx.GetLocale().GetMessage("devise.invalid"))
 		return
 	}
@@ -61,7 +58,7 @@ func (s *SessionController) Login(ctx iris.Context) {
 		"phone": user.Phone,
 	})
 	if err != nil {
-		s.RenderErrorJson(ctx, http.StatusBadRequest, err.Error())
+		s.Render400(ctx, err, err.Error())
 	}
 	s.RenderSuccessJson(ctx, iris.Map{"token": tokenString})
 }
@@ -69,14 +66,12 @@ func (s *SessionController) Login(ctx iris.Context) {
 func (s *SessionController) Show(ctx iris.Context) {
 	currentUser, err := s.CurrentUser(ctx)
 	if err != nil {
-		conf.IrisApp.Logger().Error(err)
-		s.RenderErrorJson(ctx, http.StatusInternalServerError,
-			ctx.GetLocale().GetMessage("error.inter_error"))
+		s.Render500(ctx, err, "")
 		return
 	}
 	userMap, err := s.StructToMap(currentUser, ctx)
 	if err != nil {
-		s.RenderErrorJson(ctx, http.StatusInternalServerError, err.Error())
+		s.Render500(ctx, err, "")
 	}
 	s.RenderSuccessJson(ctx, s.handleUserInfo(currentUser, userMap))
 	return
@@ -96,19 +91,21 @@ func (s *SessionController) Update(ctx iris.Context) {
 	//读取用户信息
 	err := ctx.ReadJSON(&userInfo)
 	if err != nil {
-		s.RenderErrorJson(ctx, http.StatusBadRequest, err.Error())
+		s.Render400(ctx, err, err.Error())
+		return
 	}
 	//读取密码信息
 	var passwordInfo models.ReadPassword
 	err = ctx.ReadJSON(&passwordInfo)
 	if err != nil {
-		s.RenderErrorJson(ctx, http.StatusBadRequest, err.Error())
+		s.Render400(ctx, err, err.Error())
+		return
 	}
 	updateModel := models.Employee{Email: userInfo.Email, Name: userInfo.Name, Phone: userInfo.Phone, Address: userInfo.Address}
 	//验证密码是否为空
 	if passwordInfo.Password != "" {
 		if passwordInfo.Password != passwordInfo.ConfirmPassword {
-			s.RenderErrorJson(ctx, http.StatusBadRequest, ctx.GetLocale().GetMessage("error.password_error"))
+			s.Render400(ctx, nil, ctx.GetLocale().GetMessage("error.password_error"))
 			return
 		}
 		updateModel.EncryptedPassword, _ = s.SService.GeneratePassword(passwordInfo.Password)
@@ -117,7 +114,7 @@ func (s *SessionController) Update(ctx iris.Context) {
 	currentUser, _ := s.CurrentUser(ctx)
 	err = s.EService.UpdateRecord(currentUser, updateModel)
 	if err != nil {
-		s.RenderErrorJson(ctx, http.StatusBadRequest, err.Error())
+		s.Render400(ctx, err, err.Error())
 		return
 	}
 	userMap, _ := s.StructToMap(currentUser, ctx)
@@ -130,8 +127,8 @@ func (s *SessionController) UploadAvatar(ctx iris.Context) {
 	up := uploader.NewQiNiuUploaderDefault()
 	url, key, err := up.Upload(value, header)
 	if err != nil {
-		conf.IrisApp.Logger().Error(err)
-		s.RenderErrorJson(ctx, http.StatusBadRequest, ctx.GetLocale().GetMessage("error.upload"))
+		s.Render400(ctx, err, ctx.GetLocale().GetMessage("error.upload"))
+		return
 	}
 	url = up.PrivateReadURL(key)
 	s.RenderSuccessJson(ctx, map[string]interface{}{

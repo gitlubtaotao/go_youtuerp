@@ -60,15 +60,14 @@ func (s *SelectController) base(ctx iris.Context) (readData ReadData, err error)
 }
 
 func (s *SelectController) renderError(ctx iris.Context, err error) {
-	s.RenderErrorJson(ctx, http.StatusBadRequest, ctx.GetLocale().GetMessage("error.params_error"))
+	s.Render400(ctx, err, ctx.GetLocale().GetMessage("error.params_error"))
 	return
 }
 
 func (s *SelectController) renderModel(model interface{},scope map[string]interface{},selectKeys []string) {
 	data, err := s.service.FindModel(model, scope, selectKeys)
 	if err != nil {
-		conf.IrisApp.Logger().Errorf("select api read data error %v", err)
-		s.RenderErrorJson(s.ctx, http.StatusBadRequest, s.ctx.GetLocale().GetMessage("error.params_error"))
+		s.Render500(s.ctx,err,"")
 		return
 	}
 	_, _ = s.ctx.JSON(iris.Map{"code": http.StatusOK, "data": data})

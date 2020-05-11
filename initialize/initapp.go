@@ -9,7 +9,6 @@ import (
 	"os"
 	"strings"
 	"time"
-	"youtuerp/admin/controllers"
 	"youtuerp/admin/middleware"
 	"youtuerp/conf"
 	"youtuerp/tools"
@@ -65,9 +64,6 @@ func NewApp() *iris.Application {
 	//加载web端口对应的web secure cookie
 	route.DefaultRegister()
 	conf.IrisApp = app
-	
-	app.OnErrorCode(iris.StatusNotFound, new(controllers.ErrorsController).NotFound)
-	app.OnErrorCode(iris.StatusInternalServerError, new(controllers.ErrorsController).InternalServerError)
 	return app
 }
 

@@ -4,11 +4,13 @@ import (
 	"github.com/iris-contrib/middleware/jwt"
 	"github.com/kataras/iris/v12"
 	"net/http"
+	"youtuerp/conf"
 	"youtuerp/models"
 	"youtuerp/services"
 )
 
 type BaseController struct {
+	renderError
 }
 
 func (b BaseController) RenderSuccessJson(ctx iris.Context, data interface{}) {
@@ -19,23 +21,12 @@ func (b BaseController) RenderSuccessJson(ctx iris.Context, data interface{}) {
 	_, _ = ctx.JSON(m)
 }
 
-//render error to json
-func (b BaseController) RenderErrorJson(ctx iris.Context, code int, err string) {
-	if code == 0 {
-		code = http.StatusBadRequest
-	}
-	if err == "" {
-		err = ctx.GetLocale().GetMessage("error.params_error")
-	}
-	ctx.StatusCode(code)
-	_, _ = ctx.JSON(iris.Map{"code": code, "message": err})
-}
-
 func (b BaseController) RenderModuleColumn(ctx iris.Context, model interface{}) {
 	column := services.NewColumnService(ctx.GetLocale())
 	data, err := column.StructColumn(model)
 	if err != nil {
-		b.RenderErrorJson(ctx, http.StatusBadRequest, err.Error())
+		b.Render500(ctx, err, err.Error())
+		return
 	}
 	b.RenderSuccessJson(ctx, data)
 }
@@ -67,4 +58,32 @@ func (b *BaseController) GetPage(ctx iris.Context) uint {
 }
 func (b *BaseController) GetPer(ctx iris.Context) uint {
 	return uint(ctx.URLParamIntDefault("per", 20))
+}
+
+//错误消息处理
+type renderError struct {
+}
+
+//render 500 error
+func (r renderError) Render500(ctx iris.Context, err error, message string) {
+	if message == "" {
+		message = ctx.GetLocale().GetMessage("error.inter_err")
+	}
+	if err != nil {
+		conf.IrisApp.Logger().Errorf("render 500 error %v", err)
+	}
+	ctx.StatusCode(http.StatusInternalServerError)
+	_, _ = ctx.JSON(iris.Map{"code": http.StatusInternalServerError, "message": message})
+}
+
+//render 400 error
+func (r renderError) Render400(ctx iris.Context, err error, message string) {
+	if message == "" {
+		message = ctx.GetLocale().GetMessage("error.params_error")
+	}
+	if err != nil {
+		conf.IrisApp.Logger().Warnf("render 400 warn %v", err)
+	}
+	ctx.StatusCode(http.StatusBadRequest)
+	_, _ = ctx.JSON(iris.Map{"code": http.StatusBadRequest, "message": message})
 }

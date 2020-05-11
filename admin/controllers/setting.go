@@ -2,8 +2,6 @@ package controllers
 
 import (
 	"github.com/kataras/iris/v12"
-	"net/http"
-	"youtuerp/conf"
 	"youtuerp/models"
 	"youtuerp/services"
 )
@@ -17,7 +15,7 @@ func (s *SettingController) Get(ctx iris.Context) {
 	service := services.NewSettingService()
 	settings, err := service.Find(key)
 	if err != nil {
-		s.RenderErrorJson(ctx, http.StatusInternalServerError, "")
+		s.Render500(ctx, err, "")
 		return
 	}
 	s.RenderSuccessJson(ctx, settings)
@@ -28,15 +26,13 @@ func (s *SettingController) UpdateSystem(ctx iris.Context) {
 		err           error
 	)
 	if err = ctx.ReadJSON(&systemSetting); err != nil {
-		conf.IrisApp.Logger().Error(err)
-		s.RenderErrorJson(ctx, 0, "")
+		s.Render400(ctx, err, "")
 		return
 	}
 	key := ctx.URLParamDefault("key", "base")
 	service := services.NewSettingService()
 	if err = service.UpdateSystem(key, systemSetting); err != nil {
-		conf.IrisApp.Logger().Error(err)
-		s.RenderErrorJson(ctx, 0, "")
+		s.Render500(ctx, err, err.Error())
 		return
 	}
 	s.RenderSuccessJson(ctx, iris.Map{})

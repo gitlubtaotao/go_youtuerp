@@ -3,7 +3,6 @@ package controllers
 import (
 	"fmt"
 	"github.com/kataras/iris/v12"
-	"net/http"
 	"youtuerp/conf"
 	"youtuerp/models"
 	"youtuerp/services"
@@ -22,17 +21,16 @@ func (n *NumberSettingController) GetColumn(ctx iris.Context) {
 func (n *NumberSettingController) Get(ctx iris.Context) {
 	numberSettings, total, err := n.service.Find(n.GetPer(ctx), n.GetPage(ctx), n.handlerGetParams(), []string{}, []string{})
 	if err != nil {
-		conf.IrisApp.Logger().Errorf("number setting is err (%v)", err)
-		n.RenderErrorJson(ctx, http.StatusInternalServerError, ctx.GetLocale().GetMessage("error.inter_error"))
+		n.Render500(ctx, err, ctx.GetLocale().GetMessage("error.inter_error"))
 		return
 	}
 	dataArray := make([]map[string]interface{}, 0)
 	enum := conf.Enum{Locale: ctx.GetLocale()}
-	fmt.Print( ctx.GetLocale().GetMessage("clear_rule"))
+	fmt.Print(ctx.GetLocale().GetMessage("clear_rule"))
 	for _, v := range numberSettings {
 		result, _ := n.StructToMap(v, ctx)
 		result["clear_rule"] = enum.ClearRuleText(result["clear_rule"])
-		result["application_no"] = enum.DefaultText("number_setting_application_no."+result["application_no"].(string))
+		result["application_no"] = enum.DefaultText("number_setting_application_no." + result["application_no"].(string))
 		dataArray = append(dataArray, result)
 	}
 	n.RenderSuccessJson(ctx, iris.Map{
@@ -47,20 +45,17 @@ func (n *NumberSettingController) Create(ctx iris.Context) {
 		err           error
 	)
 	if err = ctx.ReadJSON(&numberSetting); err != nil {
-		conf.IrisApp.Logger().Warnf("read number setting json is err %v", err)
-		n.RenderErrorJson(ctx, 0, "")
+		n.Render400(ctx, err, "")
 		return
 	}
-	fmt.Printf("%v", numberSetting)
 	numberSetting, err = n.service.Create(numberSetting, ctx.GetLocale().Language())
 	if err != nil {
-		conf.IrisApp.Logger().Errorf("create number setting is error %v", err)
-		n.RenderErrorJson(ctx, 0, err.Error())
+		n.Render500(ctx, err, err.Error())
 		return
 	}
 	data, err := n.StructToMap(numberSetting, ctx)
 	if err != nil {
-		n.RenderErrorJson(ctx, http.StatusInternalServerError, ctx.GetLocale().GetMessage("error.inter_error"))
+		n.Render500(ctx, err, ctx.GetLocale().GetMessage("error.inter_error"))
 		return
 	}
 	n.RenderSuccessJson(ctx, data)
@@ -71,11 +66,11 @@ func (n *NumberSettingController) Delete(ctx iris.Context) {
 		err error
 	)
 	if id, err = ctx.Params().GetInt("id"); err != nil {
-		n.RenderErrorJson(ctx, 0, "")
+		n.Render400(ctx, err, "")
 		return
 	}
 	if err = n.service.Delete(uint(id)); err != nil {
-		n.RenderErrorJson(ctx, http.StatusInternalServerError, "")
+		n.Render500(ctx, err, "")
 		return
 	}
 	n.RenderSuccessJson(ctx, iris.Map{})

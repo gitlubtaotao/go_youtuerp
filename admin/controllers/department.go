@@ -3,8 +3,6 @@ package controllers
 
 import (
 	"github.com/kataras/iris/v12"
-	"net/http"
-	"youtuerp/conf"
 	"youtuerp/models"
 	"youtuerp/services"
 )
@@ -22,8 +20,7 @@ func (d *DepartmentController) GetColumn(ctx iris.Context) {
 func (d *DepartmentController) Get(ctx iris.Context) () {
 	departments, total, err := d.Service.Find(d.GetPer(ctx), d.GetPage(ctx), d.handlerGetParams(), []string{}, []string{}, true)
 	if err != nil {
-		conf.IrisApp.Logger().Errorf("select department is err (%v)", err)
-		d.RenderErrorJson(ctx, http.StatusInternalServerError, ctx.GetLocale().GetMessage("error.inter_error"))
+		d.Render500(ctx, err, "")
 		return
 	}
 	dataArray := make([]map[string]interface{}, 0)
@@ -41,19 +38,18 @@ func (d *DepartmentController) Create(ctx iris.Context) {
 	)
 	err = ctx.ReadJSON(&department)
 	if err != nil {
-		d.RenderErrorJson(ctx, http.StatusBadRequest, ctx.GetLocale().GetMessage("error.params_error"))
+		d.Render400(ctx, err, ctx.GetLocale().GetMessage("error.params_error"))
 		return
 	}
 	valid := services.NewValidatorService(department)
 	errString := valid.ResultError(ctx.GetLocale().Language())
 	if errString != "" {
-		conf.IrisApp.Logger().Errorf("create department is err %s", errString)
-		d.RenderErrorJson(ctx, http.StatusBadRequest, errString)
+		d.Render400(ctx, nil, errString)
 		return
 	}
 	department, err = d.Service.Create(department)
 	if err != nil {
-		d.RenderErrorJson(ctx, http.StatusInternalServerError, err.Error())
+		d.Render500(ctx, err, err.Error())
 		return
 	}
 	data, _ := d.StructToMap(department, ctx)
@@ -68,29 +64,28 @@ func (d *DepartmentController) Update(ctx iris.Context) {
 	)
 	id, err = ctx.Params().GetInt("id")
 	if err != nil {
-		d.RenderErrorJson(ctx, 0, "")
+		d.Render400(ctx, err, "")
 		return
 	}
 	err = ctx.ReadJSON(&readData)
 	if err != nil {
-		d.RenderErrorJson(ctx, 0, "")
+		d.Render400(ctx, err, err.Error())
 		return
 	}
 	department, err := d.Service.First(uint(id))
 	if err != nil {
-		d.RenderErrorJson(ctx, 0, "")
+		d.Render400(ctx, err, "")
 		return
 	}
 	valid := services.NewValidatorService(readData)
 	errString := valid.ResultError(ctx.GetLocale().Language())
 	if errString != "" {
-		d.RenderErrorJson(ctx, http.StatusBadRequest, errString)
+		d.Render400(ctx, nil, errString)
 		return
 	}
 	err = d.Service.Update(department, readData)
 	if err != nil {
-		conf.IrisApp.Logger().Error(err)
-		d.RenderErrorJson(ctx, http.StatusInternalServerError, ctx.GetLocale().GetMessage("error.inter_error"))
+		d.Render500(ctx, err, "")
 		return
 	}
 	returnData, _ := d.StructToMap(department, ctx)
@@ -101,15 +96,14 @@ func (d *DepartmentController) Update(ctx iris.Context) {
 func (d *DepartmentController) Delete(ctx iris.Context) {
 	id, err := ctx.Params().GetUint("id")
 	if err != nil {
-		d.RenderErrorJson(ctx, 0, "")
+		d.Render400(ctx, err, err.Error())
 		return
 	}
 	err = d.Service.Delete(id)
-	if err != nil{
-		conf.IrisApp.Logger().Error(err)
-		d.RenderErrorJson(ctx, http.StatusInternalServerError, ctx.GetLocale().GetMessage("error.inter_error"))
-	}else{
-		d.RenderSuccessJson(ctx,iris.Map{})
+	if err != nil {
+		d.Render500(ctx, err, "")
+	} else {
+		d.RenderSuccessJson(ctx, iris.Map{})
 	}
 }
 

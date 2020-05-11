@@ -57,14 +57,9 @@ func (d *DataBase) InitDataBase() error {
  */
 func (d *DataBase) Migration() error {
 	db := GetDBCon()
-	if !db.HasTable("companies") {
-		db.AutoMigrate(&models.CompanyInfo{})
-	}
-	db.AutoMigrate(&models.Employee{}, &models.UserCompany{},
-		&models.Department{}, &models.CrmCompany{}, &models.Contact{}, &models.Department{})
-	if !db.HasTable("accounts") {
-		db.AutoMigrate(&models.Account{})
-	}
-	db.AutoMigrate(&models.Setting{},&models.NumberSetting{})
+	db.AutoMigrate(&models.Company{}, &models.User{}, &models.Account{})
+	db.AutoMigrate(&models.Department{})
+	db.AutoMigrate(&models.CrmClue{})
+	db.AutoMigrate(&models.Setting{}, &models.NumberSetting{})
 	return nil
 }

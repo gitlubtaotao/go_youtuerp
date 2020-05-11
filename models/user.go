@@ -1,11 +1,8 @@
 package models
 
-import (
-	"github.com/jinzhu/gorm"
-	"time"
-)
+import "time"
 
-type Employee struct {
+type User struct {
 	ID                  uint       `gorm:"primary_key"json:"id"`
 	CreatedAt           time.Time  `json:"created_at"`
 	UpdatedAt           time.Time  `json:"updated_at"`
@@ -33,36 +30,10 @@ type Employee struct {
 	UserCompany         UserCompany `gorm:"foreignkey:user_company_id" validate:"structonly"`
 	Department          Department  `gorm:"foreignkey:department_id" validate:"structonly"`
 	Avatar              string      `gorm:"size:255" json:"avatar" yaml:"avatar"`
+	IsKeyContact        bool        `gorm:"default: false"`
 }
 
-type ResultEmployee struct {
-	ID                    uint      `json:"id"`
-	CreatedAt             time.Time `json:"created_at"`
-	Email                 string    `json:"email"`
-	SignInCount           int       `json:"sign_in_count"`
-	LastSignInAt          time.Time `json:"last_sign_in_at"`
-	LastSignInIp          string    `json:"last_sign_in_ip"`
-	UserCompanyId         int       `json:"user_company_id"`
-	UserCompaniesNameNick string    `json:"user_companies_name_nick"`
-	DepartmentId          int       `json:"department_id"`
-	DepartmentsNameCN     string    `json:"departments_name_cn"`
-	Name                  string    `json:"name"`
-	UserNo                string    `json:"user_no"`
-	Phone                 string    `json:"phone"`
-}
-
-func (Employee) TableName() string {
+func (User) TableName() string {
 	return "users"
-}
-
-func (ResultEmployee) TableName() string {
-	return "users"
-}
-
-func (e *Employee) BeforeCreate(scope *gorm.Scope) (err error) {
-	e.ResetPasswordSentAt = time.Now()
-	e.RememberCreatedAt = time.Now()
-	e.LastSignInAt = time.Now()
-	return
 }
 
