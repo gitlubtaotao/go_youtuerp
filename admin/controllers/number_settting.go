@@ -28,9 +28,10 @@ func (n *NumberSettingController) Get(ctx iris.Context) {
 	}
 	dataArray := make([]map[string]interface{}, 0)
 	enum := conf.Enum{Locale: ctx.GetLocale()}
+	fmt.Print( ctx.GetLocale().GetMessage("clear_rule"))
 	for _, v := range numberSettings {
 		result, _ := n.StructToMap(v, ctx)
-		result["clear_rule"] = enum.ClearRule(result["clear_rule"])
+		result["clear_rule"] = enum.ClearRuleText(result["clear_rule"])
 		result["application_no"] = enum.DefaultText("number_setting_application_no."+result["application_no"].(string))
 		dataArray = append(dataArray, result)
 	}
