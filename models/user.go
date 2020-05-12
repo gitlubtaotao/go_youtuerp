@@ -31,9 +31,9 @@ type User struct {
 	Department          Department  `gorm:"foreignkey:department_id" validate:"structonly"`
 	Avatar              string      `gorm:"size:255" json:"avatar" yaml:"avatar"`
 	IsKeyContact        bool        `gorm:"default: false"`
+	CompanyType         uint        `json:"company_type"`
 }
 
 func (User) TableName() string {
 	return "users"
 }
-

@@ -36,6 +36,7 @@ func NewRoute(app *iris.Application) IRoute {
 func (r *Route) DefaultRegister() {
 	r.SessionRegister()
 	r.OaRegister()
+	r.crmRegister()
 	r.selectRegister()
 	r.otherRegister()
 	
@@ -111,6 +112,20 @@ func (r *Route) OaRegister() {
 	})
 	
 }
+func (r *Route) crmRegister() {
+	j := r.jwtAccess()
+	clue := controllers.CrmClue{}
+	clueApi := r.app.Party("/crm/clues")
+	{
+		clueApi.Use(clue.Before)
+		clueApi.Post("/data", j.Serve, clue.Get)
+		clueApi.Get("/column", j.Serve, clue.GetColumn)
+		clueApi.Post("/create", j.Serve, clue.Create)
+		clueApi.Patch("/{id:uint}/update", j.Serve, clue.Update)
+		clueApi.Delete("/{id:uint}/delete", j.Serve, clue.Delete)
+		clueApi.Get("/{id:uint}/show", j.Serve, clue.Show)
+	}
+}
 
 func (r *Route) selectRegister() {
 	j := r.jwtAccess()
@@ -118,6 +133,7 @@ func (r *Route) selectRegister() {
 	selectApi := r.app.Party("/select")
 	{
 		selectApi.Post("/companies", j.Serve, selectData.GetCompany)
+		selectApi.Post("/base",j.Serve,selectData.GetCommon)
 	}
 }
 
@@ -128,7 +144,7 @@ func (r *Route) otherRegister() {
 	r.app.Post("/upload", j.Serve, uploader.Upload)
 	r.app.Post("/setting/update_system", j.Serve, setting.UpdateSystem)
 	r.app.Post("/setting/update_user", j.Serve, setting.UpdateUser)
-	r.app.Post("/setting/data",j.Serve,setting.Get)
+	r.app.Post("/setting/data", j.Serve, setting.Get)
 }
 
 //验证jwt token

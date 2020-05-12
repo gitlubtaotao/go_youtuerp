@@ -1,6 +1,9 @@
 package conf
 
-import "github.com/kataras/iris/v12/context"
+import (
+	"github.com/kataras/iris/v12/context"
+	"strconv"
+)
 
 type Enum struct {
 	Locale context.Locale
@@ -21,8 +24,9 @@ func (e Enum) ClearRuleOptions() []interface{} {
 
 
 
-func (e Enum) TransportType(src interface{}) string {
-	return e.DefaultText("transport_type" + src.(string))
+func (e Enum) TransportTypeText(src interface{}) string {
+	value := strconv.Itoa(int(src.(uint)))
+	return e.DefaultText("transport_type." + value)
 }
 
 

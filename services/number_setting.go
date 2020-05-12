@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-	"fmt"
 	"youtuerp/models"
 	"youtuerp/repositories"
 )
@@ -29,7 +28,6 @@ func (n NumberSettingService) Find(per, page uint, filter map[string]interface{}
 
 func (n NumberSettingService) Create(numberSetting models.NumberSetting, language string) (result models.NumberSetting, err error) {
 	valid := NewValidatorService(numberSetting)
-	fmt.Print("validate is error")
 	if message := valid.ResultError(language); message != "" {
 		err = errors.New(message)
 		return

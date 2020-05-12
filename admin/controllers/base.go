@@ -87,3 +87,15 @@ func (r renderError) Render400(ctx iris.Context, err error, message string) {
 	ctx.StatusCode(http.StatusBadRequest)
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusBadRequest, "message": message})
 }
+
+func (r renderError) Render401(ctx iris.Context, err error, message string) {
+	if message == "" {
+		message = ctx.GetLocale().GetMessage("error.invalid_error")
+	}
+	if err != nil {
+		conf.IrisApp.Logger().Warnf("render 401 warn %v", err)
+	}
+	ctx.StatusCode(http.StatusBadRequest)
+	_, _ = ctx.JSON(iris.Map{"code": http.StatusUnauthorized, "message": message})
+}
+

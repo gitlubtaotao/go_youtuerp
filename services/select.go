@@ -6,12 +6,29 @@ import (
 )
 
 type ISelectService interface {
+	FindTable(tableName string, name string, scope map[string]interface{}, selectKeys []string) (selectResult []map[string]interface{}, err error)
 	FindModel(model interface{}, scope map[string]interface{}, selectKey []string) (selectResult []map[string]interface{}, err error)
 }
 
 type SelectService struct {
 	repo repositories.ISelectRepository
 	ctx  iris.Context
+}
+
+
+func (s *SelectService) FindTable(tableName string, name string, scope map[string]interface{}, selectKeys []string) ([]map[string]interface{}, error) {
+	selectResult := make([]map[string]interface{},0)
+	result, err := s.repo.FindTable(tableName, name, scope, selectKeys)
+	if err != nil {
+		return []map[string]interface{}{}, err
+	}
+	columnService := NewColumnService(s.ctx.GetLocale())
+	for _, v := range result {
+		src, _ := columnService.StructToMap(v)
+		dst := s.afterHandler(src)
+		selectResult = append(selectResult, dst)
+	}
+	return selectResult, nil
 }
 
 func (s *SelectService) FindModel(model interface{}, scope map[string]interface{}, selectKey []string) (selectResult []map[string]interface{}, err error) {
