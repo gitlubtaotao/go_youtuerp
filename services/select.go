@@ -7,7 +7,6 @@ import (
 
 type ISelectService interface {
 	FindTable(tableName string, name string, scope map[string]interface{}, selectKeys []string) (selectResult []map[string]interface{}, err error)
-	FindModel(model interface{}, scope map[string]interface{}, selectKey []string) (selectResult []map[string]interface{}, err error)
 }
 
 type SelectService struct {
@@ -31,19 +30,7 @@ func (s *SelectService) FindTable(tableName string, name string, scope map[strin
 	return selectResult, nil
 }
 
-func (s *SelectService) FindModel(model interface{}, scope map[string]interface{}, selectKey []string) (selectResult []map[string]interface{}, err error) {
-	result, err := s.repo.FindModel(model, scope, selectKey)
-	if err != nil {
-		return nil, err
-	}
-	columnService := NewColumnService(s.ctx.GetLocale())
-	for _, v := range result {
-		src, _ := columnService.StructToMap(v)
-		dst := s.afterHandler(src)
-		selectResult = append(selectResult, dst)
-	}
-	return selectResult, nil
-}
+
 
 func (s *SelectService) afterHandler(dest map[string]interface{}) (out map[string]interface{}) {
 	out = make(map[string]interface{})
