@@ -144,6 +144,7 @@ func (c *CrmClue) handlerGetParams() map[string]interface{} {
 	searchColumn["crm_clues.user_email-rCount"] = c.ctx.URLParamDefault("user_email", "")
 	searchColumn["crm_clues.create_id-eq"] = c.ctx.URLParamDefault("create_id", "")
 	searchColumn["crm_clues.company_type-eq"] = c.ctx.URLParamDefault("company_type", "")
+	searchColumn["crm_clues.status-eq"] = c.ctx.URLParamDefault("status","")
 	return searchColumn
 }
 
