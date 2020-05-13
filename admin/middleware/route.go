@@ -121,9 +121,17 @@ func (r *Route) crmRegister() {
 		clueApi.Post("/data", j.Serve, clue.Get)
 		clueApi.Get("/column", j.Serve, clue.GetColumn)
 		clueApi.Post("/create", j.Serve, clue.Create)
+		clueApi.Get("/{id: uint}/edit", j.Serve, clue.Edit)
 		clueApi.Patch("/{id:uint}/update", j.Serve, clue.Update)
 		clueApi.Delete("/{id:uint}/delete", j.Serve, clue.Delete)
 		clueApi.Get("/{id:uint}/show", j.Serve, clue.Show)
+	}
+	track := controllers.ClueTrack{}
+	trackApi := r.app.Party("/crm/tracks")
+	{
+		trackApi.Use(track.Before)
+		trackApi.Post("/data", j.Serve, track.Get)
+		trackApi.Post("/create", j.Serve, track.Create)
 	}
 }
 
@@ -133,7 +141,7 @@ func (r *Route) selectRegister() {
 	selectApi := r.app.Party("/select")
 	{
 		selectApi.Post("/companies", j.Serve, selectData.GetCompany)
-		selectApi.Post("/base",j.Serve,selectData.GetCommon)
+		selectApi.Post("/base", j.Serve, selectData.GetCommon)
 	}
 }
 

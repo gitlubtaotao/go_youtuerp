@@ -59,7 +59,7 @@ func (d *DataBase) Migration() error {
 	db := GetDBCon()
 	db.AutoMigrate(&models.Company{}, &models.User{}, &models.Account{})
 	db.AutoMigrate(&models.Department{})
-	db.AutoMigrate(&models.CrmClue{})
+	db.AutoMigrate(&models.CrmClue{}, &models.CrmTrack{})
 	db.AutoMigrate(&models.Setting{}, &models.NumberSetting{})
 	return nil
 }

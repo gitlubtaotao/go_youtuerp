@@ -11,7 +11,6 @@ import (
 	"time"
 	"youtuerp/admin/middleware"
 	"youtuerp/conf"
-	"youtuerp/tools"
 )
 
 //@title: 处理request info
@@ -112,12 +111,11 @@ func I18nInit(app *iris.Application) (err error) {
 
 //进行前端页面的注册
 func RegisterView(app *iris.Application) {
-	tmpl := iris.HTML("./view", ".html")
-	tmpl.Reload(true)
-	tmpl.Layout("layouts/application.html")
-	helper := tools.ViewHelper{}
-	tmpl.AddFunc("AssetsPublic", helper.AssetsPublic)
-	app.RegisterView(tmpl)
+	//tmpl := iris.HTML("./view", ".html")
+	//tmpl.Reload(true)
+	//tmpl.Layout("layouts/application.html")
+	//tmpl.AddFunc("AssetsPublic", helper.AssetsPublic)
+	//app.RegisterView(tmpl)
 }
 
 //根据日期获取文件名，文件日志以最常用的方式工作

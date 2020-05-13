@@ -14,6 +14,8 @@ type ReadPassword struct {
 	ConfirmPassword string `json:"confirm_password"`
 }
 
+
+
 //
 //type Finance_banks struct {
 //	Id int `gorm:"id" json:"id"`
