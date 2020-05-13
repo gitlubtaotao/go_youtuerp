@@ -7,16 +7,16 @@ import (
 )
 
 //跟进记录的操作方法
-type ClueTrack struct {
+type CrmTrack struct {
 	BaseController
 	service services.ICrmTrack
 	ctx     iris.Context
 }
 
-func (c *ClueTrack) Get(ctx iris.Context) {
+func (c *CrmTrack) Get(ctx iris.Context) {
 }
 
-func (c *ClueTrack) Create(ctx iris.Context) {
+func (c *CrmTrack) Create(ctx iris.Context) {
 	var (
 		track models.CrmTrack
 		err   error
@@ -34,7 +34,7 @@ func (c *ClueTrack) Create(ctx iris.Context) {
 
 
 
-func (c *ClueTrack) Before(ctx iris.Context) {
+func (c *CrmTrack) Before(ctx iris.Context) {
 	c.ctx = ctx
 	c.service = services.NewCrmTrack()
 	ctx.Next()

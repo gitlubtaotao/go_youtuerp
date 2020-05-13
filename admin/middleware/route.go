@@ -126,7 +126,7 @@ func (r *Route) crmRegister() {
 		clueApi.Delete("/{id:uint}/delete", j.Serve, clue.Delete)
 		clueApi.Get("/{id:uint}/show", j.Serve, clue.Show)
 	}
-	track := controllers.ClueTrack{}
+	track := controllers.CrmTrack{}
 	trackApi := r.app.Party("/crm/tracks")
 	{
 		trackApi.Use(track.Before)
