@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/jinzhu/gorm"
 	"youtuerp/database"
 	"youtuerp/models"
@@ -64,7 +65,10 @@ func (c CrmClue) Find(per, page uint, filter map[string]interface{}, selectKeys 
 }
 
 func (c CrmClue) Create(clue models.CrmClue) (models.CrmClue, error) {
-	err := database.GetDBCon().Set("gorm:association_autocreate", false).Create(&clue).Error
+	sqlCon := database.GetDBCon().Set("gorm:association_autoupdate", false)
+	sqlCon = sqlCon.Set("gorm:association_autocreate", false)
+	fmt.Printf("%v",clue)
+	err := sqlCon.Create(&clue).Error
 	if err != nil {
 		return models.CrmClue{}, err
 	}

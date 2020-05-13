@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"github.com/jinzhu/gorm"
+	"time"
+)
 
 type CrmClue struct {
 	ID            uint       `gorm:"primary_key" json:"id"`
@@ -30,7 +33,7 @@ type CrmClue struct {
 	Province      string     `gorm:"size:64" json:"province"`
 	Distinct      string     `gorm:"size:64" json:"distinct"`
 	CrmTracks     []CrmTrack `gorm:"polymorphic:Source;"`
-	UserCreate    Employee   `gorm:"ForeignKey:CreateId"`
+	UserCreate    Employee   `gorm:"ForeignKey:CreateId" validate:"-"`
 	Status        uint       `gorm:"index:status;default:0" json:"status"`
 }
 
@@ -81,4 +84,9 @@ func (CrmUser) TableName() string {
 
 func (CrmTrack) TableName() string {
 	return "crm_tracks"
+}
+
+func (c *CrmClue) BeforeCreate(scope *gorm.Scope) (err error) {
+	c.Status = 0
+	return
 }
