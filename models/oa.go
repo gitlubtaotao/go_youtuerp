@@ -4,6 +4,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"time"
 )
+
 type UserCompany struct {
 	ID               uint         `gorm:"primary_key"json:"id"`
 	CreatedAt        time.Time    `json:"created_at"`
@@ -30,12 +31,8 @@ type UserCompany struct {
 	Website          string       `form:"website" json:"website"`
 	Employees        []Employee   `gorm:"foreignkey:user_company_id"`
 	Departments      []Department `gorm:"foreignkey:user_company_id"`
-	Accounts          []Account    `gorm:"foreignkey:user_company_id"`
+	Accounts         []Account    `gorm:"foreignkey:user_company_id"`
 }
-
-
-
-
 
 type Department struct {
 	ID            uint        `gorm:"primary_key"json:"id"`
@@ -50,16 +47,14 @@ type Department struct {
 
 //go index 查询结构
 type ResultDepartment struct {
-	ID                    uint  `json:"id"`
+	ID                    uint      `json:"id"`
 	CreatedAt             time.Time `json:"created_at"`
 	UpdatedAt             time.Time `json:"updated_at"`
-	NameCn                string `json:"name_cn"`
-	NameEn                string `json:"name_en"`
-	UserCompanyId         int `json:"user_company_id"`
-	UserCompaniesNameNick string `json:"user_companies_name_nick"`
+	NameCn                string    `json:"name_cn"`
+	NameEn                string    `json:"name_en"`
+	UserCompanyId         int       `json:"user_company_id"`
+	UserCompaniesNameNick string    `json:"user_companies_name_nick"`
 }
-
-
 
 type Employee struct {
 	ID                  uint      `json:"id"`
@@ -89,6 +84,7 @@ type Employee struct {
 	UserCompany         UserCompany `gorm:"foreignkey:user_company_id" validate:"structonly"`
 	Department          Department  `gorm:"foreignkey:department_id" validate:"structonly"`
 	Avatar              string      `gorm:"size:255" json:"avatar" yaml:"avatar"`
+	CompanyType         uint        `json:"company_type"`
 }
 
 type ResultEmployee struct {
@@ -136,6 +132,6 @@ func (e *Employee) BeforeCreate(scope *gorm.Scope) (err error) {
 	e.RememberCreatedAt = time.Now()
 	e.LastSignInAt = time.Now()
 	e.CurrentSignInAt = time.Now()
+	e.CompanyType = CompanyTypeB
 	return
 }
-

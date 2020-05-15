@@ -32,13 +32,12 @@ type Company struct {
 	Code             string     `gorm:"size:64"`
 }
 
-
 //定义公司类型
 const (
-	Customer = iota
-	Supplier
-	CustomerSupplier
-	Branch
+	CompanyTypeC = iota + 1
+	CompanyTypeS
+	CompanyTypeCS
+	CompanyTypeB
 )
 
 func (Company) TableName() string {
