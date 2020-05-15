@@ -7,6 +7,8 @@ import (
 )
 
 type ICrmCompanyService interface {
+	UpdateByMap(id uint, attr map[string]interface{}) error
+	Delete(id uint) error
 	Update(id uint, company models.CrmCompany, language string) (models.CrmCompany, error)
 	Find(per, page uint, filter map[string]interface{}, selectKeys []string,
 		orders []string) ([]models.CrmCompany, uint, error)
@@ -19,6 +21,15 @@ type CrmCompanyService struct {
 	BaseService
 }
 
+func (c CrmCompanyService) UpdateByMap(id uint, attr map[string]interface{}) error {
+	return c.repo.UpdateByMap(id,attr)
+}
+
+func (c CrmCompanyService) Delete(id uint) error {
+	return c.repo.Delete(id)
+}
+
+
 func (c CrmCompanyService) Update(id uint, company models.CrmCompany, language string) (models.CrmCompany, error) {
 	//处理roles
 	
@@ -26,7 +37,7 @@ func (c CrmCompanyService) Update(id uint, company models.CrmCompany, language s
 	if message := valid.ResultError(language); message != "" {
 		return models.CrmCompany{}, errors.New(message)
 	}
-	return c.repo.Update(id,company)
+	return c.repo.Update(id, company)
 }
 
 func (c CrmCompanyService) First(id uint, isRole bool) (models.CrmCompany, error) {

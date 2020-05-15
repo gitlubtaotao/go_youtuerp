@@ -145,6 +145,8 @@ func (r *Route) CrmRegister() {
 		crmCompanyApi.Get("/{id:uint}/edit",j.Serve,crmCompany.Edit)
 		crmCompanyApi.Patch("/{id:uint}/update", j.Serve, crmCompany.Update)
 		crmCompanyApi.Delete("/{id:uint}/delete", j.Serve, crmCompany.Delete)
+		crmCompanyApi.Patch("/{id:uint}/changeStatus", j.Serve, crmCompany.ChangeStatus)
+		crmCompanyApi.Patch("/{id:uint}/changeType", j.Serve, crmCompany.ChangeType)
 	}
 }
 

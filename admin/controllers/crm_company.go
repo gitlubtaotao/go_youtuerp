@@ -110,8 +110,51 @@ func (c *CrmCompany) Update(ctx iris.Context) {
 	c.RenderSuccessJson(ctx, data)
 }
 
-
 func (c *CrmCompany) Delete(ctx iris.Context) {
+	var (
+		id  uint
+		err error
+	)
+	if id, err = ctx.Params().GetUint("id"); err != nil {
+		c.Render400(ctx, err, err.Error())
+		return
+	}
+	if err = c.service.Delete(id); err != nil {
+		c.Render500(ctx, err, "")
+	} else {
+		c.RenderSuccessJson(ctx, iris.Map{})
+	}
+}
+
+func (c *CrmCompany) ChangeStatus(ctx iris.Context) {
+	var (
+		id     uint
+		err    error
+		status string
+	)
+	if id, err = ctx.Params().GetUint("id"); err != nil {
+		c.Render400(ctx, err, err.Error())
+		return
+	}
+	status = ctx.URLParam("status")
+	_ = c.service.UpdateByMap(id, map[string]interface{}{"status": status})
+}
+
+func (c *CrmCompany) ChangeType(ctx iris.Context) {
+	var (
+		id           uint
+		err          error
+		companyType  int
+		userSalesman int
+	)
+	if id, err = ctx.Params().GetUint("id"); err != nil {
+		c.Render400(ctx, err, err.Error())
+		return
+	}
+	companyType, _ = ctx.URLParamInt("company_type")
+	userSalesman, _ = ctx.URLParamInt("user_salesman_id")
+	_ = c.service.UpdateByMap(id, map[string]interface{}{
+		"company_type": companyType,"user_salesman_id": uint(userSalesman)})
 }
 
 func (c *CrmCompany) Before(ctx iris.Context) {
@@ -152,11 +195,16 @@ func (c *CrmCompany) handlerGetParams(companyType string) map[string]interface{}
 	searchColumn["user_companies.account_period-rCount"] = c.ctx.URLParamDefault("user_email", "")
 	searchColumn["user_companies.user_salesman_id-eq"] = c.ctx.URLParamDefault("create_id", "")
 	searchColumn["user_companies.parent_id-eq"] = c.ctx.URLParamDefault("company_type", "")
-	searchColumn["user_companies.status-eq"] = c.ctx.URLParamDefault("status", "")
+	status := c.ctx.URLParamDefault("status", "")
+	if status == ""{
+		searchColumn["user_companies.status-in"] = []string{"rejected","approved","approving"}
+	}else{
+		searchColumn["user_companies.status-eq"] = status
+	}
 	if companyType == "customer" {
 		searchColumn["user_companies.company_type-in"] = []int{1, 3}
 	} else {
-		searchColumn["user_companies.company_type-eq"] = 2
+		searchColumn["user_companies.company_type-in"] = []int{2, 3}
 	}
 	return searchColumn
 }
