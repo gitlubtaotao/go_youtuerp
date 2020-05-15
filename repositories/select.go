@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"database/sql"
 	"github.com/jinzhu/gorm"
 	"youtuerp/database"
 	"youtuerp/models"
@@ -8,11 +9,31 @@ import (
 
 type ISelectRepository interface {
 	FindTable(tableName string, name string, scope map[string]interface{}, selectKeys []string) (selectResult []models.SelectResult, err error)
+	FirstRecord(tableName string, filter map[string]interface{}, selectKeys []string) (selectResult []models.SelectResult, err error)
 }
 
 type SelectRepository struct {
 	BaseRepository
 }
+
+func (s *SelectRepository) FirstRecord(tableName string, filter map[string]interface{}, selectKeys []string) (selectResult []models.SelectResult, err error) {
+	sqlCon := database.GetDBCon().Table(tableName)
+	var rows *sql.Rows
+	if len(selectKeys) == 0 {
+		selectKeys = []string{"id", "name"}
+	}
+	sqlCon = sqlCon.Where(filter).Where("deleted_at is NULL").Select(selectKeys)
+	if rows, err = sqlCon.Rows(); err != nil {
+		return
+	}
+	for rows.Next() {
+		var temp models.SelectResult
+		_ = sqlCon.ScanRows(rows, &temp)
+		selectResult = append(selectResult, temp)
+	}
+	return selectResult, nil
+}
+
 
 func (s *SelectRepository) FindTable(tableName string, name string, scope map[string]interface{},
 	selectKeys []string) (selectResult []models.SelectResult, err error) {

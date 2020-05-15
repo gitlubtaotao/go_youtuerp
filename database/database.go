@@ -55,11 +55,16 @@ func (d *DataBase) InitDataBase() error {
 /*
  * 注册迁移文件
  */
+
 func (d *DataBase) Migration() error {
 	db := GetDBCon()
-	db.AutoMigrate(&models.Company{}, &models.User{}, &models.Account{})
+	db.AutoMigrate(&models.Company{}, &models.User{}, &models.Account{},&models.Role{})
 	db.AutoMigrate(&models.Department{})
 	db.AutoMigrate(&models.CrmClue{}, &models.CrmTrack{})
 	db.AutoMigrate(&models.Setting{}, &models.NumberSetting{})
 	return nil
 }
+
+
+
+

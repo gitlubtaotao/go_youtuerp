@@ -30,7 +30,7 @@ func (n *NumberSettingController) Get(ctx iris.Context) {
 	for _, v := range numberSettings {
 		result, _ := n.StructToMap(v, ctx)
 		result["clear_rule"] = enum.ClearRuleText(result["clear_rule"])
-		result["application_no"] = enum.DefaultText("number_setting_application_no." + result["application_no"].(string))
+		result["application_no"] = enum.DefaultText("number_setting_application_no.", result["application_no"])
 		dataArray = append(dataArray, result)
 	}
 	n.RenderSuccessJson(ctx, iris.Map{

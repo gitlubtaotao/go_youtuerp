@@ -144,7 +144,7 @@ func (c *CrmClue) handlerGetParams() map[string]interface{} {
 	searchColumn["crm_clues.user_email-rCount"] = c.ctx.URLParamDefault("user_email", "")
 	searchColumn["crm_clues.create_id-eq"] = c.ctx.URLParamDefault("create_id", "")
 	searchColumn["crm_clues.company_type-eq"] = c.ctx.URLParamDefault("company_type", "")
-	searchColumn["crm_clues.status-eq"] = c.ctx.URLParamDefault("status","")
+	searchColumn["crm_clues.status-eq"] = c.ctx.URLParamDefault("status", "")
 	return searchColumn
 }
 
@@ -155,10 +155,10 @@ func (c *CrmClue) handleClue(clue models.CrmClue) (data map[string]interface{}, 
 		return
 	}
 	data["company_type_value"] = data["company_type"]
-	data["company_type"] = enum.TransportTypeText(data["company_type"])
+	data["company_type"] = enum.CompanyTypeText(data["company_type"])
 	status := data["status"].(uint)
 	statusStr := strconv.Itoa(int(status))
-	data["status"] = enum.DefaultText("crm_clues_status." + statusStr)
+	data["status"] = enum.DefaultText("crm_clues_status.", statusStr)
 	data["status_value"] = status
 	return
 }

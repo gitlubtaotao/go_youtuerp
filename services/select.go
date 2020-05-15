@@ -15,8 +15,8 @@ type SelectService struct {
 }
 
 
-func (s *SelectService) FindTable(tableName string, name string, scope map[string]interface{}, selectKeys []string) ([]map[string]interface{}, error) {
-	selectResult := make([]map[string]interface{},0)
+func (s SelectService) FindTable(tableName string, name string, scope map[string]interface{}, selectKeys []string) ([]map[string]interface{}, error) {
+	selectResult := make([]map[string]interface{}, 0)
 	result, err := s.repo.FindTable(tableName, name, scope, selectKeys)
 	if err != nil {
 		return []map[string]interface{}{}, err
@@ -31,8 +31,7 @@ func (s *SelectService) FindTable(tableName string, name string, scope map[strin
 }
 
 
-
-func (s *SelectService) afterHandler(dest map[string]interface{}) (out map[string]interface{}) {
+func (s SelectService) afterHandler(dest map[string]interface{}) (out map[string]interface{}) {
 	out = make(map[string]interface{})
 	out["value"] = dest["id"]
 	if value := dest["name"]; value.(string) != "" {
@@ -54,6 +53,9 @@ func (s *SelectService) afterHandler(dest map[string]interface{}) (out map[strin
 	}
 	return
 }
+
+
+
 
 func NewSelectService(ctx iris.Context) ISelectService {
 	return &SelectService{

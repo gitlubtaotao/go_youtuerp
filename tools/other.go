@@ -5,16 +5,20 @@ import (
 	"net"
 	"net/http"
 	"reflect"
+	"regexp"
 	"strings"
+	"time"
 )
 
 var (
-	MaxDepth = 32
+	MaxDepth    = 32
+	matchAllCap = regexp.MustCompile("([a-z0-9])([A-Z])")
 )
 
 type IOtherHelper interface {
 	GetIPAddress() (string, error)
 	MapMerge(dst, src map[string]interface{}) map[string]interface{}
+	StructToMap(currentObject interface{}) map[string]interface{}
 }
 
 type OtherHelper struct {
@@ -42,6 +46,43 @@ func (o OtherHelper) GetIPAddress(r *http.Request) (string, error) {
 
 func (o OtherHelper) MapMerge(dst, src map[string]interface{}) map[string]interface{} {
 	return o.merge(dst, src, 0)
+}
+
+func (o OtherHelper) StructToMap(currentObject interface{}) map[string]interface{} {
+	res := map[string]interface{}{}
+	v := reflect.TypeOf(currentObject)
+	utils := TimeHelper{}
+	reflectValue := reflect.ValueOf(currentObject)
+	reflectValue = reflect.Indirect(reflectValue)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+	for i := 0; i < v.NumField(); i++ {
+		temp := v.Field(i).Type
+		kind := temp.Kind()
+		tag := v.Field(i).Tag.Get("json")
+		if tag == "" {
+			tag = o.ToSnakeCase(v.Field(i).Name)
+		}
+		field := reflectValue.Field(i).Interface()
+		if kind == reflect.Struct {
+			if temp.Name() == "Time" {
+				res[tag] = utils.DefaultDate(field.(time.Time), "zh-CN")
+			} else {
+				res[tag] = o.StructToMap(field)
+			}
+		} else {
+			if tag != "" {
+				res[tag] = field
+			}
+		}
+	}
+	return res
+}
+
+func (o OtherHelper) ToSnakeCase(str string) string {
+	snake := matchAllCap.ReplaceAllString(str, "${1}_${2}")
+	return strings.ToLower(strings.ToLower(snake))
 }
 
 func (o OtherHelper) merge(dst, src map[string]interface{}, depth int) map[string]interface{} {

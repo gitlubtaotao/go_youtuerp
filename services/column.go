@@ -4,14 +4,9 @@ import (
 	"errors"
 	"github.com/kataras/iris/v12/context"
 	"reflect"
-	"regexp"
-	"strings"
 	"sync"
-	"time"
 	"youtuerp/tools"
 )
-
-var matchAllCap = regexp.MustCompile("([a-z0-9])([A-Z])")
 
 type IColumnService interface {
 	StructColumn(model interface{}, args ...interface{}) (data []interface{}, err error)
@@ -28,7 +23,7 @@ func (c *ColumnService) StructToMap(currentObject interface{}) (map[string]inter
 	if currentObject == nil {
 		return map[string]interface{}{}, errors.New(c.loader.GetMessage("error.params_error"))
 	}
-	return c.structToMap(currentObject), nil
+	return tools.OtherHelper{}.StructToMap(currentObject), nil
 }
 
 func (c *ColumnService) StructColumn(model interface{}, args ...interface{}) (dataArray []interface{}, err error) {
@@ -125,8 +120,7 @@ func (c *ColumnService) isHiddenColumn(hiddenColumns interface{}, column string)
 
 //将蛇形字符转换成_风格
 func (c *ColumnService) toSnakeCase(str string) string {
-	snake := matchAllCap.ReplaceAllString(str, "${1}_${2}")
-	return strings.ToLower(strings.ToLower(snake))
+	return tools.OtherHelper{}.ToSnakeCase(str)
 }
 
 //获取的model对应的table name
@@ -140,39 +134,6 @@ func (c *ColumnService) tableName(v reflect.Value) string {
 		data = c.toSnakeCase(v.Kind().String())
 	}
 	return data
-}
-
-//strut value to map value
-func (c *ColumnService) structToMap(currentObject interface{}) map[string]interface{} {
-	res := map[string]interface{}{}
-	v := reflect.TypeOf(currentObject)
-	utils := tools.TimeHelper{}
-	reflectValue := reflect.ValueOf(currentObject)
-	reflectValue = reflect.Indirect(reflectValue)
-	if v.Kind() == reflect.Ptr {
-		v = v.Elem()
-	}
-	for i := 0; i < v.NumField(); i++ {
-		temp := v.Field(i).Type
-		kind := temp.Kind()
-		tag := v.Field(i).Tag.Get("json")
-		if tag == "" {
-			tag = c.toSnakeCase(v.Field(i).Name)
-		}
-		field := reflectValue.Field(i).Interface()
-		if kind == reflect.Struct {
-			if temp.Name() == "Time" {
-				res[tag] = utils.DefaultDate(field.(time.Time), c.loader.Language())
-			} else {
-				res[tag] = c.structToMap(field)
-			}
-		} else {
-			if tag != "" {
-				res[tag] = field
-			}
-		}
-	}
-	return res
 }
 
 func NewColumnService(loader context.Locale) IColumnService {

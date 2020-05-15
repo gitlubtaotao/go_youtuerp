@@ -51,7 +51,6 @@ func (e EmployeeRepository) Find(per, page uint, filter map[string]interface{},
 	if len(filter) > 0 {
 		sqlCon = sqlCon.Scopes(e.Ransack(filter))
 	}
-	fmt.Println(filter)
 	if isCount {
 		err = sqlCon.Count(&total).Error
 		if err != nil {

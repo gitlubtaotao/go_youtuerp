@@ -15,7 +15,13 @@ import (
 //处理路由信息
 type IRoute interface {
 	DefaultRegister()
+	SessionRegister()
+	OaRegister()
+	CrmRegister()
+	SelectRegister()
+	OtherRegister()
 }
+
 
 var allowMethods = []string{iris.MethodGet, iris.MethodPost, iris.MethodPatch,
 	iris.MethodDelete, iris.MethodOptions}
@@ -29,17 +35,12 @@ func NewRoute(app *iris.Application) IRoute {
 	return &Route{app: app}
 }
 
-/*
- * @title 路由的注册方法
- * @description 注册系统的方法
- */
 func (r *Route) DefaultRegister() {
 	r.SessionRegister()
 	r.OaRegister()
-	r.crmRegister()
-	r.selectRegister()
-	r.otherRegister()
-	
+	r.CrmRegister()
+	r.SelectRegister()
+	r.OtherRegister()
 }
 
 func (r *Route) SessionRegister() {
@@ -112,7 +113,7 @@ func (r *Route) OaRegister() {
 	})
 	
 }
-func (r *Route) crmRegister() {
+func (r *Route) CrmRegister() {
 	j := r.jwtAccess()
 	clue := controllers.CrmClue{}
 	clueApi := r.app.Party("/crm/clues")
@@ -133,9 +134,20 @@ func (r *Route) crmRegister() {
 		trackApi.Post("/data", j.Serve, track.Get)
 		trackApi.Post("/create", j.Serve, track.Create)
 	}
+	crmCompanyApi := r.app.Party("/crm/companies")
+	{
+		crmCompany := controllers.CrmCompany{}
+		crmCompanyApi.Use(crmCompany.Before)
+		crmCompanyApi.Post("/column", j.Serve, crmCompany.GetColumn)
+		crmCompanyApi.Post("/create", j.Serve, crmCompany.Create)
+		crmCompanyApi.Post("/data",j.Serve,crmCompany.Get)
+		crmCompanyApi.Post("/create",j.Serve,crmCompany.Create)
+		crmCompanyApi.Patch("/{id:uint}/update", j.Serve, crmCompany.Update)
+		crmCompanyApi.Delete("/{id:uint}/delete", j.Serve, crmCompany.Delete)
+	}
 }
 
-func (r *Route) selectRegister() {
+func (r *Route) SelectRegister() {
 	j := r.jwtAccess()
 	selectData := controllers.SelectController{}
 	selectApi := r.app.Party("/select")
@@ -145,7 +157,7 @@ func (r *Route) selectRegister() {
 	}
 }
 
-func (r *Route) otherRegister() {
+func (r *Route) OtherRegister() {
 	j := r.jwtAccess()
 	uploader := controllers.UploadController{}
 	setting := controllers.SettingController{}
