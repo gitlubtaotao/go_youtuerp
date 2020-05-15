@@ -3,6 +3,7 @@ package controllers
 import (
 	"github.com/kataras/iris/v12"
 	"net/http"
+	"strings"
 	"youtuerp/conf"
 	"youtuerp/models"
 	"youtuerp/redis"
@@ -64,11 +65,51 @@ func (c *CrmCompany) Create(ctx iris.Context) {
 	c.RenderSuccessJson(ctx, data)
 }
 
-func (c *CrmCompany) Show(ctx iris.Context) {
+func (c *CrmCompany) Edit(ctx iris.Context) {
+	var (
+		id      uint
+		err     error
+		company models.CrmCompany
+	)
+	if id, err = ctx.Params().GetUint("id"); err != nil {
+		c.Render400(ctx, err, err.Error())
+		return
+	}
+	if company, err = c.service.First(id, true); err != nil {
+		c.Render500(ctx, err, err.Error())
+		return
+	}
+	data, _ := c.StructToMap(company, ctx)
+	delete(data, "created_at")
+	delete(data, "updated_at")
+	businessTypeName := data["business_type_name"].(string)
+	data["business_type_name"] = strings.Split(businessTypeName, ",")
+	c.RenderSuccessJson(ctx, data)
+}
 
-}
 func (c *CrmCompany) Update(ctx iris.Context) {
+	var (
+		id      uint
+		company models.CrmCompany
+		err     error
+	)
+	if id, err = ctx.Params().GetUint("id"); err != nil {
+		c.Render400(ctx, err, err.Error())
+		return
+	}
+	if err = ctx.ReadJSON(&company); err != nil {
+		c.Render400(ctx, err, err.Error())
+		return
+	}
+	if company, err = c.service.Update(id, company, ctx.GetLocale().Language()); err != nil {
+		c.Render400(ctx, err, err.Error())
+		return
+	}
+	red := redis.NewRedis()
+	data, _ := c.handleCompany(red, company)
+	c.RenderSuccessJson(ctx, data)
 }
+
 
 func (c *CrmCompany) Delete(ctx iris.Context) {
 }

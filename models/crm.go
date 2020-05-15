@@ -10,7 +10,7 @@ type CrmClue struct {
 	CreatedAt     time.Time  `json:"created_at"`
 	UpdatedAt     time.Time  `json:"updated_at"`
 	DeletedAt     *time.Time `sql:"index"`
-	CompanyType   int       `json:"company_type"`
+	CompanyType   int        `json:"company_type"`
 	NameNick      string     `gorm:"size:64;index:name_nick" json:"name_nick" validate:"required"`
 	NameCn        string     `gorm:"size:128" json:"name_cn" validate:"required"`
 	NameEn        string     `gorm:"size:256" json:"name_en"`
@@ -45,7 +45,9 @@ type CrmCompany struct {
 	CompanyType      int        `form:"company_type" json:"company_type"`
 	ParentId         int        `gorm:"index:parent_id" json:"parent_id"`
 	ParentNameNick   string     `gorm:"-"`
-	UserSalesmanId   int        `gorm:"index:user_salesman_id"`        // 所属的业务人员
+	UserSalesmanId   int        `gorm:"index:user_salesman_id"` // 所属的业务人员
+	UserAuditId      int        `gorm:"-" json:"user_audit_id"`
+	UserCreateId     int        `gorm:"-" json:"user_create_id"`
 	AccountPeriod    string     `gorm:"size:16" json:"account_period"` // 公司结算类型
 	Age              int        `json:"age"`
 	Amount           float64    `json:"amount"`
@@ -65,7 +67,7 @@ type CrmCompany struct {
 	Province         string     `gorm:"size:64"`
 	Distinct         string     `gorm:"size:64"`
 	Code             string     `json:"code"`
-	Roles            []Role     `gorm:"polymorphic:Source;"`
+	Roles            []Role     `gorm:"polymorphic:Source;" json:"roles"`
 }
 
 type CrmUser struct {

@@ -135,6 +135,7 @@ func (e *Employee) BeforeCreate(scope *gorm.Scope) (err error) {
 	e.ResetPasswordSentAt = time.Now()
 	e.RememberCreatedAt = time.Now()
 	e.LastSignInAt = time.Now()
+	e.CurrentSignInAt = time.Now()
 	return
 }
 
