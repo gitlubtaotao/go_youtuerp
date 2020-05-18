@@ -2,7 +2,10 @@ package controllers
 
 import (
 	"github.com/kataras/iris/v12"
+	"net/http"
+	"sync"
 	"youtuerp/models"
+	"youtuerp/redis"
 	"youtuerp/services"
 )
 
@@ -10,6 +13,7 @@ type AccountController struct {
 	service services.IAccountService
 	BaseController
 	ctx iris.Context
+	mu  sync.Mutex
 }
 
 func (a *AccountController) GetColumn(ctx iris.Context) {
@@ -18,7 +22,7 @@ func (a *AccountController) GetColumn(ctx iris.Context) {
 
 func (a *AccountController) Get(ctx iris.Context) {
 	var (
-		accounts []models.ResultAccount
+		accounts []models.Account
 		total    uint
 		err      error
 	)
@@ -26,20 +30,20 @@ func (a *AccountController) Get(ctx iris.Context) {
 	if ty == "oa" {
 		accounts, total, err = a.service.FindByOa(a.GetPer(ctx), a.GetPage(ctx), a.handlerGetParams(), []string{}, []string{})
 	} else {
+		accounts, total, err = a.service.FindByCrm(a.GetPer(ctx), a.GetPage(ctx), a.handlerGetParams(), []string{}, []string{})
 	}
 	if err != nil {
-		a.Render500(ctx,err,"")
+		a.Render500(ctx, err, "")
 		return
 	}
 	dataArray := make([]map[string]interface{}, 0)
+	red := redis.Redis{}
+	a.mu.Lock()
+	defer a.mu.Unlock()
 	for _, v := range accounts {
-		result, _ := a.StructToMap(v, ctx)
-		dataArray = append(dataArray, result)
+		dataArray = append(dataArray, a.handlerData(red, v))
 	}
-	a.RenderSuccessJson(ctx, iris.Map{
-		"data":  dataArray,
-		"total": total,
-	})
+	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": dataArray, "total": total,})
 }
 
 func (a *AccountController) Create(ctx iris.Context) {
@@ -48,12 +52,12 @@ func (a *AccountController) Create(ctx iris.Context) {
 		err     error
 	)
 	if err = ctx.ReadJSON(&account); err != nil {
-		a.Render400(ctx,err,err.Error())
+		a.Render400(ctx, err, err.Error())
 		return
 	}
 	account, err = a.service.Create(account, ctx.GetLocale().Language())
 	if err != nil {
-		a.Render500(ctx,err, ctx.GetLocale().GetMessage("error.inter_error"))
+		a.Render500(ctx, err, ctx.GetLocale().GetMessage("error.inter_error"))
 		return
 	}
 	data, _ := a.StructToMap(account, ctx)
@@ -68,15 +72,15 @@ func (a *AccountController) Update(ctx iris.Context) {
 		id            int
 	)
 	if id, err = ctx.Params().GetInt("id"); err != nil {
-		a.Render400(ctx,err,err.Error())
+		a.Render400(ctx, err, err.Error())
 		return
 	}
 	if err = ctx.ReadJSON(&updateContent); err != nil {
-		a.Render400(ctx,err,err.Error())
+		a.Render400(ctx, err, err.Error())
 		return
 	}
 	if account, err = a.service.UpdateById(uint(id), updateContent, ctx.GetLocale().Language()); err != nil {
-		a.Render500(ctx,err,"")
+		a.Render500(ctx, err, "")
 	}
 	returnData, _ := a.StructToMap(account, ctx)
 	a.RenderSuccessJson(ctx, returnData)
@@ -88,11 +92,11 @@ func (a *AccountController) Edit(ctx iris.Context) {
 func (a *AccountController) Delete(ctx iris.Context) {
 	id, err := ctx.Params().GetInt("id")
 	if err != nil {
-		a.Render400(ctx,err,err.Error())
+		a.Render400(ctx, err, err.Error())
 		return
 	}
 	if err = a.service.Delete(uint(id)); err != nil {
-		a.Render500(ctx,err,"")
+		a.Render500(ctx, err, "")
 	} else {
 		a.RenderSuccessJson(ctx, iris.Map{})
 	}
@@ -113,4 +117,10 @@ func (a *AccountController) handlerGetParams() map[string]interface{} {
 	searchColumn["category-eq"] = a.ctx.URLParamDefault("category", "")
 	searchColumn["user_company_id-eq"] = a.ctx.URLParamDefault("user_company_id", "")
 	return searchColumn
+}
+func (a *AccountController) handlerData(red redis.Redis, account models.Account) map[string]interface{} {
+	data, _ := a.StructToMap(account, a.ctx)
+	data["user_company_id_value"] = data["user_company_id"]
+	data["user_company_id"] = red.GetCompany(data["user_company_id"], "name_nick")
+	return data
 }

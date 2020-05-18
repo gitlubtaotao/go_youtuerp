@@ -12,7 +12,9 @@ type IAccountService interface {
 	First(id uint) (models.Account, error)
 	Create(account models.Account, language string) (models.Account, error)
 	FindByOa(per, page uint, filter map[string]interface{}, selectKeys []string,
-		order []string) (accounts []models.ResultAccount, total uint, err error)
+		order []string) (accounts []models.Account, total uint, err error)
+	FindByCrm(per, page uint, filter map[string]interface{}, selectKeys []string,
+		orders []string) (accounts []models.Account, total uint, err error)
 }
 
 type AccountService struct {
@@ -37,8 +39,12 @@ func (a AccountService) First(id uint) (models.Account, error) {
 }
 
 func (a AccountService) FindByOa(per, page uint, filter map[string]interface{}, selectKeys []string,
-	order []string) (accounts []models.ResultAccount, total uint, err error) {
+	order []string) (accounts []models.Account, total uint, err error) {
 	return a.repo.FindByOa(per, page, filter, selectKeys, order)
+}
+func (a AccountService) FindByCrm(per, page uint, filter map[string]interface{}, selectKeys []string,
+	orders []string) (accounts []models.Account, total uint, err error) {
+	return a.repo.FindByCrm(per, page, filter, selectKeys, orders)
 }
 
 func (a AccountService) Create(account models.Account, language string) (models.Account, error) {

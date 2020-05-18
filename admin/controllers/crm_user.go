@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"github.com/kataras/golog"
 	"github.com/kataras/iris/v12"
 	"net/http"
+	"sync"
 	"youtuerp/conf"
 	"youtuerp/models"
 	"youtuerp/redis"
@@ -15,6 +15,7 @@ type CrmUser struct {
 	service services.ICrmUser
 	ctx     iris.Context
 	enum    conf.Enum
+	mu      sync.Mutex
 }
 
 func (c *CrmUser) GetColumn(ctx iris.Context) {
@@ -30,12 +31,12 @@ func (c *CrmUser) Get(ctx iris.Context) {
 	}
 	dataArray := make([]map[string]interface{}, 0)
 	red := redis.NewRedis()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	for _, user := range users {
 		data := c.handleData(red, user)
 		dataArray = append(dataArray, data)
 	}
-	golog.Warnf("warn is %v","eeee")
-	golog.Error("2222222")
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": dataArray, "total": total,})
 }
 

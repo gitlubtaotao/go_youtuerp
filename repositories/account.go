@@ -9,7 +9,9 @@ import (
 type IAccountRepository interface {
 	Delete(id uint) error
 	UpdateById(id uint, updateContent models.Account) (models.Account, error)
-	FindByOa(per, page uint, filter map[string]interface{}, selectKeys []string, order []string) (accounts []models.ResultAccount,
+	FindByOa(per, page uint, filter map[string]interface{}, selectKeys []string, order []string) (accounts []models.Account,
+		total uint, err error)
+	FindByCrm(per, page uint, filter map[string]interface{}, selectKeys []string, orders []string) (accounts []models.Account,
 		total uint, err error)
 	Create(account models.Account) (models.Account, error)
 	First(id uint) (models.Account, error)
@@ -43,10 +45,16 @@ func (a AccountRepository) First(id uint) (models.Account, error) {
 }
 
 func (a AccountRepository) FindByOa(per, page uint, filter map[string]interface{}, selectKeys []string,
-	order []string) (accounts []models.ResultAccount, total uint, err error) {
+	order []string) (accounts []models.Account, total uint, err error) {
 	sqlCon := database.GetDBCon().Model(&models.Account{})
 	sqlCon = sqlCon.Scopes(a.defaultOaScoped)
-	return a.find(sqlCon, per, page, filter, selectKeys, order, true)
+	return a.Find(sqlCon, per, page, filter, selectKeys, order, true)
+}
+func (a AccountRepository) FindByCrm(per, page uint, filter map[string]interface{}, selectKeys []string,
+	orders []string) (accounts []models.Account, total uint, err error) {
+	sqlCon := database.GetDBCon().Model(&models.Account{})
+	sqlCon = sqlCon.Scopes(a.defaultCrmScoped)
+	return a.Find(sqlCon, per, page, filter, selectKeys, orders, true)
 }
 
 //创建银行账户信息
@@ -58,8 +66,8 @@ func (a AccountRepository) Create(account models.Account) (models.Account, error
 	return account, err
 }
 
-func (a AccountRepository) find(sqlCon *gorm.DB, per, page uint, filter map[string]interface{}, selectKeys []string,
-	order []string, isCount bool) (accounts []models.ResultAccount,
+func (a AccountRepository) Find(sqlCon *gorm.DB, per, page uint, filter map[string]interface{}, selectKeys []string,
+	order []string, isCount bool) (accounts []models.Account,
 	total uint, err error) {
 	if len(filter) > 0 {
 		sqlCon = sqlCon.Scopes(a.Ransack(filter))
@@ -78,12 +86,13 @@ func (a AccountRepository) find(sqlCon *gorm.DB, per, page uint, filter map[stri
 		return
 	}
 	for rows.Next() {
-		var data models.ResultAccount
+		var data models.Account
 		_ = sqlCon.ScanRows(rows, &data)
 		accounts = append(accounts, data)
 	}
 	return
 }
+
 
 func (a AccountRepository) selectKeys() []string {
 	return []string{"accounts.*", "user_companies.name_nick as user_companies_name_nick",}
@@ -91,6 +100,11 @@ func (a AccountRepository) selectKeys() []string {
 
 func (a AccountRepository) defaultOaScoped(db *gorm.DB) *gorm.DB {
 	db = db.Joins("inner join user_companies on user_companies.id = accounts.user_company_id and user_companies.company_type = 4")
+	return db
+}
+
+func (a AccountRepository) defaultCrmScoped(db *gorm.DB) *gorm.DB {
+	db = db.Joins("inner join user_companies on user_companies.id = accounts.user_company_id and user_companies.company_type in (?) ", []int{1, 2, 3})
 	return db
 }
 
