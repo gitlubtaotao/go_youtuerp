@@ -67,12 +67,12 @@ type renderError struct {
 //render 500 error
 func (r renderError) Render500(ctx iris.Context, err error, message string) {
 	if message == "" {
-		message = ctx.GetLocale().GetMessage("error.inter_err")
+		message = ctx.GetLocale().GetMessage("error.inter_error")
 	}
 	if err != nil {
 		conf.IrisApp.Logger().Errorf("render 500 error %v", err)
 	}
-	ctx.StatusCode(http.StatusInternalServerError)
+	//ctx.StatusCode(http.StatusInternalServerError)
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusInternalServerError, "message": message})
 }
 
@@ -84,7 +84,7 @@ func (r renderError) Render400(ctx iris.Context, err error, message string) {
 	if err != nil {
 		conf.IrisApp.Logger().Warnf("render 400 warn %v", err)
 	}
-	ctx.StatusCode(http.StatusBadRequest)
+	//ctx.StatusCode(http.StatusBadRequest)
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusBadRequest, "message": message})
 }
 
@@ -95,7 +95,7 @@ func (r renderError) Render401(ctx iris.Context, err error, message string) {
 	if err != nil {
 		conf.IrisApp.Logger().Warnf("render 401 warn %v", err)
 	}
-	ctx.StatusCode(http.StatusBadRequest)
+	//ctx.StatusCode(http.StatusBadRequest)
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusUnauthorized, "message": message})
 }
 
