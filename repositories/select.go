@@ -44,7 +44,7 @@ func (s *SelectRepository) FindTable(tableName string, name string, scope map[st
 	if name != "" {
 		sqlCon = s.defaultScope(sqlCon, tableName, name)
 	}
-	sqlCon = sqlCon.Where(scope).Where("deleted_at is NULL").Scopes(s.Paginate(20, 1)).Select(selectKeys)
+	sqlCon = sqlCon.Scopes(s.Ransack(scope)) .Where("deleted_at is NULL").Scopes(s.Paginate(50, 1)).Select(selectKeys)
 	rows, err := sqlCon.Rows()
 	if err != nil {
 		return []models.SelectResult{}, nil

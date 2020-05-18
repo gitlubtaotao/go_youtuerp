@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"fmt"
 	"github.com/jinzhu/gorm"
 	"reflect"
 	"strings"
@@ -93,6 +92,9 @@ func (c crud) Count(sqlCon *gorm.DB, filter map[string]interface{}, funcs ...fun
 
 func (c crud) ransack(selectColumn map[string]interface{}) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
+		if len(selectColumn) == 0{
+			return db
+		}
 		for k, v := range selectColumn {
 			if c.notSearchValue(v) {
 				continue
@@ -128,7 +130,6 @@ func (c crud) ransack(selectColumn map[string]interface{}) func(db *gorm.DB) *go
 			case "lCount":
 				db = db.Where(key+" LIKE ? ", "%"+v.(string))
 			case "rCount":
-				fmt.Println("33333")
 				db = db.Where(key+" LIKE ? ", v.(string)+"%")
 			}
 		}
@@ -158,12 +159,14 @@ func (c crud) keyString(splitArray []string) string {
 //空值不进行查询处理
 func (c crud) notSearchValue(value interface{}) bool {
 	v := reflect.ValueOf(value)
-	kind := v.Kind()
-	if kind == reflect.Array || kind == reflect.Struct || kind == reflect.Slice {
-		return value == nil
+	switch v.Kind() {
+	case reflect.Array,reflect.Struct,reflect.Slice:
+			return value == nil
+	case reflect.Bool:
+		return value.(bool)
+	case reflect.Int,reflect.Int8,reflect.Int16,reflect.Int32,reflect.Int64:
+		return value == 0
+	default:
+		return value == ""
 	}
-	if kind == reflect.Bool {
-		return false
-	}
-	return value == ""
 }

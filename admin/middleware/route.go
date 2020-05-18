@@ -22,7 +22,6 @@ type IRoute interface {
 	OtherRegister()
 }
 
-
 var allowMethods = []string{iris.MethodGet, iris.MethodPost, iris.MethodPatch,
 	iris.MethodDelete, iris.MethodOptions}
 
@@ -140,13 +139,23 @@ func (r *Route) CrmRegister() {
 		crmCompanyApi.Use(crmCompany.Before)
 		crmCompanyApi.Post("/column", j.Serve, crmCompany.GetColumn)
 		crmCompanyApi.Post("/create", j.Serve, crmCompany.Create)
-		crmCompanyApi.Post("/data",j.Serve,crmCompany.Get)
-		crmCompanyApi.Post("/create",j.Serve,crmCompany.Create)
-		crmCompanyApi.Get("/{id:uint}/edit",j.Serve,crmCompany.Edit)
+		crmCompanyApi.Post("/data", j.Serve, crmCompany.Get)
+		crmCompanyApi.Post("/create", j.Serve, crmCompany.Create)
+		crmCompanyApi.Get("/{id:uint}/edit", j.Serve, crmCompany.Edit)
 		crmCompanyApi.Patch("/{id:uint}/update", j.Serve, crmCompany.Update)
 		crmCompanyApi.Delete("/{id:uint}/delete", j.Serve, crmCompany.Delete)
 		crmCompanyApi.Patch("/{id:uint}/changeStatus", j.Serve, crmCompany.ChangeStatus)
 		crmCompanyApi.Patch("/{id:uint}/changeType", j.Serve, crmCompany.ChangeType)
+	}
+	crmUserApi := r.app.Party("/crm/users")
+	{
+		crmUser := controllers.CrmUser{}
+		crmUserApi.Use(crmUser.Before)
+		crmUserApi.Post("/column", j.Serve, crmUser.GetColumn)
+		crmUserApi.Post("/data", j.Serve, crmUser.Get)
+		crmUserApi.Post("/create", j.Serve, crmUser.Create)
+		crmUserApi.Patch("/{id:uint}/update", j.Serve, crmUser.Update)
+		crmUserApi.Delete("/{id:uint}/delete",j.Serve,crmUser.Delete)
 	}
 }
 

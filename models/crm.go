@@ -71,6 +71,21 @@ type CrmCompany struct {
 }
 
 type CrmUser struct {
+	ID            uint        `gorm:"primary_key"json:"id"`
+	CreatedAt     time.Time   `json:"created_at"`
+	UpdatedAt     time.Time   `json:"updated_at"`
+	DeletedAt     *time.Time  `sql:"index"`
+	Email         string      `grom:"type:varchar(100);email;unique;not_null;" json:"email" validate:"required,email"` // email
+	UserCompanyId int         `form:"user_company_id" json:"user_company_id" validate:"required"`
+	Name          string      `form:"name" json:"name" validate:"required"` // 姓名
+	Phone         string      `gorm:"UNIQUE_INDEX;size:64" form:"phone" json:"phone" validate:"required"`
+	Address       string      `json:"address" form:"address"`
+	Remarks       string      `gorm:"size:65535" json:"remarks" form:"remarks"`
+	Sex           uint        `gorm:"default:0" json:"sex" form:"sex"`
+	UserCompany   UserCompany `gorm:"foreignkey:user_company_id" validate:"structonly"`
+	Avatar        string      `gorm:"size:255" json:"avatar" yaml:"avatar"`
+	IsKeyContact  bool        `gorm:"default: false" json:"is_key_contact"`
+	CompanyType   uint        `json:"company_type"`
 }
 
 type CrmTrack struct {
@@ -117,5 +132,10 @@ func (c *CrmClue) BeforeCreate(scope *gorm.Scope) (err error) {
 
 func (c *CrmCompany) BeforeCreate(scope *gorm.Scope) (err error) {
 	c.Status = "approving"
+	return
+}
+
+func (c *CrmUser) BeforeCreate(scope *gorm.Scope) (err error) {
+	c.CompanyType = CompanyTypeCS
 	return
 }

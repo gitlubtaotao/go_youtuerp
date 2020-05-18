@@ -30,10 +30,15 @@ type User struct {
 	UserCompany         UserCompany `gorm:"foreignkey:user_company_id" validate:"structonly"`
 	Department          Department  `gorm:"foreignkey:department_id" validate:"structonly"`
 	Avatar              string      `gorm:"size:255" json:"avatar" yaml:"avatar"`
-	IsKeyContact        bool        `gorm:"default: false"`
+	IsKeyContact        bool        `gorm:"default: false" json:"is_key_contact"`
 	CompanyType         uint        `json:"company_type"`
 }
 
 func (User) TableName() string {
 	return "users"
 }
+
+const (
+	UserMan = iota + 1
+	UserWom
+)

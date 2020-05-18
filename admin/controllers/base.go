@@ -57,7 +57,7 @@ func (b *BaseController) GetPage(ctx iris.Context) uint {
 	return uint(ctx.URLParamIntDefault("page", 1))
 }
 func (b *BaseController) GetPer(ctx iris.Context) uint {
-	return uint(ctx.URLParamIntDefault("per", 20))
+	return uint(ctx.URLParamIntDefault("limit", 20))
 }
 
 //错误消息处理
