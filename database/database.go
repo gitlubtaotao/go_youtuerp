@@ -58,13 +58,10 @@ func (d *DataBase) InitDataBase() error {
 
 func (d *DataBase) Migration() error {
 	db := GetDBCon()
-	db.AutoMigrate(&models.Company{}, &models.User{}, &models.Account{},&models.Role{})
+	db.AutoMigrate(&models.Company{}, &models.User{},
+		&models.Account{}, &models.Role{}, &models.Invoice{}, &models.Address{})
 	db.AutoMigrate(&models.Department{})
 	db.AutoMigrate(&models.CrmClue{}, &models.CrmTrack{})
 	db.AutoMigrate(&models.Setting{}, &models.NumberSetting{})
 	return nil
 }
-
-
-
-
