@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/go-redis/redis/v7"
+	"github.com/kataras/golog"
 	"reflect"
 	"strconv"
 	"sync"
@@ -73,7 +74,7 @@ func (r Redis) HGet(tableName string, key interface{}, field string) string {
 	if conf.ReisCon.HExists(dst, field).Val() {
 		val, err := conf.ReisCon.HGet(dst, field).Result()
 		if err != nil {
-			conf.IrisApp.Logger().Warnf("redis get key is %v, field is %v, error is %v", key, field, err.Error())
+			golog.Warnf("redis get key is %v, field is %v, error is %v", key, field, err.Error())
 			return ""
 		}
 		return val
@@ -97,7 +98,7 @@ func (r Redis) HMGet(key string, fields ...string) ([]interface{}, error) {
 func (r Redis) HGetAll(tableName string, key string) map[string]string {
 	val, err := conf.ReisCon.HGetAll(r.CombineKey(tableName, key)).Result()
 	if err != nil {
-		conf.IrisApp.Logger().Warnf("redis get all key %v, error is %v", key, err)
+		golog.Warnf("redis get all key %v, error is %v", key, err)
 		return map[string]string{}
 	}
 	return val

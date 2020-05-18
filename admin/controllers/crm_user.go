@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/kataras/golog"
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"youtuerp/conf"
@@ -33,6 +34,8 @@ func (c *CrmUser) Get(ctx iris.Context) {
 		data := c.handleData(red, user)
 		dataArray = append(dataArray, data)
 	}
+	golog.Warnf("warn is %v","eeee")
+	golog.Error("2222222")
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": dataArray, "total": total,})
 }
 

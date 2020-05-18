@@ -1,9 +1,9 @@
 package controllers
 
 import (
+	"github.com/kataras/golog"
 	"github.com/kataras/iris/v12"
 	"net/http"
-	"youtuerp/conf"
 	"youtuerp/services"
 )
 
@@ -57,7 +57,7 @@ func (s *SelectController) base(ctx iris.Context) (readData ReadData, err error)
 	s.ctx = ctx
 	err = ctx.ReadJSON(&readData)
 	if err != nil {
-		conf.IrisApp.Logger().Errorf("select api read data error %v", err)
+		golog.Errorf("select api read data error %v", err)
 		return
 	}
 	return

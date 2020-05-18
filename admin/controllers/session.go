@@ -2,10 +2,10 @@ package controllers
 
 import (
 	"errors"
+	"github.com/kataras/golog"
 	"github.com/kataras/iris/v12"
 	"sync"
 	"time"
-	"youtuerp/conf"
 	"youtuerp/models"
 	"youtuerp/services"
 	"youtuerp/tools"
@@ -193,7 +193,7 @@ func (s *SessionController) UpdateAvatar(ctx iris.Context, key string) {
 	go func(s *SessionController, user *models.Employee, updateColumn map[string]interface{}) {
 		defer sy.Done()
 		err := s.EService.UpdateColumn(user, updateColumn)
-		conf.IrisApp.Logger().Error(err)
+		golog.Error(err)
 	}(s, user, updateColumn)
 	sy.Wait()
 	return

@@ -1,6 +1,8 @@
 package redis
 
-import "youtuerp/conf"
+import (
+	"github.com/kataras/golog"
+)
 
 func (r Redis) GetCompany(id interface{}, field string) string {
 	if field == "" {
@@ -10,7 +12,7 @@ func (r Redis) GetCompany(id interface{}, field string) string {
 		return value
 	} else {
 		if err := r.SetCompany(id); err != nil {
-			conf.IrisApp.Logger().Errorf("set company redis is error %v", err)
+			golog.Errorf("set company redis is error %v", err)
 			return ""
 		}
 		return r.HGet("user_companies", id, field)
@@ -25,7 +27,7 @@ func (r Redis) GetCommon(table string, id interface{}, field string) string {
 		return value
 	} else {
 		if err := r.SetCommon(table, id, []string{}); err != nil {
-			conf.IrisApp.Logger().Errorf("set %v redis is error %v", table, err)
+			golog.Errorf("set %v redis is error %v", table, err)
 			return ""
 		}
 		return r.HGet(table, id, field)

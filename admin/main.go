@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/kataras/golog"
 	"github.com/kataras/iris/v12"
-	"io"
 	"os"
 	"runtime/trace"
 	"youtuerp/conf"
@@ -22,7 +22,12 @@ func main() {
 		panic(err)
 	}
 	defer f.Close()
-	app.Logger().SetOutput(io.MultiWriter(f, os.Stdout))
+	app.Logger().AddOutput(f)
+	if conf.Configuration.Env == "dev" {
+		golog.SetLevel("debug")
+	} else {
+		golog.SetLevel("error")
+	}
 	config := iris.WithConfiguration(iris.YAML("../conf/iris.yaml"))
 	_ = app.Run(iris.Addr(":8082"), config, iris.WithoutServerError(iris.ErrServerClosed))
 }

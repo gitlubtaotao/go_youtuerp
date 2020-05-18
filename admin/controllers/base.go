@@ -2,9 +2,9 @@ package controllers
 
 import (
 	"github.com/iris-contrib/middleware/jwt"
+	"github.com/kataras/golog"
 	"github.com/kataras/iris/v12"
 	"net/http"
-	"youtuerp/conf"
 	"youtuerp/models"
 	"youtuerp/services"
 )
@@ -70,7 +70,7 @@ func (r renderError) Render500(ctx iris.Context, err error, message string) {
 		message = ctx.GetLocale().GetMessage("error.inter_error")
 	}
 	if err != nil {
-		conf.IrisApp.Logger().Errorf("render 500 error %v", err)
+		golog.Errorf("render 500 error %v", err)
 	}
 	//ctx.StatusCode(http.StatusInternalServerError)
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusInternalServerError, "message": message})
@@ -82,7 +82,7 @@ func (r renderError) Render400(ctx iris.Context, err error, message string) {
 		message = ctx.GetLocale().GetMessage("error.params_error")
 	}
 	if err != nil {
-		conf.IrisApp.Logger().Warnf("render 400 warn %v", err)
+		golog.Warnf("render 400 warn %v", err)
 	}
 	//ctx.StatusCode(http.StatusBadRequest)
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusBadRequest, "message": message})
@@ -93,7 +93,7 @@ func (r renderError) Render401(ctx iris.Context, err error, message string) {
 		message = ctx.GetLocale().GetMessage("error.invalid_error")
 	}
 	if err != nil {
-		conf.IrisApp.Logger().Warnf("render 401 warn %v", err)
+		golog.Warnf("render 401 warn %v", err)
 	}
 	//ctx.StatusCode(http.StatusBadRequest)
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusUnauthorized, "message": message})
