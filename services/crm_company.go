@@ -13,7 +13,7 @@ type ICrmCompanyService interface {
 	Find(per, page uint, filter map[string]interface{}, selectKeys []string,
 		orders []string) ([]models.CrmCompany, uint, error)
 	Create(company models.CrmCompany, language string) (models.CrmCompany, error)
-	First(id uint, isRole bool) (models.CrmCompany, error)
+	First(id uint, isRole bool,isUser bool) (models.CrmCompany, error)
 }
 
 type CrmCompanyService struct {
@@ -40,8 +40,8 @@ func (c CrmCompanyService) Update(id uint, company models.CrmCompany, language s
 	return c.repo.Update(id, company)
 }
 
-func (c CrmCompanyService) First(id uint, isRole bool) (models.CrmCompany, error) {
-	return c.repo.First(id, isRole)
+func (c CrmCompanyService) First(id uint, isRole bool,isUser bool) (models.CrmCompany, error) {
+	return c.repo.First(id, isRole,isUser)
 }
 
 func (c CrmCompanyService) Find(per, page uint, filter map[string]interface{}, selectKeys []string,

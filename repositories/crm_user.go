@@ -35,7 +35,7 @@ func (c CrmUser) Find(per, page uint, filter map[string]interface{}, selectKeys 
 	if len(selectKeys) == 0 {
 		selectKeys = []string{"users.*"}
 	}
-	sqlConn = c.crud.Where(sqlConn, filter, selectKeys, c.Paginate(per, page))
+	sqlConn = c.crud.Where(sqlConn, filter, selectKeys, c.Paginate(per, page),c.OrderBy(order))
 	err = sqlConn.Find(&users).Error
 	return users, total, err
 }

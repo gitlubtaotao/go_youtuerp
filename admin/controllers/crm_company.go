@@ -75,7 +75,7 @@ func (c *CrmCompany) Edit(ctx iris.Context) {
 		c.Render400(ctx, err, err.Error())
 		return
 	}
-	if company, err = c.service.First(id, true); err != nil {
+	if company, err = c.service.First(id, true,false); err != nil {
 		c.Render500(ctx, err, err.Error())
 		return
 	}

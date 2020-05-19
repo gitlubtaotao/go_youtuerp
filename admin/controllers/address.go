@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/kataras/golog"
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"sync"
@@ -64,7 +65,7 @@ func (a *Address) Create(ctx iris.Context) {
 
 func (a *Address) Update(ctx iris.Context) {
 	var (
-		account models.Address
+		address models.Address
 		err     error
 		id      int
 	)
@@ -72,14 +73,15 @@ func (a *Address) Update(ctx iris.Context) {
 		a.Render400(ctx, err, err.Error())
 		return
 	}
-	if err = ctx.ReadJSON(&account); err != nil {
+	if err = ctx.ReadJSON(&address); err != nil {
 		a.Render400(ctx, err, err.Error())
 		return
 	}
-	if account, err = a.service.UpdateById(uint(id), account, ctx.GetLocale().Language()); err != nil {
+	golog.Infof("%v",address)
+	if address, err = a.service.UpdateById(uint(id), address, ctx.GetLocale().Language()); err != nil {
 		a.Render500(ctx, err, "")
 	}
-	data := a.handlerData(redis.NewRedis(), account)
+	data := a.handlerData(redis.NewRedis(), address)
 	a.RenderSuccessJson(ctx, data)
 }
 

@@ -11,7 +11,7 @@ type ICrmCompany interface {
 	UpdateByMap(id uint, attr map[string]interface{}) error
 	Find(per, page uint, filter map[string]interface{}, selectKeys []string,
 		orders []string, isTotal bool) ([]models.CrmCompany, uint, error)
-	First(id uint, isRole bool) (models.CrmCompany, error)
+	First(id uint, isRole bool,isUser bool) (models.CrmCompany, error)
 	Create(company models.CrmCompany) (models.CrmCompany, error)
 }
 
@@ -77,10 +77,13 @@ func (c CrmCompany) Create(company models.CrmCompany) (models.CrmCompany, error)
 	return company, err
 }
 
-func (c CrmCompany) First(id uint, isRole bool) (company models.CrmCompany, err error) {
+func (c CrmCompany) First(id uint, isRole bool,isUser bool) (company models.CrmCompany, err error) {
 	sqlConn := database.GetDBCon().Model(&models.CrmCompany{})
 	if isRole {
 		sqlConn = sqlConn.Preload("Roles")
+	}
+	if isUser{
+		sqlConn = sqlConn.Preload("CrmUsers")
 	}
 	err = sqlConn.First(&company, "user_companies.id = ?", id).Error
 	return

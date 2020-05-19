@@ -68,6 +68,7 @@ type CrmCompany struct {
 	Distinct         string     `gorm:"size:64"`
 	Code             string     `json:"code"`
 	Roles            []Role     `gorm:"polymorphic:Source;" json:"roles"`
+	CrmUsers         []CrmUser  `gorm:"foreignkey:UserCompanyId;association_foreignkey:Id;association_autoupdate:false" json:"crm_users"`
 }
 
 type CrmUser struct {
