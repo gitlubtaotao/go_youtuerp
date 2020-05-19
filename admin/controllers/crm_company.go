@@ -75,7 +75,7 @@ func (c *CrmCompany) Edit(ctx iris.Context) {
 		c.Render400(ctx, err, err.Error())
 		return
 	}
-	if company, err = c.service.First(id, true,false); err != nil {
+	if company, err = c.service.First(id, "Roles"); err != nil {
 		c.Render500(ctx, err, err.Error())
 		return
 	}
@@ -137,7 +137,11 @@ func (c *CrmCompany) ChangeStatus(ctx iris.Context) {
 		return
 	}
 	status = ctx.URLParam("status")
-	_ = c.service.UpdateByMap(id, map[string]interface{}{"status": status})
+	if err = c.service.UpdateByMap(id, map[string]interface{}{"status": status}); err != nil {
+		c.Render400(ctx, err, err.Error())
+	} else {
+		c.RenderSuccessJson(ctx, iris.Map{})
+	}
 }
 
 func (c *CrmCompany) ChangeType(ctx iris.Context) {
@@ -154,7 +158,26 @@ func (c *CrmCompany) ChangeType(ctx iris.Context) {
 	companyType, _ = ctx.URLParamInt("company_type")
 	userSalesman, _ = ctx.URLParamInt("user_salesman_id")
 	_ = c.service.UpdateByMap(id, map[string]interface{}{
-		"company_type": companyType,"user_salesman_id": uint(userSalesman)})
+		"company_type": companyType, "user_salesman_id": uint(userSalesman)})
+}
+
+func (c *CrmCompany) Show(ctx iris.Context) {
+	var (
+		id      uint
+		err     error
+		company models.CrmCompany
+	)
+	if id, err = ctx.Params().GetUint("id"); err != nil {
+		c.Render400(ctx, err, err.Error())
+		return
+	}
+	company, err = c.service.First(id, "Roles", "CrmUsers", "Accounts", "Invoices", "Address", "CrmTracks")
+	if err != nil {
+		c.Render500(ctx, err, "")
+		return
+	}
+	data, _ := c.handleCompany(redis.NewRedis(), company)
+	c.RenderSuccessJson(ctx, data)
 }
 
 func (c *CrmCompany) Before(ctx iris.Context) {
@@ -196,9 +219,9 @@ func (c *CrmCompany) handlerGetParams(companyType string) map[string]interface{}
 	searchColumn["user_companies.user_salesman_id-eq"] = c.ctx.URLParamDefault("create_id", "")
 	searchColumn["user_companies.parent_id-eq"] = c.ctx.URLParamDefault("company_type", "")
 	status := c.ctx.URLParamDefault("status", "")
-	if status == ""{
-		searchColumn["user_companies.status-in"] = []string{"rejected","approved","approving"}
-	}else{
+	if status == "" {
+		searchColumn["user_companies.status-in"] = []string{"rejected", "approved", "approving"}
+	} else {
 		searchColumn["user_companies.status-eq"] = status
 	}
 	if companyType == "customer" {

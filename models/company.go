@@ -30,6 +30,7 @@ type Company struct {
 	Province         string     `gorm:"size:64"`
 	Distinct         string     `gorm:"size:64"`
 	Code             string     `gorm:"size:64"`
+	Source           string     `gorm:"size:64" json:"source"`
 }
 
 //定义公司类型

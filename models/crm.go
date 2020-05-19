@@ -69,7 +69,12 @@ type CrmCompany struct {
 	Code             string     `json:"code"`
 	Roles            []Role     `gorm:"polymorphic:Source;" json:"roles"`
 	CrmUsers         []CrmUser  `gorm:"foreignkey:UserCompanyId;association_foreignkey:Id;association_autoupdate:false" json:"crm_users"`
+	Accounts         []Account  `gorm:"foreignkey:UserCompanyId;association_autoupdate:false" json:"accounts"`
+	Invoices         []Invoice  `gorm:"foreignkey:UserCompanyId;association_autoupdate:false" json:"invoices"`
+	Address          []Address  `gorm:"foreignkey:UserCompanyId" json:"address"`
+	CrmTracks        []CrmTrack `gorm:"polymorphic:Source;" json:"crm_tracks"`
 }
+
 
 type CrmUser struct {
 	ID            uint        `gorm:"primary_key"json:"id"`

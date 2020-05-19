@@ -135,17 +135,18 @@ func (r *Route) CrmRegister() {
 	}
 	crmCompanyApi := r.app.Party("/crm/companies")
 	{
-		crmCompany := controllers.CrmCompany{}
-		crmCompanyApi.Use(crmCompany.Before)
-		crmCompanyApi.Post("/column", j.Serve, crmCompany.GetColumn)
-		crmCompanyApi.Post("/create", j.Serve, crmCompany.Create)
-		crmCompanyApi.Post("/data", j.Serve, crmCompany.Get)
-		crmCompanyApi.Post("/create", j.Serve, crmCompany.Create)
-		crmCompanyApi.Get("/{id:uint}/edit", j.Serve, crmCompany.Edit)
-		crmCompanyApi.Patch("/{id:uint}/update", j.Serve, crmCompany.Update)
-		crmCompanyApi.Delete("/{id:uint}/delete", j.Serve, crmCompany.Delete)
-		crmCompanyApi.Patch("/{id:uint}/changeStatus", j.Serve, crmCompany.ChangeStatus)
-		crmCompanyApi.Patch("/{id:uint}/changeType", j.Serve, crmCompany.ChangeType)
+		record := controllers.CrmCompany{}
+		crmCompanyApi.Use(record.Before)
+		crmCompanyApi.Post("/column", j.Serve, record.GetColumn)
+		crmCompanyApi.Post("/create", j.Serve, record.Create)
+		crmCompanyApi.Post("/data", j.Serve, record.Get)
+		crmCompanyApi.Post("/create", j.Serve, record.Create)
+		crmCompanyApi.Get("/{id:uint}/show",j.Serve,record.Show)
+		crmCompanyApi.Get("/{id:uint}/edit", j.Serve, record.Edit)
+		crmCompanyApi.Patch("/{id:uint}/update", j.Serve, record.Update)
+		crmCompanyApi.Delete("/{id:uint}/delete", j.Serve, record.Delete)
+		crmCompanyApi.Patch("/{id:uint}/changeStatus", j.Serve, record.ChangeStatus)
+		crmCompanyApi.Patch("/{id:uint}/changeType", j.Serve, record.ChangeType)
 	}
 	crmUserApi := r.app.Party("/crm/users")
 	{
