@@ -30,13 +30,12 @@ func (b BaseCode) Update(id uint, code models.BaseDataCode, language string) err
 	if err := b.repo.Update(id, code); err != nil {
 		return err
 	}
-	redis.HSetValue("base_data_codes", id, map[string]interface{}{
+	go redis.HSetValue("base_data_codes", id, map[string]interface{}{
 		"id":   id,
 		"name": code.Name,
 	})
 	return nil
 }
-
 
 func (b BaseCode) Delete(id uint) error {
 	return b.repo.Delete(id)
@@ -51,7 +50,7 @@ func (b BaseCode) Create(code models.BaseDataCode, language string) (models.Base
 	if err != nil {
 		return result, err
 	}
-	redis.HSetValue("base_data_codes", result.ID, map[string]interface{}{
+	go redis.HSetValue("base_data_codes", result.ID, map[string]interface{}{
 		"id":   result.ID,
 		"name": result.Name,
 	})
