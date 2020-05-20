@@ -18,6 +18,7 @@ type IRoute interface {
 	SessionRegister()
 	OaRegister()
 	CrmRegister()
+	BaseDataRegister()
 	SelectRegister()
 	OtherRegister()
 }
@@ -30,8 +31,16 @@ type Route struct {
 	app *iris.Application
 }
 
-func NewRoute(app *iris.Application) IRoute {
-	return &Route{app: app}
+func (r *Route) BaseDataRegister() {
+	j := r.jwtAccess()
+	r.app.PartyFunc("/base/codes", func(c iris.Party) {
+		record := controllers.BaseCodeController{}
+		c.Use(record.Before)
+		c.Get("/column", j.Serve, record.GetColumn)
+		c.Post("/create", j.Serve, record.Create)
+		c.Post("/data", j.Serve, record.Get)
+		c.Delete("/{id:uint}/delete", j.Serve, record.Delete)
+	})
 }
 
 func (r *Route) DefaultRegister() {
@@ -39,6 +48,7 @@ func (r *Route) DefaultRegister() {
 	r.OaRegister()
 	r.CrmRegister()
 	r.SelectRegister()
+	r.BaseDataRegister()
 	r.OtherRegister()
 }
 
@@ -141,7 +151,7 @@ func (r *Route) CrmRegister() {
 		crmCompanyApi.Post("/create", j.Serve, record.Create)
 		crmCompanyApi.Post("/data", j.Serve, record.Get)
 		crmCompanyApi.Post("/create", j.Serve, record.Create)
-		crmCompanyApi.Get("/{id:uint}/show",j.Serve,record.Show)
+		crmCompanyApi.Get("/{id:uint}/show", j.Serve, record.Show)
 		crmCompanyApi.Get("/{id:uint}/edit", j.Serve, record.Edit)
 		crmCompanyApi.Patch("/{id:uint}/update", j.Serve, record.Update)
 		crmCompanyApi.Delete("/{id:uint}/delete", j.Serve, record.Delete)
@@ -156,7 +166,7 @@ func (r *Route) CrmRegister() {
 		crmUserApi.Post("/data", j.Serve, crmUser.Get)
 		crmUserApi.Post("/create", j.Serve, crmUser.Create)
 		crmUserApi.Patch("/{id:uint}/update", j.Serve, crmUser.Update)
-		crmUserApi.Delete("/{id:uint}/delete",j.Serve,crmUser.Delete)
+		crmUserApi.Delete("/{id:uint}/delete", j.Serve, crmUser.Delete)
 	}
 	InvoiceApi := r.app.Party("/invoices")
 	{
@@ -166,7 +176,7 @@ func (r *Route) CrmRegister() {
 		InvoiceApi.Post("/data", j.Serve, record.Get)
 		InvoiceApi.Post("/create", j.Serve, record.Create)
 		InvoiceApi.Patch("/{id:uint}/update", j.Serve, record.Update)
-		InvoiceApi.Delete("/{id:uint}/delete",j.Serve,record.Delete)
+		InvoiceApi.Delete("/{id:uint}/delete", j.Serve, record.Delete)
 	}
 	AddressApi := r.app.Party("/address")
 	{
@@ -176,7 +186,7 @@ func (r *Route) CrmRegister() {
 		AddressApi.Post("/data", j.Serve, record.Get)
 		AddressApi.Post("/create", j.Serve, record.Create)
 		AddressApi.Patch("/{id:uint}/update", j.Serve, record.Update)
-		AddressApi.Delete("/{id:uint}/delete",j.Serve,record.Delete)
+		AddressApi.Delete("/{id:uint}/delete", j.Serve, record.Delete)
 	}
 }
 
@@ -224,4 +234,8 @@ func (r *Route) jwtAccess() *jwt.Middleware {
 func (r *Route) versionNotFound(ctx iris.Context) {
 	ctx.StatusCode(404)
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusNotFound})
+}
+
+func NewRoute(app *iris.Application) IRoute {
+	return &Route{app: app}
 }

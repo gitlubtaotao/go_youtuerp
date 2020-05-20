@@ -2,17 +2,11 @@ package redis
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/go-redis/redis/v7"
-	"github.com/kataras/golog"
 	"reflect"
 	"strconv"
 	"sync"
 	"youtuerp/conf"
-	"youtuerp/models"
-	"youtuerp/repositories"
-	"youtuerp/tools"
-	"youtuerp/tools/uploader"
 )
 
 //链接redis
@@ -34,57 +28,36 @@ type Redis struct {
 	sy sync.Mutex
 }
 
-func (r Redis) FindRecord(tableName string, filter map[string]interface{}, selectKey []string) (data []map[string]interface{}, err error) {
-	repo := repositories.NewSelectRepository()
-	var result []models.SelectResult
-	result, err = repo.FirstRecord(tableName, filter, selectKey)
-	if err != nil {
-		return
-	}
-	r.sy.Lock()
-	for _, v := range result {
-		data = append(data, tools.OtherHelper{}.StructToMap(v))
-	}
-	r.sy.Unlock()
-	return data, nil
+func (r Redis) HSet(key string, field string, value interface{}) error {
+	return conf.ReisCon.HSet(key, field, value).Err()
 }
 
-//通过查询数据库,将记录写入redis中
-func (r Redis) HSetRecord(tableName string, filter map[string]interface{}, selectKeys []string) error {
-	result, err := r.FindRecord(tableName, filter, selectKeys)
-	fmt.Println(result,err)
-	if err != nil {
-		return err
-	}
-	for _, v := range result {
-		key := r.CombineKey(tableName, v["id"])
-		if err = r.HMSet(key, v); err != nil {
-			return err
-		}
-	}
-	return nil
+func (r Redis) SAdd(key string, member ...interface{}) error {
+	return conf.ReisCon.SAdd(key, member...).Err()
 }
 
-func (r Redis) HSet(tableName string, key interface{}, field string, value interface{}) error {
-	panic("implement me")
+func (r Redis) SMembers(key string) []string {
+	return conf.ReisCon.SMembers(key).Val()
 }
 
-func (r Redis) HGet(tableName string, key interface{}, field string) string {
-	dst := r.CombineKey(tableName, key)
-	if conf.ReisCon.HExists(dst, field).Val() {
-		val, err := conf.ReisCon.HGet(dst, field).Result()
-		if err != nil {
-			golog.Warnf("redis get key is %v, field is %v, error is %v", key, field, err.Error())
-			return ""
-		}
-		return val
+func (r Redis) SRemove(key string, member ...interface{}) error {
+	return conf.ReisCon.SRem(key, member...).Err()
+}
+
+func (r Redis) HDelete(key string, field ...string) error {
+	return conf.ReisCon.HDel(key, field...).Err()
+}
+
+func (r Redis) HGet(key string, field string) (string, error) {
+	if conf.ReisCon.HExists(key, field).Val() {
+		return conf.ReisCon.HGet(key, field).Result()
 	}
-	return ""
+	return "", nil
 }
 
 //Key是否存在
-func (r Redis) KeyIsExist(tableName, key string) {
-	conf.ReisCon.Exists(r.CombineKey(tableName, key)).Val()
+func (r Redis) KeyIsExist(key string) {
+	conf.ReisCon.Exists(key).Val()
 }
 
 func (r Redis) HMSet(key string, value ...interface{}) error {
@@ -95,13 +68,16 @@ func (r Redis) HMGet(key string, fields ...string) ([]interface{}, error) {
 	return conf.ReisCon.HMGet(key, fields...).Result()
 }
 
-func (r Redis) HGetAll(tableName string, key string) map[string]string {
-	val, err := conf.ReisCon.HGetAll(r.CombineKey(tableName, key)).Result()
+func (r Redis) HGetAll(key string) (map[string]string, error) {
+	val, err := conf.ReisCon.HGetAll(key).Result()
 	if err != nil {
-		golog.Warnf("redis get all key %v, error is %v", key, err)
-		return map[string]string{}
+		return map[string]string{}, err
 	}
-	return val
+	return val, nil
+}
+
+func (r Redis) Scan(tableName string, cursor uint64, count int64) ([]string, uint64, error) {
+	return conf.ReisCon.Scan(cursor, tableName+"*", count).Result()
 }
 
 func (r Redis) CombineKey(tableName string, key interface{}) string {
@@ -126,46 +102,3 @@ func NewRedis() Redis {
 }
 
 //获取公司的Logo
-func CompanyLogo() string {
-	red := NewRedis()
-	value := red.HGet("system_settings", "base", "company_logo")
-	if value == "" {
-	}
-	upload := uploader.NewQiNiuUploaderDefault()
-	return upload.PrivateReadURL(value)
-}
-
-//获取数据安全控制
-func DataSecurityControl() bool {
-	red := NewRedis()
-	value := red.HGet("system_settings", "base", "data_security_control")
-	if value == "" {
-	}
-	if value == "false" {
-		return false
-	} else {
-		return true
-	}
-}
-
-//计费的计算方式
-func ConversionMethod() (method string, remain int) {
-	red := NewRedis()
-	table := "system_settings"
-	method = red.HGet(table, "base", "conversion_method_calu")
-	tempR := red.HGet(table, "base", "conversion_method_remain")
-	if method == "" || tempR == "" {
-	}
-	remain, _ = strconv.Atoi(tempR)
-	return
-}
-
-//获取本位币计算方式
-func SystemFinanceCurrency() int {
-	red := NewRedis()
-	value := red.HGet("system_settings", "finance", "system_finance_currency")
-	if value == "" {
-	}
-	currency, _ := strconv.Atoi(value)
-	return currency
-}

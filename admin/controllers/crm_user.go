@@ -115,7 +115,7 @@ func (c *CrmUser) handleData(red redis.Redis, user models.CrmUser) map[string]in
 	data["sex_value"] = data["sex"]
 	data["sex"] = c.enum.DefaultText("users_sex.", data["sex"])
 	data["user_company_id_value"] = data["user_company_id"]
-	data["user_company_id"] = red.GetCompany(data["user_company_id"], "name_nick")
+	data["user_company_id"] = red.HGetCompany(data["user_company_id"], "name_nick")
 	return data
 }
 

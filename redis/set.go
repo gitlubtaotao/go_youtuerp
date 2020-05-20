@@ -1,17 +1,74 @@
 package redis
 
+import (
+	"github.com/kataras/golog"
+	"youtuerp/models"
+	"youtuerp/repositories"
+	"youtuerp/tools"
+)
+
 //保存公司redis信息
-func (r Redis) SetCompany(id interface{}) error {
-	return r.HSetRecord("user_companies",
+func (r Redis) HSetCompany(id interface{}) error {
+	return r.setRecord("user_companies",
 		map[string]interface{}{"id": id},
 		[]string{"id", "name_nick", "code", "age", "amount", "account_period"})
 }
 
-func (r Redis) SetCommon(tableName string, id interface{}, selectKeys []string) error {
+func (r Redis) HSetRecord(tableName string, id interface{}, selectKeys []string) error {
 	if len(selectKeys) == 0 {
 		selectKeys = []string{"id", "name"}
 	}
-	return r.HSetRecord(tableName, map[string]interface{}{"id": id}, selectKeys)
+	return r.setRecord(tableName, map[string]interface{}{"id": id}, selectKeys)
 }
 
+func (r Redis) HSetValue(tableName string, id interface{}, value map[string]interface{}) error {
+	key := r.CombineKey(tableName, id)
+	if err := r.HMSet(key, value); err != nil {
+		return err
+	}
+	return r.SAdd(tableName, id)
+}
 
+func (r Redis) HDeleteRecord(table string, id interface{}, field ...string) error {
+	key := r.CombineKey(table, id)
+	return r.HDelete(key, field...)
+}
+
+func (r Redis) findRecord(tableName string, filter map[string]interface{}, selectKey []string) (data []map[string]interface{}, err error) {
+	repo := repositories.NewSelectRepository()
+	var result []models.SelectResult
+	result, err = repo.FirstRecord(tableName, filter, selectKey)
+	if err != nil {
+		return
+	}
+	r.sy.Lock()
+	for _, v := range result {
+		data = append(data, tools.OtherHelper{}.StructToMap(v))
+	}
+	r.sy.Unlock()
+	return data, nil
+}
+
+//通过查询数据库,将记录写入redis中
+func (r Redis) setRecord(tableName string, filter map[string]interface{}, selectKeys []string) error {
+	result, err := r.findRecord(tableName, filter, selectKeys)
+	if err != nil {
+		return err
+	}
+	for _, v := range result {
+		key := r.CombineKey(tableName, v["id"])
+		if err = r.HMSet(key, v); err != nil {
+			return err
+		}
+		_ = r.SAdd(tableName, v["id"])
+	}
+	return nil
+}
+
+func HSetValue(table string, id interface{}, value map[string]interface{}) {
+	red := NewRedis()
+	if err := red.HSetValue(table, id, value); err != nil {
+		golog.Warnf("set hash value is error current table is %v,current id is %v,error is %v",
+			table, id, err)
+	}
+}

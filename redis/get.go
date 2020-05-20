@@ -2,36 +2,132 @@ package redis
 
 import (
 	"github.com/kataras/golog"
+	"strconv"
+	"youtuerp/tools/uploader"
 )
 
-func (r Redis) GetCompany(id interface{}, field string) string {
+func (r Redis) HGetCompany(id interface{}, field string) (value string) {
+	var err error
 	if field == "" {
 		field = "name_nick"
 	}
-	if value := r.HGet("user_companies", id, field); value != "" {
-		return value
-	} else {
-		if err := r.SetCompany(id); err != nil {
-			golog.Errorf("set company redis is error %v", err)
-			return ""
-		}
-		return r.HGet("user_companies", id, field)
+	key := r.CombineKey("user_companies", id)
+	if value, err = r.HGet(key, field); err != nil {
+		golog.Error("HGetCompany redis is error id is %v,err is %v", id, err)
+		return ""
 	}
+	if err := r.HSetCompany(id); err != nil {
+		golog.Errorf("set company redis id %v is error %v", id, err)
+		return ""
+	}
+	value, _ = r.HGet(key, field)
+	return value
 }
 
-func (r Redis) GetCommon(table string, id interface{}, field string) string {
+func (r Redis) HGetRecord(table string, id interface{}, field string) (value string) {
+	var err error
 	if field == "" {
 		field = "name"
 	}
-	if value := r.HGet(table, id, field); value != "" {
-		return value
-	} else {
-		if err := r.SetCommon(table, id, []string{}); err != nil {
-			golog.Errorf("set %v redis is error %v", table, err)
-			return ""
-		}
-		return r.HGet(table, id, field)
+	key := r.CombineKey(table, id)
+	if value, err = r.HGet(key, field); err != nil {
+		golog.Errorf("HGetValue is error table_name is %v,id is %v,error is %v", table, id, err)
+		return ""
 	}
+	if err := r.HSetRecord(table, id, []string{}); err != nil {
+		golog.Errorf("set %v redis is error %v", table, err)
+		return ""
+	}
+	value, _ = r.HGet(key, field)
+	return
+}
+
+func (r Redis) HGetValue(table string, id interface{}, field string) string {
+	if field == "" {
+		field = "name"
+	}
+	value, err := r.HGet(r.CombineKey(table, id), field)
+	if err != nil {
+		golog.Errorf("HGetValue is error %v", err)
+		return ""
+	}
+	return value
+}
+
+func (r Redis) HGetAllValue(table string, id interface{}) (value map[string]string) {
+	key := r.CombineKey(table, id)
+	var err error
+	if value, err = r.HGetAll(key); err != nil {
+		golog.Errorf("HGetAllValue is error table is %v,id is %v,error is %v", table, id, err)
+		return
+	}
+	return
+}
+
+//获取某一张表中所有的缓存集合
+func (r Redis) HCollectOptions(table string) []map[string]string {
+	var collect []map[string]string
+	members := r.SMembers(table)
+	r.sy.Lock()
+	defer r.sy.Unlock()
+	for _, i := range members {
+		temp, err := r.HGetAll(r.CombineKey(table, i))
+		if err != nil {
+			golog.Warnf("HCollectOptions is error, id is %v,error is %v", i, err)
+			continue
+		}
+		collect = append(collect, temp)
+	}
+	return collect
 }
 
 
+func CompanyLogo() string {
+	value, err := GetSystemSetting("base", "company_logo")
+	if err == nil {
+		golog.Errorf("company logo redis is error %v", err)
+		return ""
+	}
+	upload := uploader.NewQiNiuUploaderDefault()
+	return upload.PrivateReadURL(value)
+}
+
+//获取数据安全控制
+func DataSecurityControl() bool {
+	value, err := GetSystemSetting("base", "data_security_control")
+	if err != nil {
+		golog.Errorf("data security control is error %v", err)
+		return false
+	}
+	if value == "false" {
+		return false
+	} else {
+		return true
+	}
+}
+
+//计费的计算方式
+func ConversionMethod() (method string, remain int) {
+	tempM, _ := GetSystemSetting("base", "conversion_method_calu")
+	tempR, _ := GetSystemSetting("base", "conversion_method_remain")
+	if tempM == "" || tempR == "" {
+	}
+	remain, _ = strconv.Atoi(tempR)
+	return tempM, remain
+}
+
+//获取本位币计算方式
+func SystemFinanceCurrency() int {
+	value, err := GetSystemSetting("finance", "system_finance_currency")
+	if err != nil {
+		golog.Errorf("system finance currency is err %v", err)
+		return 0
+	}
+	currency, _ := strconv.Atoi(value)
+	return currency
+}
+
+func GetSystemSetting(key string, field string) (value string, err error) {
+	red := NewRedis()
+	return red.HGet(red.CombineKey("system_settings", key), field)
+}

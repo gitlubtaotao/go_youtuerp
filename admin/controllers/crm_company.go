@@ -200,11 +200,11 @@ func (c *CrmCompany) handleCompany(redis redis.Redis, company models.CrmCompany)
 	accountPeriod := data["account_period"]
 	roles := data["roles"].([]models.Role)
 	for i, v := range roles {
-		roles[i].UserName = redis.GetCommon("users", v.UserId, "name")
+		roles[i].UserName = redis.HGetRecord("users", v.UserId, "name")
 		roles[i].Name = enum.DefaultText("roles_name.", v.Name)
 	}
 	data["roles"] = roles
-	data["parent_id"] = redis.GetCompany(data["parent_id"], "name_nick")
+	data["parent_id"] = redis.HGetCompany(data["parent_id"], "name_nick")
 	data["account_period"] = enum.DefaultText("user_companies_account_period.", accountPeriod)
 	data["account_period_value"] = accountPeriod
 	return data, err
