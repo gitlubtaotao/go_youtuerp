@@ -166,6 +166,8 @@ func (c crud) notSearchValue(value interface{}) bool {
 		return value.(bool)
 	case reflect.Int,reflect.Int8,reflect.Int16,reflect.Int32,reflect.Int64:
 		return value == 0
+	case reflect.Uint,reflect.Uint8,reflect.Uint64:
+		return value == 0
 	default:
 		return value == ""
 	}

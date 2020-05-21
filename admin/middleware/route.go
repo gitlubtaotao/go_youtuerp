@@ -1,13 +1,11 @@
 package middleware
 
 import (
-	"fmt"
 	"github.com/iris-contrib/middleware/jwt"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/context"
 	"github.com/kataras/iris/v12/versioning"
 	"net/http"
-	"strings"
 	"youtuerp/admin/controllers"
 	"youtuerp/conf"
 )
@@ -23,8 +21,7 @@ type IRoute interface {
 	OtherRegister()
 }
 
-var allowMethods = []string{iris.MethodGet, iris.MethodPost, iris.MethodPatch,
-	iris.MethodDelete, iris.MethodOptions}
+
 
 //
 type Route struct {
@@ -39,8 +36,37 @@ func (r *Route) BaseDataRegister() {
 		c.Get("/column", j.Serve, record.GetColumn)
 		c.Post("/create", j.Serve, record.Create)
 		c.Post("/data", j.Serve, record.Get)
+		c.Patch("/{id:uint}/update",j.Serve,record.Update)
 		c.Delete("/{id:uint}/delete", j.Serve, record.Delete)
 	})
+	r.app.PartyFunc("/base/ports", func(c iris.Party) {
+		record := controllers.BasePort{}
+		c.Use(record.Before)
+		c.Get("/column", j.Serve, record.GetColumn)
+		c.Post("/create", j.Serve, record.Create)
+		c.Post("/data", j.Serve, record.Get)
+		c.Patch("/{id:uint}/update",j.Serve,record.Update)
+		c.Delete("/{id:uint}/delete", j.Serve, record.Delete)
+	})
+	r.app.PartyFunc("/base/carriers", func(c iris.Party) {
+		record := controllers.BaseCarrier{}
+		c.Use(record.Before)
+		c.Get("/column", j.Serve, record.GetColumn)
+		c.Post("/create", j.Serve, record.Create)
+		c.Patch("/{id:uint}/update",j.Serve,record.Update)
+		c.Post("/data", j.Serve, record.Get)
+		c.Delete("/{id:uint}/delete", j.Serve, record.Delete)
+	})
+	api := r.app.Party("/base/warehouses")
+	{
+		record := controllers.BaseWarehouse{}
+		api.Use(record.Before)
+		api.Get("/column", j.Serve, record.GetColumn)
+		api.Post("/create", j.Serve, record.Create)
+		api.Patch("/{id:uint}/update",j.Serve,record.Update)
+		api.Post("/data", j.Serve, record.Get)
+		api.Post("/{id:uint}/delete", j.Serve, record.Delete)
+	}
 }
 
 func (r *Route) DefaultRegister() {
@@ -55,7 +81,6 @@ func (r *Route) DefaultRegister() {
 func (r *Route) SessionRegister() {
 	j := r.jwtAccess()
 	session := controllers.SessionController{}
-	fmt.Println(strings.Join(allowMethods, ","))
 	users := r.app.Party("user/")
 	{
 		users.Post("/login", versioning.NewMatcher(versioning.Map{

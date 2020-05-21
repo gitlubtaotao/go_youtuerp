@@ -27,6 +27,7 @@ func (s *SessionController) Login(ctx iris.Context) {
 	var loginInfo login
 	s.initSession()
 	err := ctx.ReadJSON(&loginInfo)
+	golog.Errorf("eee is %v,login info %v",err,loginInfo)
 	if err != nil {
 		s.Render400(ctx, err, err.Error())
 		return
