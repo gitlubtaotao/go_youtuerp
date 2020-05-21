@@ -63,6 +63,7 @@ func (b *BaseCarrier) Update(ctx iris.Context) {
 		b.Render400(ctx, err, err.Error())
 		return
 	}
+	_ = ctx.ReadJSON(&code)
 	if err = b.service.Update(id, code, ctx.GetLocale().Language()); err != nil {
 		b.Render400(ctx, err, err.Error())
 		return

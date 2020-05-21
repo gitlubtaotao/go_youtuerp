@@ -22,7 +22,7 @@ func (b BaseCarrier) Update(id uint, carrier models.BaseDataCarrier) error {
 }
 
 func (b BaseCarrier) Delete(id uint) error {
-	return b.crud.Delete(&models.BaseDataCode{}, id)
+	return b.crud.Delete(&models.BaseDataCarrier{}, id)
 }
 func (b BaseCarrier) Create(code models.BaseDataCarrier) (models.BaseDataCarrier, error) {
 	err := database.GetDBCon().Create(&code).Error

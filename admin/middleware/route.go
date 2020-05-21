@@ -37,7 +37,7 @@ func (r *Route) BaseDataRegister() {
 		c.Post("/create", j.Serve, record.Create)
 		c.Post("/data", j.Serve, record.Get)
 		c.Patch("/{id:uint}/update",j.Serve,record.Update)
-		c.Delete("/{id:uint}/delete", j.Serve, record.Delete)
+		c.Delete("/{id:uint}/destroy", j.Serve, record.Delete)
 	})
 	r.app.PartyFunc("/base/ports", func(c iris.Party) {
 		record := controllers.BasePort{}
@@ -55,18 +55,17 @@ func (r *Route) BaseDataRegister() {
 		c.Post("/create", j.Serve, record.Create)
 		c.Patch("/{id:uint}/update",j.Serve,record.Update)
 		c.Post("/data", j.Serve, record.Get)
-		c.Delete("/{id:uint}/delete", j.Serve, record.Delete)
+		c.Delete("/{id:uint}/destroy", j.Serve, record.Delete)
 	})
-	api := r.app.Party("/base/warehouses")
-	{
+	r.app.PartyFunc("/base/warehouses", func(c iris.Party) {
 		record := controllers.BaseWarehouse{}
-		api.Use(record.Before)
-		api.Get("/column", j.Serve, record.GetColumn)
-		api.Post("/create", j.Serve, record.Create)
-		api.Patch("/{id:uint}/update",j.Serve,record.Update)
-		api.Post("/data", j.Serve, record.Get)
-		api.Post("/{id:uint}/delete", j.Serve, record.Delete)
-	}
+		c.Use(record.Before)
+		c.Get("/column", j.Serve, record.GetColumn)
+		c.Post("/create", j.Serve, record.Create)
+		c.Patch("/{id:uint}/update",j.Serve,record.Update)
+		c.Post("/data", j.Serve, record.Get)
+		c.Delete("/{id:uint}/destroy", j.Serve, record.Delete)
+	})
 }
 
 func (r *Route) DefaultRegister() {

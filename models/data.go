@@ -24,7 +24,7 @@ type BaseDataPort struct {
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt time.Time  `json:"updated_at"`
 	DeletedAt *time.Time `sql:"index"`
-	Name      string     `gorm:"size:64;index:name" json:"name" validate:"required"`
+	Name      string     `gorm:"size:64;index:name" json:"name"`
 	NameCn    string     `gorm:"size:128;" json:"name_cn"`
 	NameEn    string     `gorm:"size:128;" json:"name_en"`
 	Country   string     `gorm:"size:128" json:"country"`
