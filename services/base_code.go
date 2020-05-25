@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"strconv"
 	"sync"
 	"youtuerp/models"
 	"youtuerp/redis"
@@ -15,11 +16,31 @@ type IBaseCode interface {
 	Find(per, page uint, filter map[string]interface{}, selectKeys []string,
 		orders []string) (codes []models.BaseDataCode, total uint, err error)
 	FindAllLevel() (levels []map[string]string, err error)
+	FindCollect(key string) []map[string]string
 }
 type BaseCode struct {
 	repo repositories.IBaseCode
 	BaseService
 	mu sync.Mutex
+}
+
+func (b BaseCode) FindCollect(key string) []map[string]string {
+	red := redis.NewRedis()
+	tableName := models.BaseDataCode{}.TableName()
+	data := make([]map[string]string, 0)
+	data = red.HCollectOptions(tableName + key)
+	if len(data) > 0 {
+		return data
+	}
+	records, _, _ := b.repo.Find(0, 0, map[string]interface{}{"code": key}, []string{}, []string{}, false)
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	for _, k := range records {
+		go b.SaveRedisData(k)
+		temp := map[string]string{"id": strconv.Itoa(int(k.ID)), "name": k.Name}
+		data = append(data, temp)
+	}
+	return data
 }
 
 func (b BaseCode) Update(id uint, code models.BaseDataCode, language string) error {
@@ -30,10 +51,7 @@ func (b BaseCode) Update(id uint, code models.BaseDataCode, language string) err
 	if err := b.repo.Update(id, code); err != nil {
 		return err
 	}
-	go redis.HSetValue("base_data_codes", id, map[string]interface{}{
-		"id":   id,
-		"name": code.Name,
-	})
+	go b.SaveRedisData(code)
 	return nil
 }
 
@@ -50,10 +68,7 @@ func (b BaseCode) Create(code models.BaseDataCode, language string) (models.Base
 	if err != nil {
 		return result, err
 	}
-	go redis.HSetValue("base_data_codes", result.ID, map[string]interface{}{
-		"id":   result.ID,
-		"name": result.Name,
-	})
+	go b.SaveRedisData(result)
 	return result, err
 }
 
@@ -64,7 +79,7 @@ func (b BaseCode) Find(per, page uint, filter map[string]interface{}, selectKeys
 
 func (b BaseCode) FindAllLevel() (data []map[string]string, err error) {
 	red := redis.NewRedis()
-	data = red.HCollectOptions("base_data_levels")
+	data = red.HCollectOptions(models.BaseDataLevel{}.TableName())
 	if len(data) > 0 {
 		return
 	}
@@ -75,7 +90,7 @@ func (b BaseCode) FindAllLevel() (data []map[string]string, err error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	for _, k := range levels {
-		_ = red.HSetValue("base_data_levels", k.Code, map[string]interface{}{
+		_ = red.HSetValue(models.BaseDataLevel{}.TableName(), k.Code, map[string]interface{}{
 			"code":    k.Code,
 			"name":    k.Name,
 			"en_name": k.EnName,
@@ -85,6 +100,13 @@ func (b BaseCode) FindAllLevel() (data []map[string]string, err error) {
 		data = append(data, temp)
 	}
 	return
+}
+
+func (b BaseCode) SaveRedisData(result models.BaseDataCode) {
+	redis.HSetValue(models.BaseDataCode{}.TableName()+result.CodeName, result.ID, map[string]interface{}{
+		"id":   result.ID,
+		"name": result.Name,
+	})
 }
 
 func NewBaseCode() IBaseCode {

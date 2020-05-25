@@ -43,3 +43,12 @@ func (u TimeHelper) DefaultDateTime(time time.Time, language string) string {
 		return u.TimeFormat(time, ENDateTime)
 	}
 }
+
+func (u TimeHelper) StringToTime(data string) (time.Time, error) {
+	if data == "" {
+		return time.Time{}, nil
+	}
+	loc, _ := time.LoadLocation("Local") //获取时区
+	timeLayout := "2006-01-02 15:04:05"
+	return time.ParseInLocation(timeLayout, data, loc)
+}

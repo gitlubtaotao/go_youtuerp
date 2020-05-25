@@ -77,7 +77,9 @@ func (c crud) Where(sqlCon *gorm.DB, filter map[string]interface{}, selectKeys [
 		sqlCon = sqlCon.Scopes(c.ransack(filter))
 	}
 	sqlCon = sqlCon.Scopes(funcs...)
-	sqlCon = sqlCon.Select(selectKeys)
+	if len(selectKeys) > 0 {
+		sqlCon = sqlCon.Select(selectKeys)
+	}
 	return sqlCon
 }
 
@@ -92,7 +94,7 @@ func (c crud) Count(sqlCon *gorm.DB, filter map[string]interface{}, funcs ...fun
 
 func (c crud) ransack(selectColumn map[string]interface{}) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
-		if len(selectColumn) == 0{
+		if len(selectColumn) == 0 {
 			return db
 		}
 		for k, v := range selectColumn {
@@ -160,13 +162,13 @@ func (c crud) keyString(splitArray []string) string {
 func (c crud) notSearchValue(value interface{}) bool {
 	v := reflect.ValueOf(value)
 	switch v.Kind() {
-	case reflect.Array,reflect.Struct,reflect.Slice:
-			return value == nil
+	case reflect.Array, reflect.Struct, reflect.Slice:
+		return value == nil
 	case reflect.Bool:
 		return value.(bool)
-	case reflect.Int,reflect.Int8,reflect.Int16,reflect.Int32,reflect.Int64:
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		return value == 0
-	case reflect.Uint,reflect.Uint8,reflect.Uint64:
+	case reflect.Uint, reflect.Uint8, reflect.Uint64:
 		return value == 0
 	default:
 		return value == ""

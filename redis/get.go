@@ -16,6 +16,9 @@ func (r Redis) HGetCompany(id interface{}, field string) (value string) {
 		golog.Error("HGetCompany redis is error id is %v,err is %v", id, err)
 		return ""
 	}
+	if value != "" {
+		return value
+	}
 	if err := r.HSetCompany(id); err != nil {
 		golog.Errorf("set company redis id %v is error %v", id, err)
 		return ""
@@ -30,9 +33,13 @@ func (r Redis) HGetRecord(table string, id interface{}, field string) (value str
 		field = "name"
 	}
 	key := r.CombineKey(table, id)
+	
 	if value, err = r.HGet(key, field); err != nil {
 		golog.Errorf("HGetValue is error table_name is %v,id is %v,error is %v", table, id, err)
 		return ""
+	}
+	if value != "" {
+		return value
 	}
 	if err := r.HSetRecord(table, id, []string{}); err != nil {
 		golog.Errorf("set %v redis is error %v", table, err)
@@ -81,7 +88,6 @@ func (r Redis) HCollectOptions(table string) []map[string]string {
 	return collect
 }
 
-
 func CompanyLogo() string {
 	value, err := GetSystemSetting("base", "company_logo")
 	if err == nil {
@@ -117,14 +123,23 @@ func ConversionMethod() (method string, remain int) {
 }
 
 //获取本位币计算方式
-func SystemFinanceCurrency() int {
+func SystemFinanceCurrency() string {
 	value, err := GetSystemSetting("finance", "system_finance_currency")
 	if err != nil {
 		golog.Errorf("system finance currency is err %v", err)
-		return 0
+		return ""
 	}
-	currency, _ := strconv.Atoi(value)
-	return currency
+	return value
+}
+
+//获取系统汇率计算方式
+func SystemRateSetting() string {
+	value, err := GetSystemSetting("finance", "system_finance_rate")
+	if err != nil {
+		golog.Errorf("system finance currency is err %v", err)
+		return ""
+	}
+	return value
 }
 
 func GetSystemSetting(key string, field string) (value string, err error) {

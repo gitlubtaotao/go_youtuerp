@@ -17,55 +17,13 @@ type IRoute interface {
 	OaRegister()
 	CrmRegister()
 	BaseDataRegister()
+	FinanceRegister()
 	SelectRegister()
 	OtherRegister()
 }
-
-
-
 //
 type Route struct {
 	app *iris.Application
-}
-
-func (r *Route) BaseDataRegister() {
-	j := r.jwtAccess()
-	r.app.PartyFunc("/base/codes", func(c iris.Party) {
-		record := controllers.BaseCodeController{}
-		c.Use(record.Before)
-		c.Get("/column", j.Serve, record.GetColumn)
-		c.Post("/create", j.Serve, record.Create)
-		c.Post("/data", j.Serve, record.Get)
-		c.Patch("/{id:uint}/update",j.Serve,record.Update)
-		c.Delete("/{id:uint}/destroy", j.Serve, record.Delete)
-	})
-	r.app.PartyFunc("/base/ports", func(c iris.Party) {
-		record := controllers.BasePort{}
-		c.Use(record.Before)
-		c.Get("/column", j.Serve, record.GetColumn)
-		c.Post("/create", j.Serve, record.Create)
-		c.Post("/data", j.Serve, record.Get)
-		c.Patch("/{id:uint}/update",j.Serve,record.Update)
-		c.Delete("/{id:uint}/delete", j.Serve, record.Delete)
-	})
-	r.app.PartyFunc("/base/carriers", func(c iris.Party) {
-		record := controllers.BaseCarrier{}
-		c.Use(record.Before)
-		c.Get("/column", j.Serve, record.GetColumn)
-		c.Post("/create", j.Serve, record.Create)
-		c.Patch("/{id:uint}/update",j.Serve,record.Update)
-		c.Post("/data", j.Serve, record.Get)
-		c.Delete("/{id:uint}/destroy", j.Serve, record.Delete)
-	})
-	r.app.PartyFunc("/base/warehouses", func(c iris.Party) {
-		record := controllers.BaseWarehouse{}
-		c.Use(record.Before)
-		c.Get("/column", j.Serve, record.GetColumn)
-		c.Post("/create", j.Serve, record.Create)
-		c.Patch("/{id:uint}/update",j.Serve,record.Update)
-		c.Post("/data", j.Serve, record.Get)
-		c.Delete("/{id:uint}/destroy", j.Serve, record.Delete)
-	})
 }
 
 func (r *Route) DefaultRegister() {
@@ -75,6 +33,46 @@ func (r *Route) DefaultRegister() {
 	r.SelectRegister()
 	r.BaseDataRegister()
 	r.OtherRegister()
+	r.FinanceRegister()
+}
+func (r *Route) BaseDataRegister() {
+	j := r.jwtAccess()
+	r.app.PartyFunc("/base/codes", func(c iris.Party) {
+		record := controllers.BaseCodeController{}
+		c.Use(record.Before)
+		c.Get("/column", j.Serve, record.GetColumn)
+		c.Post("/create", j.Serve, record.Create)
+		c.Post("/data", j.Serve, record.Get)
+		c.Patch("/{id:uint}/update", j.Serve, record.Update)
+		c.Delete("/{id:uint}/destroy", j.Serve, record.Delete)
+	})
+	r.app.PartyFunc("/base/ports", func(c iris.Party) {
+		record := controllers.BasePort{}
+		c.Use(record.Before)
+		c.Get("/column", j.Serve, record.GetColumn)
+		c.Post("/create", j.Serve, record.Create)
+		c.Post("/data", j.Serve, record.Get)
+		c.Patch("/{id:uint}/update", j.Serve, record.Update)
+		c.Delete("/{id:uint}/delete", j.Serve, record.Delete)
+	})
+	r.app.PartyFunc("/base/carriers", func(c iris.Party) {
+		record := controllers.BaseCarrier{}
+		c.Use(record.Before)
+		c.Get("/column", j.Serve, record.GetColumn)
+		c.Post("/create", j.Serve, record.Create)
+		c.Patch("/{id:uint}/update", j.Serve, record.Update)
+		c.Post("/data", j.Serve, record.Get)
+		c.Delete("/{id:uint}/destroy", j.Serve, record.Delete)
+	})
+	r.app.PartyFunc("/base/warehouses", func(c iris.Party) {
+		record := controllers.BaseWarehouse{}
+		c.Use(record.Before)
+		c.Get("/column", j.Serve, record.GetColumn)
+		c.Post("/create", j.Serve, record.Create)
+		c.Patch("/{id:uint}/update", j.Serve, record.Update)
+		c.Post("/data", j.Serve, record.Get)
+		c.Delete("/{id:uint}/destroy", j.Serve, record.Delete)
+	})
 }
 
 func (r *Route) SessionRegister() {
@@ -232,6 +230,45 @@ func (r *Route) OtherRegister() {
 	r.app.Post("/setting/update_system", j.Serve, setting.UpdateSystem)
 	r.app.Post("/setting/update_user", j.Serve, setting.UpdateUser)
 	r.app.Post("/setting/data", j.Serve, setting.Get)
+}
+
+func (r *Route) FinanceRegister()  {
+	j := r.jwtAccess()
+	r.app.PartyFunc("/finance/fee_types", func(c iris.Party) {
+		record := controllers.FinanceFeeType{}
+		c.Use(record.Before)
+		c.Get("/column", j.Serve, record.GetColumn)
+		c.Post("/create", j.Serve, record.Create)
+		c.Post("/data", j.Serve, record.Get)
+		c.Patch("/{id:uint}/update", j.Serve, record.Update)
+		c.Delete("/{id:uint}/destroy", j.Serve, record.Delete)
+	})
+	r.app.PartyFunc("/finance/rates", func(c iris.Party) {
+		record := controllers.FinanceRate{}
+		c.Use(record.Before)
+		c.Get("/column", j.Serve, record.GetColumn)
+		c.Post("/create", j.Serve, record.Create)
+		c.Post("/data", j.Serve, record.Get)
+		c.Delete("/{id:uint}/delete", j.Serve, record.Delete)
+	})
+	r.app.PartyFunc("/base/carriers", func(c iris.Party) {
+		record := controllers.BaseCarrier{}
+		c.Use(record.Before)
+		c.Get("/column", j.Serve, record.GetColumn)
+		c.Post("/create", j.Serve, record.Create)
+		c.Patch("/{id:uint}/update", j.Serve, record.Update)
+		c.Post("/data", j.Serve, record.Get)
+		c.Delete("/{id:uint}/destroy", j.Serve, record.Delete)
+	})
+	r.app.PartyFunc("/base/warehouses", func(c iris.Party) {
+		record := controllers.BaseWarehouse{}
+		c.Use(record.Before)
+		c.Get("/column", j.Serve, record.GetColumn)
+		c.Post("/create", j.Serve, record.Create)
+		c.Patch("/{id:uint}/update", j.Serve, record.Update)
+		c.Post("/data", j.Serve, record.Get)
+		c.Delete("/{id:uint}/destroy", j.Serve, record.Delete)
+	})
 }
 
 //验证jwt token

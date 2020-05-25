@@ -2,8 +2,8 @@ package services
 
 import (
 	"sync"
-	"youtuerp/conf"
 	"youtuerp/models"
+	"youtuerp/redis"
 	"youtuerp/repositories"
 )
 
@@ -34,11 +34,13 @@ func (s SettingService) UpdateSystem(key string, setting []models.ResultSetting)
 	for _, record := range setting {
 		values[record.Field] = record.Value
 	}
-	return s.saveRedis(key, values)
+	go s.saveRedis(key, values)
+	return nil
 }
 
 func (s SettingService) saveRedis(key string, values map[string]interface{}) error {
-	return conf.ReisCon.HSet(key, values).Err()
+	red := redis.NewRedis()
+	return  red.HSetValue(models.Setting{}.TableName(),key,values)
 }
 
 func NewSettingService() ISettingService {

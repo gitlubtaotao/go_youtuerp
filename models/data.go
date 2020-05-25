@@ -67,7 +67,11 @@ const (
 	BaseTypeCourier
 )
 
-func (BaseDataCode) TableName() string {
+const (
+	CodeFinanceCurrency = "FinanceCurrency"
+)
+
+func (r BaseDataCode) TableName() string {
 	return "base_data_codes"
 }
 
