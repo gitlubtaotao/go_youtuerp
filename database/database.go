@@ -63,8 +63,14 @@ func (d *DataBase) Migration() error {
 	db.AutoMigrate(&models.Department{})
 	db.AutoMigrate(&models.CrmClue{}, &models.CrmTrack{})
 	db.AutoMigrate(&models.Setting{}, &models.NumberSetting{})
-	db.AutoMigrate(&models.FinanceFeeType{},&models.FinanceRate{})
+	db.AutoMigrate(&models.FinanceFeeType{}, &models.FinanceRate{})
 	db.AutoMigrate(&models.BaseDataLevel{}, &models.BaseDataCode{},
-		&models.BaseDataPort{}, &models.BaseDataCarrier{},&models.BaseWarehouse{})
+		&models.BaseDataPort{}, &models.BaseDataCarrier{}, &models.BaseWarehouse{})
+	db.AutoMigrate(
+		&models.OrderMaster{},
+		&models.OrderExtendInfo{},
+		&models.FormerSeaInstruction{},&models.FormerSeaBook{},
+		&models.FormerSeaSoNo{},&models.SeaCargoInfo{},&models.SeaCapList{},
+	)
 	return nil
 }

@@ -72,7 +72,19 @@ func (f *FinanceRate) Create(ctx iris.Context) {
 	}
 }
 func (f *FinanceRate) Delete(ctx iris.Context) {
-
+	var (
+		id  uint
+		err error
+	)
+	if id, err = ctx.Params().GetUint("id"); err != nil {
+		f.Render400(ctx, err, err.Error())
+		return
+	}
+	if err = f.service.Delete(id,&models.FinanceRate{}); err != nil {
+		f.Render500(ctx, err, "")
+	} else {
+		f.RenderSuccessJson(ctx, iris.Map{})
+	}
 }
 func (f *FinanceRate) Before(ctx iris.Context) {
 	f.service = services.NewFinanceBase()

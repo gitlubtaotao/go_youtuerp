@@ -16,7 +16,6 @@ import (
 //@title: 处理request info
 func RequestInfo(ctx iris.Context) {
 	ctx.Application().Logger().Infof("Runs before %s", ctx.Path())
-	//ctx.Header("Access-Control-Allow-Origin", "*")
 	ctx.Next()
 }
 
@@ -59,7 +58,7 @@ func NewApp() *iris.Application {
 	route := middleware.NewRoute(app)
 	app.Use(LogConfig())
 	app.Use(setAllowedMethod())
-	app.AllowMethods(allowMethods...)
+	app.AllowMethods(iris.MethodOptions)
 	//加载web端口对应的web secure cookie
 	route.DefaultRegister()
 	conf.IrisApp = app

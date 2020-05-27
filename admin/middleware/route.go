@@ -169,7 +169,7 @@ func (r *Route) CrmRegister() {
 	{
 		record := controllers.CrmCompany{}
 		crmCompanyApi.Use(record.Before)
-		crmCompanyApi.Post("/column", j.Serve, record.GetColumn)
+		crmCompanyApi.Get("/column", j.Serve, record.GetColumn)
 		crmCompanyApi.Post("/create", j.Serve, record.Create)
 		crmCompanyApi.Post("/data", j.Serve, record.Get)
 		crmCompanyApi.Post("/create", j.Serve, record.Create)
@@ -184,7 +184,7 @@ func (r *Route) CrmRegister() {
 	{
 		crmUser := controllers.CrmUser{}
 		crmUserApi.Use(crmUser.Before)
-		crmUserApi.Post("/column", j.Serve, crmUser.GetColumn)
+		crmUserApi.Get("/column", j.Serve, crmUser.GetColumn)
 		crmUserApi.Post("/data", j.Serve, crmUser.Get)
 		crmUserApi.Post("/create", j.Serve, crmUser.Create)
 		crmUserApi.Patch("/{id:uint}/update", j.Serve, crmUser.Update)

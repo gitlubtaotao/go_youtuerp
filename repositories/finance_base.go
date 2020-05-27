@@ -9,7 +9,10 @@ import (
 )
 
 type IFinanceBase interface {
+	Update(id uint, record interface{}) error
 	Create(record interface{}) (interface{}, error)
+	Delete(id uint, model interface{}) error
+	
 	FindRate(per, page uint, filter map[string]interface{},
 		selectKeys []string, orders []string) ([]models.FinanceRate, uint, error)
 	FindFeeType(per, page uint, filter map[string]interface{}, selectKeys []string,
@@ -17,6 +20,19 @@ type IFinanceBase interface {
 }
 type FinanceBase struct {
 	BaseRepository
+}
+
+func (f FinanceBase) Update(id uint, record interface{}) error {
+	name := reflect.TypeOf(record).Name()
+	if name == "FinanceRate" {
+		return database.GetDBCon().Model(&models.FinanceRate{ID: id}).Update(record).Error
+	} else if name == "FinanceFeeType" {
+		return database.GetDBCon().Model(&models.FinanceFeeType{ID: id}).Update(record).Error
+	}
+	return nil
+}
+func (f FinanceBase) Delete(id uint, model interface{}) error {
+	return database.GetDBCon().Delete(model, "id = ?", id).Error
 }
 
 func (f FinanceBase) FindRate(per, page uint, filter map[string]interface{},
@@ -56,6 +72,12 @@ func (f FinanceBase) Create(record interface{}) (interface{}, error) {
 	if rt.Name() == "FinanceRate" {
 		rate := record.(models.FinanceRate)
 		err = database.GetDBCon().Create(&rate).Error
+		return rate, err
+	}
+	if rt.Name() == "FinanceFeeType" {
+		feeType := record.(models.FinanceFeeType)
+		err = database.GetDBCon().Create(&feeType).Error
+		return feeType, err
 	}
 	return record, err
 }

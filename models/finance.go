@@ -4,7 +4,7 @@ import "time"
 
 type FinanceRate struct {
 	ID                uint      `gorm:"primary_key"json:"id"`
-	CreatedAt         time.Time `gorm:"index: index_and_created_at" json:"created_at"`
+	CreatedAt         time.Time `json:"created_at"`
 	UpdatedAt         time.Time `json:"updated_at"`
 	Year              uint      `gorm:"index:year_start_and_end_month" json:"year"`
 	StartMonth        uint      `gorm:"year_start_and_end_month" json:"start_month"`
@@ -21,7 +21,7 @@ type FinanceFeeType struct {
 	UpdatedAt         time.Time  `json:"updated_at"`
 	DeletedAt         *time.Time `sql:"index"`
 	Name              string     `gorm:"size:64;index:name" json:"name"`
-	NameCn            string     `json:"name_cn"`
+	NameCn            string     `gorm:"index:name_cn" json:"name_cn"`
 	NameEn            string     `json:"name_en"`
 	FinanceCurrencyId uint       `gorm:"index:finance_currency_id" json:"finance_currency_id"`
 	Remarks           string     `gorm:"size:256" json:"remarks"`
