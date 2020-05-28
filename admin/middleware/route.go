@@ -17,10 +17,12 @@ type IRoute interface {
 	OaRegister()
 	CrmRegister()
 	BaseDataRegister()
+	OrderRegister()
 	FinanceRegister()
 	SelectRegister()
 	OtherRegister()
 }
+
 //
 type Route struct {
 	app *iris.Application
@@ -33,6 +35,7 @@ func (r *Route) DefaultRegister() {
 	r.SelectRegister()
 	r.BaseDataRegister()
 	r.OtherRegister()
+	r.OrderRegister()
 	r.FinanceRegister()
 }
 func (r *Route) BaseDataRegister() {
@@ -214,12 +217,13 @@ func (r *Route) CrmRegister() {
 
 func (r *Route) SelectRegister() {
 	j := r.jwtAccess()
-	selectData := controllers.SelectController{}
-	selectApi := r.app.Party("/select")
-	{
-		selectApi.Post("/companies", j.Serve, selectData.GetCompany)
-		selectApi.Post("/base", j.Serve, selectData.GetCommon)
-	}
+	r.app.PartyFunc("/select", func(p iris.Party) {
+		selectData := controllers.SelectController{}
+		p.Post("/companies", j.Serve, selectData.GetCompany)
+		p.Post("/base", j.Serve, selectData.GetCommon)
+		p.Get("/employee", j.Serve, selectData.Employee)
+		p.Get("/owner_company", j.Serve, selectData.OwnerCompany)
+	})
 }
 
 func (r *Route) OtherRegister() {
@@ -232,7 +236,16 @@ func (r *Route) OtherRegister() {
 	r.app.Post("/setting/data", j.Serve, setting.Get)
 }
 
-func (r *Route) FinanceRegister()  {
+func (r *Route) OrderRegister() {
+	j := r.jwtAccess()
+	r.app.PartyFunc("/order/masters", func(p iris.Party) {
+		record := controllers.OrderMaster{}
+		p.Use(record.Before)
+		p.Post("/create", j.Serve, record.Create)
+	})
+}
+
+func (r *Route) FinanceRegister() {
 	j := r.jwtAccess()
 	r.app.PartyFunc("/finance/fee_types", func(c iris.Party) {
 		record := controllers.FinanceFeeType{}

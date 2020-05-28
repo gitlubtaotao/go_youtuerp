@@ -52,6 +52,19 @@ func (s *SelectController) GetCompany(ctx iris.Context) {
 	_, _ = s.ctx.JSON(iris.Map{"code": http.StatusOK, "data": data})
 }
 
+func (s *SelectController) Employee(ctx iris.Context) {
+	service := services.NewEmployeeService()
+	data := service.FindRedis()
+	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": data})
+}
+
+func (s *SelectController) OwnerCompany(ctx iris.Context)  {
+	service := services.NewCompanyService()
+	data := service.AllCompanyRedis()
+	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": data})
+}
+
+
 func (s *SelectController) base(ctx iris.Context) (readData ReadData, err error) {
 	s.service = services.NewSelectService(ctx)
 	s.ctx = ctx

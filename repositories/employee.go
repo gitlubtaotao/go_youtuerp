@@ -15,7 +15,7 @@ type IEmployeeRepository interface {
 	UpdateColumnByID(employeeID uint, updateColumn map[string]interface{}) error
 	UpdateColumn(employee *models.Employee, updateColumn map[string]interface{}) error
 	UpdateRecordByModel(employee *models.Employee, updateModel models.Employee) error
-	Find(per, page uint, filter map[string]interface{}, selectKeys []string, order []string, isCount bool) (employees []models.ResultEmployee,
+	Find(per, page uint, filter map[string]interface{}, selectKeys []string, order []string, isCount bool) (employees []models.Employee,
 		total uint, err error)
 	Create(employee models.Employee) (models.Employee, error)
 	Delete(id uint) error
@@ -45,7 +45,7 @@ func (e EmployeeRepository) Create(employee models.Employee) (models.Employee, e
 
 func (e EmployeeRepository) Find(per, page uint, filter map[string]interface{},
 	selectKeys []string, order []string, isCount bool) (
-	employees []models.ResultEmployee, total uint, err error) {
+	employees []models.Employee, total uint, err error) {
 	sqlCon := database.GetDBCon().Model(&models.Employee{})
 	sqlCon = sqlCon.Scopes(e.defaultScoped)
 	if len(filter) > 0 {
@@ -68,7 +68,7 @@ func (e EmployeeRepository) Find(per, page uint, filter map[string]interface{},
 	}
 	
 	for rows.Next() {
-		var data models.ResultEmployee
+		var data models.Employee
 		_ = sqlCon.ScanRows(rows, &data)
 		employees = append(employees, data)
 	}

@@ -35,6 +35,9 @@ func (n NumberSettingService) Create(numberSetting models.NumberSetting, languag
 	return n.repo.Create(numberSetting)
 }
 
+//生成订单流水号信息
+
+
 func NewNumberSetting() INumberSettingService {
 	return &NumberSettingService{repo: repositories.NewNumberSetting()}
 }

@@ -4,26 +4,27 @@ import "time"
 
 //订单
 type OrderMaster struct {
-	ID               uint           `gorm:"primary_key"json:"id"`
-	CreatedAt        time.Time      `sql:"index" json:"created_at"`
-	UpdatedAt        time.Time      `json:"updated_at"`
-	SerialNumber     string         `gorm:"size:16;unique;not null;index:serial_number" comment:"订单号"  json:"serial_number"`
-	InstructionId    uint           `gorm:"index:company_instruction_id" json:"instruction_id"`
-	SalesmanId       uint           `gorm:"index:salesman_id" json:"salesman_id"`
-	OperationId      uint           `gorm:"index:operation_id" json:"operation_id"`
-	TransportType    uint           `sql:"index" json:"transport_type"`
-	Status           string         `gorm:"size:16;index:status" json:"status"`
-	CompanyId        uint           `sql:"index" json:"company_id"`
-	ContactId        uint           `json:"contact_id"`
-	MainTransport    uint           `json:"main_transport"`
-	PayableStatus    string         `gorm:"size:16;index:payable_paid_status" json:"payable_status"`
-	PaidStatus       string         `gorm:"size:16;index:payable_paid_status" json:"paid_status"`
-	ReceivableStatus string         `gorm:"size:16;index:receive_received_status" sql:"index" json:"receivable_status"`
-	ReceivedStatus   string         `gorm:"size:16;index:receive_received_status" json:"received_status"`
-	Remarks          string         `gorm:"size:522" json:"remarks"`
-	SupplyAgentId    uint           `sql:"index" json:"supply_agent_id"`
-	Roles            []Role         `gorm:"polymorphic:Source;" json:"roles"`
-	SeaCargoInfos    []SeaCargoInfo `gorm:"polymorphic:Source;" json:"sea_cargo_infos"`
+	ID               uint            `gorm:"primary_key"json:"id"`
+	CreatedAt        *time.Time      `sql:"index" json:"created_at"`
+	UpdatedAt        time.Time       `json:"updated_at"`
+	SerialNumber     string          `gorm:"size:16;unique;not null;index:serial_number" comment:"订单号"  json:"serial_number"`
+	InstructionId    uint            `gorm:"index:company_instruction_id" json:"instruction_id" validate:"required"`
+	SalesmanId       uint            `gorm:"index:salesman_id" json:"salesman_id" validate:"required" `
+	OperationId      uint            `gorm:"index:operation_id" json:"operation_id" validate:"required"`
+	TransportType    uint            `sql:"index" json:"transport_type" validate:"required" `
+	Status           string          `gorm:"size:16;index:status;default:processing" json:"status" validate:"required"`
+	CompanyId        uint            `sql:"index" json:"company_id" validate:"required"`
+	ContactId        uint            `json:"contact_id"`
+	MainTransport    uint            `json:"main_transport"`
+	PayableStatus    string          `gorm:"size:16;index:payable_paid_status" json:"payable_status"`
+	PaidStatus       string          `gorm:"size:16;index:payable_paid_status" json:"paid_status"`
+	ReceivableStatus string          `gorm:"size:16;index:receive_received_status" sql:"index" json:"receivable_status"`
+	ReceivedStatus   string          `gorm:"size:16;index:receive_received_status" json:"received_status"`
+	Remarks          string          `gorm:"size:522" json:"remarks"`
+	SupplyAgentId    uint            `sql:"index" json:"supply_agent_id"`
+	Roles            []Role          `gorm:"polymorphic:Source;" json:"roles"`
+	SeaCargoInfos    []SeaCargoInfo  `gorm:"polymorphic:Source;association_autocreate:false;association_autoupdate:false" json:"sea_cargo_infos"`
+	ExtendInfo       OrderExtendInfo `gorm:"foreignkey:OrderMasterId"`
 }
 
 type OrderExtendInfo struct {
@@ -50,6 +51,10 @@ type OrderExtendInfo struct {
 	CourierCodeId uint       `sql:"index" json:"courier_code_id"`
 	CourierNo     string     `gorm:"size:16;index:courier_no" json:"courier_no"`
 }
+
+const (
+	OrderStatusPro = "processing"
+)
 
 func (OrderMaster) TableName() string {
 	return "order_masters"

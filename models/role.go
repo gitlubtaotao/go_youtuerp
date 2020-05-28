@@ -14,8 +14,12 @@ type Role struct {
 	SourceType string     `gorm:"index:idx_source_id_and_type" json:"source_type"`
 }
 
-const  (
-	RoleNameSale = "salesman"
-	RoleNameAudit = "audit"
-	RoleNameCreate = "created"
+const (
+	RoleNameSale     = "salesman"
+	RoleNameAudit    = "audit"
+	RoleNameCreate   = "created"
+	RoleNameCustomer = "customer"
+	RoleNameBusiness = "business"
+	RoleNameFinance  = "finance"
+	RoleNameFile     = "file"
 )

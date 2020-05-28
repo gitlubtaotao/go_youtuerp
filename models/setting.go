@@ -22,9 +22,20 @@ type NumberSetting struct {
 	DefaultRule   string    `gorm:"size:64" json:"default_rule"`
 	Special       string    `gorm:"size:16" json:"special"`
 	ApplicationNo string    `gorm:"size:64;index:application_no" json:"application_no" validate:"required"`
-	DefaultNumber uint      `json:"default_number" validate:"required,min=1"`
-	CurrentNumber uint      `json:"current_number"`
+	DefaultNumber int       `gorm:"default:0" json:"default_number" validate:"required,min=1"`
+	CurrentNumber int       `gorm:"default:0" json:"current_number"`
 	ClearRule     string    `gorm:"size:16;comment:'清零规则'" json:"clear_rule"`
+}
+
+type NumberSettingHistory struct {
+	ID              uint      `gorm:"primary_key" json:"id"`
+	CreatedAt       time.Time `json:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
+	NumberSettingId uint      `gorm:"index:number_setting_id" json:"number_setting_id"`
+	Year            int       `gorm:"index:year_moth_day_index" json:"year"`
+	Month           int       `gorm:"index:year_moth_day_index" json:"month"`
+	Day             int       `gorm:"index:year_moth_day_index" json:"day"`
+	CurrentNumber   int       `gorm:"default:0" json:"current_number"`
 }
 
 type ResultNumberSetting struct {
@@ -58,3 +69,14 @@ func (NumberSetting) TableName() string {
 func (ResultNumberSetting) TableName() string {
 	return "number_settings"
 }
+
+const (
+	NumberSettingOrderNumber = "order_serial_number"
+)
+
+const (
+	NumberSettingYearClear  = "year"
+	NumberSettingMonthClear = "month"
+	NumberSettingDayClear   = "day"
+	NumberSettingNonZero    = "non_zero"
+)
