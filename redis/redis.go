@@ -1,10 +1,10 @@
 package redis
 
 import (
-	"bytes"
 	"github.com/go-redis/redis/v7"
 	"reflect"
 	"strconv"
+	"strings"
 	"sync"
 	"youtuerp/conf"
 )
@@ -91,10 +91,7 @@ func (r Redis) CombineKey(tableName string, key interface{}) string {
 	case reflect.Uint:
 		dst = strconv.Itoa(int(key.(uint)))
 	}
-	var b bytes.Buffer
-	b.WriteString(tableName)
-	b.WriteString(dst)
-	return b.String()
+	return strings.Join([]string{tableName, dst}, "")
 }
 
 func NewRedis() Redis {

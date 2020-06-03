@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"bytes"
 	"database/sql"
 	"fmt"
 	"github.com/kataras/golog"
@@ -111,11 +110,12 @@ func (n NumberSettingRepository) generateNumber(setting models.NumberSetting, cr
 	searchData searchNumber) (string, error) {
 	var (
 		ruleArray     []string
-		buffer        bytes.Buffer
+		buffer        strings.Builder
 		err           error
 		currentNumber int
 	)
 	ruleArray = strings.Split(setting.DefaultRule, ",")
+	buffer.Grow(len(ruleArray) * 3)
 	for _, item := range ruleArray {
 		switch item {
 		case "YY":

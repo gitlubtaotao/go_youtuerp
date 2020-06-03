@@ -8,17 +8,40 @@ import (
 )
 
 //保存公司redis信息
-func (r Redis) HSetCompany(id interface{}) error {
-	return r.setRecord("user_companies",
-		map[string]interface{}{"id": id},
-		[]string{"id", "name_nick", "code", "age", "amount", "account_period"})
+func (r Redis) HSetCompany(key string, id interface{}) error {
+	result, err := r.findRecord("user_companies", map[string]interface{}{"id": id},
+		[]string{"id", "name_nick", "code", "age", "amount", "account_period", "user_salesman_id"})
+	if err != nil {
+		return err
+	}
+	for _, v := range result {
+		key := r.CombineKey(key, v["id"])
+		if err = r.HMSet(key, v); err != nil {
+			return err
+		}
+		_ = r.SAdd(key, v["id"])
+	}
+	return nil
 }
+
+
 
 func (r Redis) HSetRecord(tableName string, id interface{}, selectKeys []string) error {
 	if len(selectKeys) == 0 {
 		selectKeys = []string{"id", "name"}
 	}
-	return r.setRecord(tableName, map[string]interface{}{"id": id}, selectKeys)
+	result, err := r.findRecord(tableName, map[string]interface{}{"id": id}, selectKeys)
+	if err != nil {
+		return err
+	}
+	for _, v := range result {
+		key := r.CombineKey(tableName, v["id"])
+		if err = r.HMSet(key, v); err != nil {
+			return err
+		}
+		_ = r.SAdd(tableName, v["id"])
+	}
+	return nil
 }
 
 func (r Redis) HSetValue(tableName string, id interface{}, value map[string]interface{}) error {
@@ -47,22 +70,6 @@ func (r Redis) findRecord(tableName string, filter map[string]interface{}, selec
 	}
 	r.sy.Unlock()
 	return data, nil
-}
-
-//通过查询数据库,将记录写入redis中
-func (r Redis) setRecord(tableName string, filter map[string]interface{}, selectKeys []string) error {
-	result, err := r.findRecord(tableName, filter, selectKeys)
-	if err != nil {
-		return err
-	}
-	for _, v := range result {
-		key := r.CombineKey(tableName, v["id"])
-		if err = r.HMSet(key, v); err != nil {
-			return err
-		}
-		_ = r.SAdd(tableName, v["id"])
-	}
-	return nil
 }
 
 func HSetValue(table string, id interface{}, value map[string]interface{}) {

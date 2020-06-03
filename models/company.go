@@ -40,6 +40,12 @@ const (
 	CompanyTypeCS
 	CompanyTypeB
 )
+const  (
+	CompanyStatusCancel = "cancel"
+	CompanyStatusRejected = "rejected"
+	CompanyStatusApproved = "approved"
+	CompanyStatusApproving = "approving"
+)
 
 func (Company) TableName() string {
 	return "user_companies"

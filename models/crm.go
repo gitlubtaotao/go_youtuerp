@@ -45,7 +45,7 @@ type CrmCompany struct {
 	CompanyType      int        `form:"company_type" json:"company_type"`
 	ParentId         int        `gorm:"index:parent_id" json:"parent_id"`
 	ParentNameNick   string     `gorm:"-"`
-	UserSalesmanId   int        `gorm:"index:user_salesman_id"` // 所属的业务人员
+	UserSalesmanId   int        `gorm:"index:user_salesman_id" json:"user_salesman_id"` // 所属的业务人员
 	UserAuditId      int        `gorm:"-" json:"user_audit_id"`
 	UserCreateId     int        `gorm:"-" json:"user_create_id"`
 	AccountPeriod    string     `gorm:"size:16" json:"account_period"` // 公司结算类型
@@ -121,6 +121,10 @@ func (CrmClue) TableName() string {
 
 func (CrmCompany) TableName() string {
 	return "user_companies"
+}
+
+func (CrmCompany) RedisKey() string  {
+	return "crm_companies"
 }
 
 func (CrmUser) TableName() string {

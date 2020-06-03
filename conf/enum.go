@@ -10,6 +10,10 @@ type Enum struct {
 	Locale context.Locale
 }
 
+func NewEnum(locale context.Locale) Enum {
+	return Enum{Locale: locale}
+}
+
 func (e Enum) DefaultText(key string, src interface{}) string {
 	ty := reflect.TypeOf(src)
 	var dst string

@@ -2,6 +2,7 @@
 package tools
 
 import (
+	"reflect"
 	"time"
 )
 
@@ -9,6 +10,7 @@ type ITimeHelper interface {
 	DefaultDate(time time.Time, language string) string
 	DefaultDateTime(time time.Time, language string) string
 	TimeFormat(time time.Time, timeFormat string) string
+	InterfaceFormat(value interface{}, timeFormat string) string
 }
 
 type TimeHelper struct {
@@ -22,6 +24,26 @@ const (
 	ENDate        = "Jan 02, 2006"
 	ENDateTime    = "Jan 02, 2006 15:04:05"
 )
+
+func (u TimeHelper) InterfaceFormat(value interface{}, timeFormat string) string {
+	vi := reflect.ValueOf(value)
+	if vi.Kind() == reflect.Ptr {
+		if vi.IsNil() {
+			return ""
+		}
+		if t, ok := value.(*time.Time); ok {
+			return u.DefaultDate(*t, timeFormat)
+		} else {
+			return ""
+		}
+	}
+	if vi.Kind() == reflect.Struct {
+		if t, ok := value.(time.Time); ok {
+			return u.DefaultDate(t, timeFormat)
+		}
+	}
+	return ""
+}
 
 //转化时间
 func (u TimeHelper) TimeFormat(time time.Time, timeFormat string) string {

@@ -3,29 +3,29 @@ package redis
 import (
 	"github.com/kataras/golog"
 	"strconv"
+	"youtuerp/models"
 	"youtuerp/tools/uploader"
 )
 
-func (r Redis) HGetCompany(id interface{}, field string) (value string) {
+func (r Redis) HGetCrm(id interface{}, field string) (value string) {
 	var err error
-	if field == "" {
-		field = "name_nick"
+	value, err = r.getUserCompany(models.CrmCompany{}.RedisKey(), id, field)
+	if err != nil {
+		golog.Errorf("get crm redis is error %v", err)
 	}
-	key := r.CombineKey("user_companies", id)
-	if value, err = r.HGet(key, field); err != nil {
-		golog.Error("HGetCompany redis is error id is %v,err is %v", id, err)
-		return ""
-	}
-	if value != "" {
-		return value
-	}
-	if err := r.HSetCompany(id); err != nil {
-		golog.Errorf("set company redis id %v is error %v", id, err)
-		return ""
-	}
-	value, _ = r.HGet(key, field)
 	return value
 }
+
+
+func (r Redis) HGetCompany(id interface{}, field string) (value string) {
+	var err error
+	value, err = r.getUserCompany(models.Company{}.TableName(), id, field)
+	if err != nil {
+		golog.Errorf("get crm redis is error %v", err)
+	}
+	return value
+}
+
 
 func (r Redis) HGetRecord(table string, id interface{}, field string) (value string) {
 	var err error
@@ -86,6 +86,23 @@ func (r Redis) HCollectOptions(table string) []map[string]string {
 		collect = append(collect, temp)
 	}
 	return collect
+}
+
+func (r Redis) getUserCompany(tableName string, id interface{}, field string) (value string, err error) {
+	if field == "" {
+		field = "name_nick"
+	}
+	key := r.CombineKey(tableName, id)
+	if value, err = r.HGet(key, field); err != nil {
+		return
+	}
+	if value != "" {
+		return value, nil
+	}
+	if err := r.HSetCompany(tableName, id); err != nil {
+		return "",err
+	}
+	return r.HGet(key, field)
 }
 
 func CompanyLogo() string {

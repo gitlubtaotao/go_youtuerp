@@ -242,6 +242,10 @@ func (r *Route) OrderRegister() {
 		record := controllers.OrderMaster{}
 		p.Use(record.Before)
 		p.Post("/create", j.Serve, record.Create)
+		p.Get("/column", j.Serve, record.GetColumn)
+		p.Post("/data", j.Serve, record.Get)
+		p.Patch("/{id:uint}/update", j.Serve, record.Update)
+		p.Get("/{id:uint}/edit", j.Serve, record.Edit)
 	})
 }
 

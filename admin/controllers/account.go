@@ -41,7 +41,7 @@ func (a *AccountController) Get(ctx iris.Context) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	for _, v := range accounts {
-		dataArray = append(dataArray, a.handlerData(red, v))
+		dataArray = append(dataArray, a.handlerData(red, v, ty))
 	}
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": dataArray, "total": total,})
 }
@@ -118,9 +118,13 @@ func (a *AccountController) handlerGetParams() map[string]interface{} {
 	searchColumn["user_company_id-eq"] = a.ctx.URLParamDefault("user_company_id", "")
 	return searchColumn
 }
-func (a *AccountController) handlerData(red redis.Redis, account models.Account) map[string]interface{} {
+func (a *AccountController) handlerData(red redis.Redis, account models.Account, ty string) map[string]interface{} {
 	data, _ := a.StructToMap(account, a.ctx)
 	data["user_company_id_value"] = data["user_company_id"]
-	data["user_company_id"] = red.HGetCompany(data["user_company_id"], "name_nick")
+	if ty == "oa" {
+		data["user_company_id"] = red.HGetCompany(data["user_company_id"], "name_nick")
+	} else {
+		data["user_company_id"] = red.HGetCrm(data["user_company_id"], "name_nick")
+	}
 	return data
 }
