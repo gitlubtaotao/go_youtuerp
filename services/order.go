@@ -6,21 +6,47 @@ import (
 	"youtuerp/conf"
 	"youtuerp/models"
 	"youtuerp/repositories"
+	"youtuerp/tools"
 )
 
 type IOrderMasterService interface {
+	DeleteMaster(id uint) error
 	ShowFinanceStatus(enum conf.Enum, field string, value interface{}) string
 	ShowTransport(enum conf.Enum, record models.ResultOrderMaster) string
 	ShowStatus(enum conf.Enum, record models.ResultOrderMaster) string
+	ChangeStatus(id uint, status string) error
 	UpdateMaster(id uint, order models.OrderMaster, language string) error
 	FirstMaster(id uint, load ...string) (models.OrderMaster, error)
 	FindMaster(per, page uint, filter map[string]interface{}, selectKeys []string, orders []string) ([]models.ResultOrderMaster, uint, error)
 	CreateMaster(order models.OrderMaster, language string) (models.OrderMaster, error)
 }
 
+var orderStatusArray = []interface{}{
+	models.OrderStatusCancel,
+	models.OrderStatusPro,
+	models.OrderStatusFinished,
+	models.OrderStatusLocked,
+}
+
 type OrderMasterService struct {
 	repo repositories.IOrderMaster
 	BaseService
+}
+
+
+func (o OrderMasterService) DeleteMaster(id uint) error {
+	return o.repo.DeleteMaster(id)
+}
+
+
+
+//进行订单状态的更新
+func (o OrderMasterService) ChangeStatus(id uint, status string) error {
+	_, b := tools.ContainsSlice(orderStatusArray, status)
+	if !b {
+		return errors.New("状态有误,请重新确认")
+	}
+	return o.repo.ChangeStatus(id, status)
 }
 
 func (o OrderMasterService) UpdateMaster(id uint, order models.OrderMaster, language string) error {
@@ -73,8 +99,6 @@ func (o OrderMasterService) CreateMaster(order models.OrderMaster, language stri
 
 func NewOrderMasterService() IOrderMasterService {
 	return OrderMasterService{
-		repo:     repositories.NewOrderMasterRepository(),
+		repo: repositories.NewOrderMasterRepository(),
 	}
 }
-
-

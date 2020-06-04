@@ -8,15 +8,31 @@ import (
 )
 
 type IOrderMaster interface {
+	//删除订单
+	DeleteMaster(id uint) error
+	//更新订单状态
+	ChangeStatus(id uint, status string) error
+	//查询订单信息
 	FindMaster(per, page uint, filter map[string]interface{}, selectKeys []string,
 		orders []string, isTotal bool) ([]models.ResultOrderMaster, uint, error)
+	//更新订单数据
 	UpdateMaster(id uint, order models.OrderMaster) error
+	//创建订单
 	CreateMaster(order models.OrderMaster) (models.OrderMaster, error)
+	//查询第一条订单信息
 	FirstMaster(id uint, load ...string) (models.OrderMaster, error)
 }
 type OrderMasterRepository struct {
 	BaseRepository
 	mu sync.Mutex
+}
+
+func (o OrderMasterRepository) DeleteMaster(id uint) error {
+	return  o.crud.Delete(&models.OrderMaster{},id)
+}
+
+func (o OrderMasterRepository) ChangeStatus(id uint, status string) error {
+	return database.GetDBCon().Model(&models.OrderMaster{ID: id}).Update(map[string]interface{}{"status": status}).Error
 }
 
 func (o OrderMasterRepository) FirstMaster(id uint, load ...string) (models.OrderMaster, error) {
@@ -25,7 +41,7 @@ func (o OrderMasterRepository) FirstMaster(id uint, load ...string) (models.Orde
 	for i := 0; i < len(load); i++ {
 		sqlConn = sqlConn.Preload(load[i])
 	}
-	err := sqlConn.First(&order,"id = ?",id).Error
+	err := sqlConn.First(&order, "id = ?", id).Error
 	return order, err
 }
 

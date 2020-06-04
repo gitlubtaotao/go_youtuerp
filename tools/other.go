@@ -85,6 +85,15 @@ func (o OtherHelper) ToSnakeCase(str string) string {
 	return strings.ToLower(strings.ToLower(snake))
 }
 
+func ContainsSlice(src []interface{}, val string) (int, bool) {
+	for i, item := range src {
+		if item == val {
+			return i, true
+		}
+	}
+	return -1, false
+}
+
 func (o OtherHelper) merge(dst, src map[string]interface{}, depth int) map[string]interface{} {
 	if depth > MaxDepth {
 		panic("too deep!")

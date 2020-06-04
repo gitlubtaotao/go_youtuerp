@@ -246,6 +246,8 @@ func (r *Route) OrderRegister() {
 		p.Post("/data", j.Serve, record.Get)
 		p.Patch("/{id:uint}/update", j.Serve, record.Update)
 		p.Get("/{id:uint}/edit", j.Serve, record.Edit)
+		p.Patch("/{id:uint}/changeStatus", j.Serve, record.ChangeStatus)
+		p.Delete("/{id:uint}/delete", j.Serve, record.Delete)
 	})
 }
 

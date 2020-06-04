@@ -116,9 +116,42 @@ func (o *OrderMaster) Update(ctx iris.Context) {
 	o.RenderSuccessJson(ctx, order)
 }
 
+//修改的订单的状态
 func (o *OrderMaster) ChangeStatus(ctx iris.Context) {
-
+	var (
+		id     uint
+		status string
+		err    error
+	)
+	if id, err = ctx.Params().GetUint("id"); err != nil {
+		o.Render400(ctx, err, "")
+		return
+	}
+	if !ctx.URLParamExists("status") {
+		o.Render400(ctx, nil, "")
+		return
+	}
+	status = ctx.URLParam("status")
+	if err = o.service.ChangeStatus(id, status); err != nil {
+		o.Render400(ctx, err, "")
+	} else {
+		o.RenderSuccessJson(ctx, iris.Map{})
+	}
 }
+
+func (o *OrderMaster) Delete(ctx iris.Context) {
+	id, err := ctx.Params().GetUint("id")
+	if err != nil {
+		o.Render400(ctx, err, "")
+		return
+	}
+	if err = o.service.DeleteMaster(id); err != nil {
+		o.Render500(ctx, err, "")
+	} else {
+		o.RenderSuccessJson(ctx, iris.Map{})
+	}
+}
+
 
 func (o *OrderMaster) Before(ctx iris.Context) {
 	o.ctx = ctx
@@ -245,5 +278,3 @@ func (o *OrderMaster) stringToDate(strTime string) time.Time {
 	}
 	return result
 }
-
-
