@@ -116,6 +116,10 @@ func (o *OrderMaster) Update(ctx iris.Context) {
 	o.RenderSuccessJson(ctx, order)
 }
 
+func (o *OrderMaster) ChangeStatus(ctx iris.Context) {
+
+}
+
 func (o *OrderMaster) Before(ctx iris.Context) {
 	o.ctx = ctx
 	o.service = services.NewOrderMasterService()
@@ -241,3 +245,5 @@ func (o *OrderMaster) stringToDate(strTime string) time.Time {
 	}
 	return result
 }
+
+

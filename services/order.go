@@ -12,11 +12,12 @@ type IOrderMasterService interface {
 	ShowFinanceStatus(enum conf.Enum, field string, value interface{}) string
 	ShowTransport(enum conf.Enum, record models.ResultOrderMaster) string
 	ShowStatus(enum conf.Enum, record models.ResultOrderMaster) string
-	UpdateMaster(id uint, order models.OrderMaster,language string) error
+	UpdateMaster(id uint, order models.OrderMaster, language string) error
 	FirstMaster(id uint, load ...string) (models.OrderMaster, error)
 	FindMaster(per, page uint, filter map[string]interface{}, selectKeys []string, orders []string) ([]models.ResultOrderMaster, uint, error)
 	CreateMaster(order models.OrderMaster, language string) (models.OrderMaster, error)
 }
+
 type OrderMasterService struct {
 	repo repositories.IOrderMaster
 	BaseService
@@ -29,8 +30,6 @@ func (o OrderMasterService) UpdateMaster(id uint, order models.OrderMaster, lang
 	}
 	return o.repo.UpdateMaster(id, order)
 }
-
-
 
 func (o OrderMasterService) FirstMaster(id uint, load ...string) (models.OrderMaster, error) {
 	return o.repo.FirstMaster(id, load...)
@@ -73,5 +72,9 @@ func (o OrderMasterService) CreateMaster(order models.OrderMaster, language stri
 }
 
 func NewOrderMasterService() IOrderMasterService {
-	return OrderMasterService{repo: repositories.NewOrderMasterRepository()}
+	return OrderMasterService{
+		repo:     repositories.NewOrderMasterRepository(),
+	}
 }
+
+
