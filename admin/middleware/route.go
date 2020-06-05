@@ -197,7 +197,7 @@ func (r *Route) CrmRegister() {
 	{
 		record := controllers.Invoice{}
 		InvoiceApi.Use(record.Before)
-		InvoiceApi.Post("/column", j.Serve, record.GetColumn)
+		InvoiceApi.Get("/column", j.Serve, record.GetColumn)
 		InvoiceApi.Post("/data", j.Serve, record.Get)
 		InvoiceApi.Post("/create", j.Serve, record.Create)
 		InvoiceApi.Patch("/{id:uint}/update", j.Serve, record.Update)
@@ -207,7 +207,7 @@ func (r *Route) CrmRegister() {
 	{
 		record := controllers.Address{}
 		AddressApi.Use(record.Before)
-		AddressApi.Post("/column", j.Serve, record.GetColumn)
+		AddressApi.Get("/column", j.Serve, record.GetColumn)
 		AddressApi.Post("/data", j.Serve, record.Get)
 		AddressApi.Post("/create", j.Serve, record.Create)
 		AddressApi.Patch("/{id:uint}/update", j.Serve, record.Update)
