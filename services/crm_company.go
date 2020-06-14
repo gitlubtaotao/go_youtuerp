@@ -2,11 +2,13 @@ package services
 
 import (
 	"errors"
+	"strings"
 	"youtuerp/models"
 	"youtuerp/repositories"
 )
 
 type ICrmCompanyService interface {
+	GetOperationInfo(id uint) string
 	UpdateByMap(id uint, attr map[string]interface{}) error
 	Delete(id uint) error
 	Update(id uint, company models.CrmCompany, language string) (models.CrmCompany, error)
@@ -19,6 +21,32 @@ type ICrmCompanyService interface {
 type CrmCompanyService struct {
 	repo repositories.ICrmCompany
 	BaseService
+}
+
+func (c CrmCompanyService) GetOperationInfo(id uint) string {
+	var (
+		operationInfo string
+		buffer        strings.Builder
+	)
+	crm, err := c.repo.First(id)
+	if err != nil {
+		return ""
+	}
+	if crm.FrequentlyUseInfo != "" {
+		return crm.FrequentlyUseInfo
+	}
+	buffer.WriteString(crm.NameEn)
+	buffer.WriteString("\n")
+	buffer.WriteString(crm.EnAddress)
+	buffer.WriteString("\n")
+	buffer.WriteString("Tel:")
+	buffer.WriteString(crm.Telephone)
+	buffer.WriteString("\n")
+	buffer.WriteString("Email:")
+	buffer.WriteString(crm.Email)
+	operationInfo = buffer.String()
+	go c.repo.UpdateByMap(id, map[string]interface{}{"frequently_use_info": operationInfo})
+	return operationInfo
 }
 
 func (c CrmCompanyService) UpdateByMap(id uint, attr map[string]interface{}) error {

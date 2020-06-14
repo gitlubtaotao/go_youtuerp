@@ -8,6 +8,7 @@ import (
 )
 
 type IOrderMaster interface {
+	FormerSeaInstruction(orderMasterId uint, formerType interface{}, attr map[string]interface{}) (models.FormerSeaInstruction, error)
 	//删除订单
 	DeleteMaster(id uint) error
 	//更新订单状态
@@ -27,8 +28,15 @@ type OrderMasterRepository struct {
 	mu sync.Mutex
 }
 
+func (o OrderMasterRepository) FormerSeaInstruction(orderMasterId uint, formerType interface{}, attr map[string]interface{}) (models.FormerSeaInstruction, error) {
+	attr["order_master_id"] = orderMasterId
+	var data models.FormerSeaInstruction
+	err := database.GetDBCon().Where(models.FormerSeaInstruction{OrderMasterId: orderMasterId, Type: formerType.(string)}).Attrs(attr).FirstOrCreate(&data).Error
+	return data, err
+}
+
 func (o OrderMasterRepository) DeleteMaster(id uint) error {
-	return  o.crud.Delete(&models.OrderMaster{},id)
+	return o.crud.Delete(&models.OrderMaster{}, id)
 }
 
 func (o OrderMasterRepository) ChangeStatus(id uint, status string) error {

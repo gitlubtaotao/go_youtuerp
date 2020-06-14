@@ -78,5 +78,4 @@ func HSetValue(table string, id interface{}, value map[string]interface{}) {
 		golog.Warnf("set hash value is error current table is %v,current id is %v,error is %v",
 			table, id, err)
 	}
-	golog.Infof("this is goroutines")
 }

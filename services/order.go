@@ -2,6 +2,8 @@ package services
 
 import (
 	"errors"
+	"github.com/kataras/golog"
+	"reflect"
 	"time"
 	"youtuerp/conf"
 	"youtuerp/models"
@@ -10,10 +12,11 @@ import (
 )
 
 type IOrderMasterService interface {
+	GetFormerData(id uint, formerType string, formerItemType string) (interface{}, error)
 	DeleteMaster(id uint) error
 	ShowFinanceStatus(enum conf.Enum, field string, value interface{}) string
-	ShowTransport(enum conf.Enum, record models.ResultOrderMaster) string
-	ShowStatus(enum conf.Enum, record models.ResultOrderMaster) string
+	ShowTransport(enum conf.Enum, order interface{}) string
+	ShowStatus(enum conf.Enum, value interface{}) string
 	ChangeStatus(id uint, status string) error
 	UpdateMaster(id uint, order models.OrderMaster, language string) error
 	FirstMaster(id uint, load ...string) (models.OrderMaster, error)
@@ -33,12 +36,42 @@ type OrderMasterService struct {
 	BaseService
 }
 
+func (o OrderMasterService) GetFormerData(id uint, formerType string, formerItemType string) (interface{}, error) {
+	var (
+		data        interface{}
+		err         error
+		orderMaster models.OrderMaster
+		attr        map[string]interface{}
+		crmService  = NewCrmCompanyService()
+	)
+	if orderMaster, err = o.repo.FirstMaster(id); err != nil {
+		return data, err
+	}
+	golog.Infof("%v",orderMaster)
+	attr = make(map[string]interface{}, 2)
+	attr["instruction_id"] = orderMaster.InstructionId
+	switch formerType {
+	case "former_sea_instruction":
+		_, status := tools.ContainsSlice([]interface{}{models.InstructionMaster, models.InstructionSplit}, formerItemType)
+		if !status {
+			return data, errors.New("传入的参数有误")
+		}
+		if formerItemType == models.InstructionMaster {
+			attr["hbl_no"] = orderMaster.SerialNumber
+			attr["type"] = formerItemType
+			attr["shipper_id"] = orderMaster.InstructionId
+			attr["shipper_content"] = crmService.GetOperationInfo(orderMaster.InstructionId)
+			data, err = o.repo.FormerSeaInstruction(id, formerItemType, attr)
+		} else {
+			data, err = o.repo.FormerSeaInstruction(id, formerItemType, attr)
+		}
+	}
+	return data, err
+}
 
 func (o OrderMasterService) DeleteMaster(id uint) error {
 	return o.repo.DeleteMaster(id)
 }
-
-
 
 //进行订单状态的更新
 func (o OrderMasterService) ChangeStatus(id uint, status string) error {
@@ -68,14 +101,27 @@ func (o OrderMasterService) ShowFinanceStatus(enum conf.Enum, field string, valu
 	return enum.DefaultText(field+".", value)
 }
 
-func (o OrderMasterService) ShowStatus(enum conf.Enum, record models.ResultOrderMaster) string {
-	return enum.DefaultText("order_masters_status.", record.Status)
+func (o OrderMasterService) ShowStatus(enum conf.Enum, value interface{}) string {
+	return enum.DefaultText("order_masters_status.", value)
 }
 
-func (o OrderMasterService) ShowTransport(enum conf.Enum, record models.ResultOrderMaster) string {
-	temp := enum.DefaultText("order_masters_transport_type.", record.TransportType)
-	if record.TransportType == models.OrderMasterTransportType3 {
-		return temp + enum.DefaultText("order_masters_main_transport.", record.MainTransport)
+func (o OrderMasterService) ShowTransport(enum conf.Enum, value interface{}) string {
+	var (
+		TransportType uint
+		MainTransport uint
+	)
+	if reflect.TypeOf(value).Name() == "OrderMaster" {
+		record := value.(models.OrderMaster)
+		TransportType = record.TransportType
+		MainTransport = record.MainTransport
+	} else {
+		record := value.(models.ResultOrderMaster)
+		TransportType = record.TransportType
+		MainTransport = record.MainTransport
+	}
+	temp := enum.DefaultText("order_masters_transport_type.", TransportType)
+	if TransportType == models.OrderMasterTransportType3 {
+		return temp + enum.DefaultText("order_masters_main_transport.", MainTransport)
 	}
 	return temp
 }

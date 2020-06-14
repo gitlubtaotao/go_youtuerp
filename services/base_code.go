@@ -27,12 +27,12 @@ type BaseCode struct {
 func (b BaseCode) FindCollect(key string) []map[string]string {
 	red := redis.NewRedis()
 	tableName := models.BaseDataCode{}.TableName()
-	data := make([]map[string]string, 0)
+	data := make([]map[string]string, 1)
 	data = red.HCollectOptions(tableName + key)
 	if len(data) > 0 {
 		return data
 	}
-	records, _, _ := b.repo.Find(0, 0, map[string]interface{}{"code": key}, []string{}, []string{}, false)
+	records, _, _ := b.repo.Find(0, 0, map[string]interface{}{"code_name-eq": key}, []string{}, []string{}, false)
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	for _, k := range records {

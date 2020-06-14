@@ -248,6 +248,8 @@ func (r *Route) OrderRegister() {
 		p.Get("/{id:uint}/edit", j.Serve, record.Edit)
 		p.Patch("/{id:uint}/changeStatus", j.Serve, record.ChangeStatus)
 		p.Delete("/{id:uint}/delete", j.Serve, record.Delete)
+		p.Get("/{id:uint}/operation",j.Serve,record.Operation)
+		p.Get("/{id:uint}/getFormerData",j.Serve,record.GetFormerData)
 	})
 }
 

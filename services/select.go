@@ -1,14 +1,16 @@
 package services
 
 import (
-	"fmt"
+	"github.com/kataras/golog"
 	"github.com/kataras/iris/v12"
 	"reflect"
 	"sync"
+	"youtuerp/models"
 	"youtuerp/repositories"
 )
 
 type ISelectService interface {
+	GetOperationSelect(formerType string) map[string]interface{}
 	FindTable(tableName string, name string, scope map[string]interface{}, selectKeys []string) (selectResult []map[string]interface{}, err error)
 }
 
@@ -16,6 +18,24 @@ type SelectService struct {
 	repo repositories.ISelectRepository
 	ctx  iris.Context
 	sy   sync.Mutex
+}
+
+func (s SelectService) GetOperationSelect(formerType string) map[string]interface{} {
+	returnAttr := make(map[string]interface{})
+	crmOptions, _ := s.FindTable("user_companies", "", map[string]interface{}{"company_type": []int{1,3},"status": models.CompanyStatusApproved}, []string{"id", "name_cn"})
+	returnAttr["crmOptions"] = crmOptions
+	stringArray := []string{models.CodePayType, models.CodeCapType, models.CodeInstructionType,
+		models.CodeCustomType, models.CodeBillProduceType, models.CodeTransshipment,
+		models.CodeTradeTerms, models.CodeShippingTerms}
+	codeService := NewBaseCode()
+	for i := 0; i < len(stringArray); i++ {
+		returnAttr[stringArray[i]] = codeService.FindCollect(stringArray[i])
+	}
+	carrierService := NewBaseCarrier()
+	portService := NewBasePort()
+	returnAttr["carrier"] = carrierService.FindCollect("1")
+	returnAttr["port"] = portService.FindCollect("1")
+	return returnAttr
 }
 
 func (s SelectService) FindTable(tableName string, name string, scope map[string]interface{}, selectKeys []string) ([]map[string]interface{}, error) {
@@ -39,7 +59,7 @@ func (s SelectService) handleScope(scope map[string]interface{}) map[string]inte
 	s.sy.Lock()
 	defer s.sy.Unlock()
 	for k, v := range scope {
-		fmt.Printf("k is %v,v is %v", k, v)
+		golog.Infof("k is %v,v is %v", k, v)
 		var search string
 		ty := reflect.TypeOf(v)
 		switch ty.Kind() {
@@ -77,8 +97,5 @@ func (s SelectService) handleResult(dest map[string]interface{}) (out map[string
 }
 
 func NewSelectService(ctx iris.Context) ISelectService {
-	return &SelectService{
-		repo: repositories.NewSelectRepository(),
-		ctx:  ctx,
-	}
+	return &SelectService{repo: repositories.NewSelectRepository(), ctx: ctx,}
 }

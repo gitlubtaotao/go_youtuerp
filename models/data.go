@@ -69,7 +69,16 @@ const (
 
 const (
 	CodeFinanceCurrency = "FinanceCurrency"
+	CodePayType         = "PayType"
+	CodeCapType         = "CapType"
+	CodeInstructionType = "InstructionType"
+	CodeCustomType      = "CustomType"
+	CodeBillProduceType = "BillProduceType"
+	CodeTransshipment   = "Transshipment"
+	CodeTradeTerms      = "TradeTerms"
+	CodeShippingTerms   = "ShippingTerms"
 )
+
 
 func (r BaseDataCode) TableName() string {
 	return "base_data_codes"

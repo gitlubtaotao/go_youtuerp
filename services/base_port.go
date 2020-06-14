@@ -2,15 +2,18 @@ package services
 
 import (
 	"errors"
+	"strconv"
+	"sync"
 	"youtuerp/models"
 	"youtuerp/redis"
 	"youtuerp/repositories"
 )
 
 type IBasePort interface {
-	Update(id uint, code models.BaseDataPort,language string) error
+	FindCollect(key string) []map[string]string
+	Update(id uint, code models.BaseDataPort, language string) error
 	Delete(id uint) error
-	Create(code models.BaseDataPort,language string) (models.BaseDataPort, error)
+	Create(code models.BaseDataPort, language string) (models.BaseDataPort, error)
 	Find(per, page uint, filter map[string]interface{}, selectKeys []string,
 		orders []string) (codes []models.BaseDataPort, total uint, err error)
 }
@@ -18,8 +21,27 @@ type IBasePort interface {
 type BasePort struct {
 	BaseService
 	repo repositories.IBasePort
+	mu   sync.Mutex
 }
 
+func (b BasePort) FindCollect(key string) []map[string]string {
+	red := redis.NewRedis()
+	tableName := models.BaseDataPort{}.TableName()
+	data := make([]map[string]string, 0)
+	data = red.HCollectOptions(tableName + key)
+	if len(data) > 0 {
+		return data
+	}
+	records, _, _ := b.repo.Find(0, 0, map[string]interface{}{"type-eq": key}, []string{}, []string{}, false)
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	for _, k := range records {
+		go b.SaveRedisData(k)
+		temp := map[string]string{"id": strconv.Itoa(int(k.ID)), "name": k.Name}
+		data = append(data, temp)
+	}
+	return data
+}
 func (b BasePort) Update(id uint, code models.BaseDataPort, language string) error {
 	valid := NewValidatorService(code)
 	if message := valid.ResultError(language); message != "" {
@@ -28,10 +50,7 @@ func (b BasePort) Update(id uint, code models.BaseDataPort, language string) err
 	if err := b.repo.Update(id, code); err != nil {
 		return err
 	}
-	go redis.HSetValue("base_data_carriers", id, map[string]interface{}{
-		"id":   id,
-		"name": code.Name,
-	})
+	go b.SaveRedisData(code)
 	return nil
 }
 
@@ -48,16 +67,20 @@ func (b BasePort) Create(code models.BaseDataPort, language string) (models.Base
 	if err != nil {
 		return result, err
 	}
-	go redis.HSetValue("base_data_carriers", result.ID, map[string]interface{}{
-		"id":   result.ID,
-		"name": result.Name,
-	})
+	go b.SaveRedisData(result)
 	return result, err
 }
 
 func (b BasePort) Find(per, page uint, filter map[string]interface{}, selectKeys []string,
 	orders []string) (codes []models.BaseDataPort, total uint, err error) {
 	return b.repo.Find(per, page, filter, selectKeys, orders, true)
+}
+
+func (b BasePort) SaveRedisData(result models.BaseDataPort) {
+	redis.HSetValue(models.BaseDataPort{}.TableName()+strconv.Itoa(int(result.Type)), result.ID, map[string]interface{}{
+		"id":   result.ID,
+		"name": result.Name,
+	})
 }
 
 func NewBasePort() IBasePort {

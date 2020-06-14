@@ -152,6 +152,58 @@ func (o *OrderMaster) Delete(ctx iris.Context) {
 	}
 }
 
+func (o *OrderMaster) Operation(ctx iris.Context) {
+	var (
+		id    uint
+		err   error
+		order models.OrderMaster
+	)
+	if id, err = ctx.Params().GetUint("id"); err != nil {
+		o.Render400(ctx, err, "")
+		return
+	}
+	if order, err = o.service.FirstMaster(id, "OrderExtendInfo"); err != nil {
+		o.Render500(ctx, err, "")
+		return
+	}
+	o.RenderSuccessJson(ctx, o.handlerOrderInfo(order))
+}
+
+// 获取表单的数据
+func (o *OrderMaster) GetFormerData(ctx iris.Context) {
+	var (
+		formerType     string
+		formerItemType string
+		orderMasterId  uint
+		err            error
+		formerData     interface{}
+		selectOptions  map[string]interface{}
+		sy             sync.WaitGroup
+		mx             sync.Mutex
+	)
+	if orderMasterId, err = ctx.Params().GetUint("id"); err != nil {
+		o.Render400(ctx, err, err.Error())
+		return
+	}
+	formerType = ctx.URLParam("formerType")
+	formerItemType = ctx.URLParamDefault("formerItemType", models.InstructionMaster)
+	sy.Add(2)
+	go func(orderMasterId uint, formerType string, formerItemType string) {
+		mx.Lock()
+		defer mx.Unlock()
+		formerData, err = o.service.GetFormerData(orderMasterId, formerType, formerItemType)
+		sy.Done()
+	}(orderMasterId, formerType, formerItemType)
+	go func() {
+		mx.Lock()
+		defer mx.Unlock()
+		selectService := services.NewSelectService(ctx)
+		selectOptions = selectService.GetOperationSelect(formerItemType)
+		sy.Done()
+	}()
+	sy.Wait()
+	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "formerData": formerData, "selectOptions": selectOptions})
+}
 
 func (o *OrderMaster) Before(ctx iris.Context) {
 	o.ctx = ctx
@@ -193,7 +245,7 @@ func (o *OrderMaster) handlerData(order models.ResultOrderMaster) map[string]int
 		data["transport_type_value"] = data["transport_type"]
 		data["transport_type"] = o.service.ShowTransport(o.enum, order)
 		data["status_value"] = data["status"]
-		data["status"] = o.service.ShowStatus(o.enum, order)
+		data["status"] = o.service.ShowStatus(o.enum, order.Status)
 		data["company_id"] = red.HGetCompany(data["company_id"], "")
 		for _, v := range []string{"paid_status", "received_status", "payable_status", "receivable_status"} {
 			data[v+"_value"] = data[v]
@@ -277,4 +329,13 @@ func (o *OrderMaster) stringToDate(strTime string) time.Time {
 		golog.Errorf("string to date is error %v", err)
 	}
 	return result
+}
+
+//处理订单操作信息
+func (o *OrderMaster) handlerOrderInfo(order models.OrderMaster) map[string]interface{} {
+	data, _ := o.StructToMap(order, o.ctx)
+	data["transport_type"] = o.service.ShowTransport(o.enum, order)
+	data["status"] = o.service.ShowStatus(o.enum, order.Status)
+	data["instruction_name"] = red.HGetCrm(order.InstructionId, "")
+	return data
 }
