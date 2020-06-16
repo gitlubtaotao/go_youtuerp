@@ -77,6 +77,7 @@ const (
 	CodeTransshipment   = "Transshipment"
 	CodeTradeTerms      = "TradeTerms"
 	CodeShippingTerms   = "ShippingTerms"
+	PackageType = "PackageType"
 )
 
 

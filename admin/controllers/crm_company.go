@@ -180,6 +180,20 @@ func (c *CrmCompany) Show(ctx iris.Context) {
 	c.RenderSuccessJson(ctx, data)
 }
 
+// 获取公司的信息
+func (c *CrmCompany) GetOperationInfo(ctx iris.Context) {
+	var (
+		id  uint
+		err error
+	)
+	if id, err = ctx.Params().GetUint("id"); err != nil {
+		c.Render400(ctx, err, err.Error())
+		return
+	}
+	c.RenderSuccessJson(ctx, c.service.GetOperationInfo(id))
+}
+
+
 func (c *CrmCompany) Before(ctx iris.Context) {
 	c.ctx = ctx
 	c.service = services.NewCrmCompanyService()

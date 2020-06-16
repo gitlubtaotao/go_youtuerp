@@ -24,6 +24,9 @@ type OrderMaster struct {
 	enum            conf.Enum
 }
 
+
+
+
 var (
 	tool     = tools.OtherHelper{}
 	toolTime = tools.TimeHelper{}
@@ -154,19 +157,36 @@ func (o *OrderMaster) Delete(ctx iris.Context) {
 
 func (o *OrderMaster) Operation(ctx iris.Context) {
 	var (
-		id    uint
-		err   error
-		order models.OrderMaster
+		id            uint
+		err           error
+		order         models.OrderMaster
+		data          interface{}
+		sy            sync.WaitGroup
+		mx            sync.Mutex
+		selectOptions map[string]interface{}
 	)
+	formerType := ctx.URLParam("formerType")
 	if id, err = ctx.Params().GetUint("id"); err != nil {
 		o.Render400(ctx, err, "")
 		return
 	}
-	if order, err = o.service.FirstMaster(id, "OrderExtendInfo"); err != nil {
-		o.Render500(ctx, err, "")
-		return
-	}
-	o.RenderSuccessJson(ctx, o.handlerOrderInfo(order))
+	sy.Add(2)
+	go func() {
+		mx.Lock()
+		defer mx.Unlock()
+		order, _ = o.service.FirstMaster(id, "OrderExtendInfo")
+		data, _ = o.service.GetFormerInstruction(order, formerType, models.InstructionMaster)
+		sy.Done()
+	}()
+	go func() {
+		mx.Lock()
+		defer mx.Unlock()
+		selectService := services.NewSelectService(ctx)
+		selectOptions = selectService.GetOperationSelect(formerType)
+		sy.Done()
+	}()
+	sy.Wait()
+	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "formerData": data, "order": o.handlerOrderInfo(order), "selectOptions": selectOptions})
 }
 
 // 获取表单的数据
@@ -177,9 +197,6 @@ func (o *OrderMaster) GetFormerData(ctx iris.Context) {
 		orderMasterId  uint
 		err            error
 		formerData     interface{}
-		selectOptions  map[string]interface{}
-		sy             sync.WaitGroup
-		mx             sync.Mutex
 	)
 	if orderMasterId, err = ctx.Params().GetUint("id"); err != nil {
 		o.Render400(ctx, err, err.Error())
@@ -187,22 +204,26 @@ func (o *OrderMaster) GetFormerData(ctx iris.Context) {
 	}
 	formerType = ctx.URLParam("formerType")
 	formerItemType = ctx.URLParamDefault("formerItemType", models.InstructionMaster)
-	sy.Add(2)
-	go func(orderMasterId uint, formerType string, formerItemType string) {
-		mx.Lock()
-		defer mx.Unlock()
-		formerData, err = o.service.GetFormerData(orderMasterId, formerType, formerItemType)
-		sy.Done()
-	}(orderMasterId, formerType, formerItemType)
-	go func() {
-		mx.Lock()
-		defer mx.Unlock()
-		selectService := services.NewSelectService(ctx)
-		selectOptions = selectService.GetOperationSelect(formerItemType)
-		sy.Done()
-	}()
-	sy.Wait()
-	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "formerData": formerData, "selectOptions": selectOptions})
+	formerData, err = o.service.GetFormerData(orderMasterId, formerType, formerItemType)
+	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "formerData": formerData})
+}
+
+func (o *OrderMaster) UpdateFormerData(ctx iris.Context) {
+	var (
+		renderJson models.RenderFormerData
+		formerType string
+		id uint
+		err error
+	)
+	_ = ctx.ReadJSON(&renderJson)
+	formerType = ctx.URLParam("former_type")
+	id,err = ctx.Params().GetUint("id")
+	if err != nil{
+		o.Render400(ctx,err,err.Error())
+		return
+	}
+	go o.service.UpdateOperationInfo(id,formerType,renderJson)
+	o.RenderSuccessJson(ctx, iris.Map{})
 }
 
 func (o *OrderMaster) Before(ctx iris.Context) {
@@ -334,8 +355,10 @@ func (o *OrderMaster) stringToDate(strTime string) time.Time {
 //处理订单操作信息
 func (o *OrderMaster) handlerOrderInfo(order models.OrderMaster) map[string]interface{} {
 	data, _ := o.StructToMap(order, o.ctx)
-	data["transport_type"] = o.service.ShowTransport(o.enum, order)
-	data["status"] = o.service.ShowStatus(o.enum, order.Status)
+	data["transport_type_text"] = o.service.ShowTransport(o.enum, order)
+	data["status_text"] = o.service.ShowStatus(o.enum, order.Status)
 	data["instruction_name"] = red.HGetCrm(order.InstructionId, "")
+	data["operation_name"] = red.HGetValue("users", order.OperationId, "")
+	data["salesman_name"] = red.HGetValue("users", order.SalesmanId, "")
 	return data
 }

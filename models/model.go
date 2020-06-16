@@ -23,3 +23,8 @@ type SelectResult struct {
 	SerialNumber string `json:"serial_number"`
 	Code         string `json:"code"`
 }
+
+type RenderFormerData struct {
+	OrderMaster          OrderMaster          `json:"order_master"`
+	FormerSeaInstruction FormerSeaInstruction `json:"former_sea_instruction"`
+}

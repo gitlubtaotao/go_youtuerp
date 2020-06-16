@@ -182,6 +182,7 @@ func (r *Route) CrmRegister() {
 		crmCompanyApi.Delete("/{id:uint}/delete", j.Serve, record.Delete)
 		crmCompanyApi.Patch("/{id:uint}/changeStatus", j.Serve, record.ChangeStatus)
 		crmCompanyApi.Patch("/{id:uint}/changeType", j.Serve, record.ChangeType)
+		crmCompanyApi.Get("/{id:uint}/operationInfo", j.Serve, record.GetOperationInfo)
 	}
 	crmUserApi := r.app.Party("/crm/users")
 	{
@@ -248,8 +249,9 @@ func (r *Route) OrderRegister() {
 		p.Get("/{id:uint}/edit", j.Serve, record.Edit)
 		p.Patch("/{id:uint}/changeStatus", j.Serve, record.ChangeStatus)
 		p.Delete("/{id:uint}/delete", j.Serve, record.Delete)
-		p.Get("/{id:uint}/operation",j.Serve,record.Operation)
-		p.Get("/{id:uint}/getFormerData",j.Serve,record.GetFormerData)
+		p.Get("/{id:uint}/operation", j.Serve, record.Operation)
+		p.Get("/{id:uint}/getFormerData", j.Serve, record.GetFormerData)
+		p.Post("/{id:uint}/UpdateFormerData", j.Serve, record.UpdateFormerData)
 	})
 }
 

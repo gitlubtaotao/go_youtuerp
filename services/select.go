@@ -26,7 +26,7 @@ func (s SelectService) GetOperationSelect(formerType string) map[string]interfac
 	returnAttr["crmOptions"] = crmOptions
 	stringArray := []string{models.CodePayType, models.CodeCapType, models.CodeInstructionType,
 		models.CodeCustomType, models.CodeBillProduceType, models.CodeTransshipment,
-		models.CodeTradeTerms, models.CodeShippingTerms}
+		models.CodeTradeTerms, models.CodeShippingTerms,models.PackageType}
 	codeService := NewBaseCode()
 	for i := 0; i < len(stringArray); i++ {
 		returnAttr[stringArray[i]] = codeService.FindCollect(stringArray[i])
@@ -35,6 +35,7 @@ func (s SelectService) GetOperationSelect(formerType string) map[string]interfac
 	portService := NewBasePort()
 	returnAttr["carrier"] = carrierService.FindCollect("1")
 	returnAttr["port"] = portService.FindCollect("1")
+	returnAttr["userInfo"] = NewEmployeeService().FindRedis()
 	return returnAttr
 }
 

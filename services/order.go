@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-	"github.com/kataras/golog"
 	"reflect"
 	"time"
 	"youtuerp/conf"
@@ -12,15 +11,29 @@ import (
 )
 
 type IOrderMasterService interface {
+	//保存操作盘中的数据
+	
+	UpdateOperationInfo(id uint, formerType string, readData models.RenderFormerData) error
+	//获取表单中对应的数据
 	GetFormerData(id uint, formerType string, formerItemType string) (interface{}, error)
+	//获取委托单的数据
+	GetFormerInstruction(master models.OrderMaster, formerType string, formerItemType string) (interface{}, error)
+	//删除订单
 	DeleteMaster(id uint) error
+	//显示订单的费用状态
 	ShowFinanceStatus(enum conf.Enum, field string, value interface{}) string
+	//显示订单的运输类型
 	ShowTransport(enum conf.Enum, order interface{}) string
+	//显示订单的状态
 	ShowStatus(enum conf.Enum, value interface{}) string
+	//更改订单的状态
 	ChangeStatus(id uint, status string) error
+	//更新订单信息
 	UpdateMaster(id uint, order models.OrderMaster, language string) error
+	//查询订单
 	FirstMaster(id uint, load ...string) (models.OrderMaster, error)
 	FindMaster(per, page uint, filter map[string]interface{}, selectKeys []string, orders []string) ([]models.ResultOrderMaster, uint, error)
+	//创建订单
 	CreateMaster(order models.OrderMaster, language string) (models.OrderMaster, error)
 }
 
@@ -36,35 +49,30 @@ type OrderMasterService struct {
 	BaseService
 }
 
+func (o OrderMasterService) UpdateOperationInfo(id uint, formerType string, readData models.RenderFormerData) error {
+	extendInfo := readData.OrderMaster.OrderExtendInfo
+	var err error
+	if extendInfo.ID != 0 {
+		err = o.repo.UpdateExtendInfo(extendInfo.ID, extendInfo)
+	}
+	if err != nil {
+		return err
+	}
+	return o.repo.UpdateFormerData(formerType, readData)
+}
+
 func (o OrderMasterService) GetFormerData(id uint, formerType string, formerItemType string) (interface{}, error) {
 	var (
 		data        interface{}
 		err         error
 		orderMaster models.OrderMaster
-		attr        map[string]interface{}
-		crmService  = NewCrmCompanyService()
 	)
 	if orderMaster, err = o.repo.FirstMaster(id); err != nil {
 		return data, err
 	}
-	golog.Infof("%v",orderMaster)
-	attr = make(map[string]interface{}, 2)
-	attr["instruction_id"] = orderMaster.InstructionId
 	switch formerType {
 	case "former_sea_instruction":
-		_, status := tools.ContainsSlice([]interface{}{models.InstructionMaster, models.InstructionSplit}, formerItemType)
-		if !status {
-			return data, errors.New("传入的参数有误")
-		}
-		if formerItemType == models.InstructionMaster {
-			attr["hbl_no"] = orderMaster.SerialNumber
-			attr["type"] = formerItemType
-			attr["shipper_id"] = orderMaster.InstructionId
-			attr["shipper_content"] = crmService.GetOperationInfo(orderMaster.InstructionId)
-			data, err = o.repo.FormerSeaInstruction(id, formerItemType, attr)
-		} else {
-			data, err = o.repo.FormerSeaInstruction(id, formerItemType, attr)
-		}
+		data, err = o.GetFormerInstruction(orderMaster, formerType, formerItemType)
 	}
 	return data, err
 }
@@ -141,6 +149,28 @@ func (o OrderMasterService) CreateMaster(order models.OrderMaster, language stri
 		order.CreatedAt = &t
 	}
 	return o.repo.CreateMaster(order)
+}
+
+//获取委托单对应的数据
+func (o OrderMasterService) GetFormerInstruction(master models.OrderMaster, formerType string, formerItemType string) (interface{}, error) {
+	var (
+		data       interface{}
+		attr       map[string]interface{}
+		crmService = NewCrmCompanyService()
+		err        error
+	)
+	attr = make(map[string]interface{}, 2)
+	attr["instruction_id"] = master.InstructionId
+	attr["hbl_no"] = master.SerialNumber
+	attr["type"] = formerItemType
+	attr["shipper_id"] = master.InstructionId
+	attr["shipper_content"] = crmService.GetOperationInfo(master.InstructionId)
+	_, status := tools.ContainsSlice([]interface{}{models.InstructionMaster, models.InstructionSplit}, formerItemType)
+	if !status {
+		return data, errors.New("传入的参数有误")
+	}
+	data, err = o.repo.FormerSeaInstruction(master.ID, formerItemType, attr)
+	return data, err
 }
 
 func NewOrderMasterService() IOrderMasterService {

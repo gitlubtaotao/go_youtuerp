@@ -47,7 +47,7 @@ func (s *SelectController) GetCompany(ctx iris.Context) {
 	readData.Scope["status"] = models.CompanyStatusApproved
 	if len(readData.SelectKeys) == 0 {
 		readData.SelectKeys = []string{"id", "name_en",
-			"name_nick", "name_cn", "user_salesman_id"}
+			"name_nick", "name_cn","frequently_use_info"}
 	}
 	readData.TableName = "user_companies"
 	name := ctx.URLParamDefault("name", "")

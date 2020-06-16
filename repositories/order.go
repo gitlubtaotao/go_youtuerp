@@ -8,6 +8,10 @@ import (
 )
 
 type IOrderMaster interface {
+	//保存表单数据
+	UpdateFormerData(formerType string, data models.RenderFormerData) error
+	UpdateExtendInfo(id uint, data models.OrderExtendInfo) error
+	//获取海运委托单
 	FormerSeaInstruction(orderMasterId uint, formerType interface{}, attr map[string]interface{}) (models.FormerSeaInstruction, error)
 	//删除订单
 	DeleteMaster(id uint) error
@@ -26,6 +30,21 @@ type IOrderMaster interface {
 type OrderMasterRepository struct {
 	BaseRepository
 	mu sync.Mutex
+}
+
+func (o OrderMasterRepository) UpdateFormerData(formerType string, data models.RenderFormerData) error {
+	sqlConn := database.GetDBCon()
+	var err error
+	switch formerType {
+	case "former_sea_instruction":
+		instruction := data.FormerSeaInstruction
+		err = sqlConn.Model(models.FormerSeaInstruction{ID: instruction.ID}).Update(instruction).Error
+	}
+	return err
+}
+
+func (o OrderMasterRepository) UpdateExtendInfo(id uint, data models.OrderExtendInfo) error {
+	return database.GetDBCon().Model(&models.OrderExtendInfo{ID: id}).Update(data).Error
 }
 
 func (o OrderMasterRepository) FormerSeaInstruction(orderMasterId uint, formerType interface{}, attr map[string]interface{}) (models.FormerSeaInstruction, error) {
@@ -102,7 +121,7 @@ func (o OrderMasterRepository) CreateMaster(order models.OrderMaster) (models.Or
 		tx.Rollback()
 		return models.OrderMaster{}, err
 	}
-	err = database.GetDBCon().Create(&models.OrderExtendInfo{OrderMasterId: order.ID}).Error
+	err = database.GetDBCon().Create(&models.OrderExtendInfo{OrderMasterId: order.ID, HblSO: order.SerialNumber}).Error
 	if err != nil {
 		tx.Rollback()
 		return models.OrderMaster{}, err
