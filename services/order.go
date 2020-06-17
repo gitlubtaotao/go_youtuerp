@@ -50,7 +50,7 @@ type OrderMasterService struct {
 }
 
 func (o OrderMasterService) UpdateOperationInfo(id uint, formerType string, readData models.RenderFormerData) error {
-	extendInfo := readData.OrderMaster.OrderExtendInfo
+	extendInfo := readData.OrderExtendInfo
 	var err error
 	if extendInfo.ID != 0 {
 		err = o.repo.UpdateExtendInfo(extendInfo.ID, extendInfo)

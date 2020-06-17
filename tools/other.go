@@ -44,6 +44,7 @@ func (o OtherHelper) GetIPAddress(r *http.Request) (string, error) {
 	return "", nil
 }
 
+//map 进行合并
 func (o OtherHelper) MapMerge(dst, src map[string]interface{}) map[string]interface{} {
 	return o.merge(dst, src, 0)
 }
@@ -80,11 +81,13 @@ func (o OtherHelper) StructToMap(currentObject interface{}) map[string]interface
 	return res
 }
 
+//字符串转化
 func (o OtherHelper) ToSnakeCase(str string) string {
 	snake := matchAllCap.ReplaceAllString(str, "${1}_${2}")
 	return strings.ToLower(strings.ToLower(snake))
 }
 
+//slice 包含某元素
 func ContainsSlice(src []interface{}, val string) (int, bool) {
 	for i, item := range src {
 		if item == val {
@@ -92,6 +95,19 @@ func ContainsSlice(src []interface{}, val string) (int, bool) {
 		}
 	}
 	return -1, false
+}
+
+func StructToChange(src interface{}) map[string]interface{} {
+	t := reflect.TypeOf(src)
+	v := reflect.ValueOf(src)
+	var data = make(map[string]interface{})
+	for i := 0; i < t.NumField(); i++ {
+		name := t.Field(i).Tag.Get("json")
+		if name != "" {
+			data[name] = v.Field(i).Interface()
+		}
+	}
+	return data
 }
 
 func (o OtherHelper) merge(dst, src map[string]interface{}, depth int) map[string]interface{} {

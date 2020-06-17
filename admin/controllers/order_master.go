@@ -210,19 +210,19 @@ func (o *OrderMaster) GetFormerData(ctx iris.Context) {
 
 func (o *OrderMaster) UpdateFormerData(ctx iris.Context) {
 	var (
-		renderJson models.RenderFormerData
 		formerType string
 		id uint
 		err error
+		params models.RenderFormerData
 	)
-	_ = ctx.ReadJSON(&renderJson)
+	_ = ctx.ReadJSON(&params)
 	formerType = ctx.URLParam("former_type")
 	id,err = ctx.Params().GetUint("id")
 	if err != nil{
 		o.Render400(ctx,err,err.Error())
 		return
 	}
-	go o.service.UpdateOperationInfo(id,formerType,renderJson)
+	go o.service.UpdateOperationInfo(id,formerType,params)
 	o.RenderSuccessJson(ctx, iris.Map{})
 }
 

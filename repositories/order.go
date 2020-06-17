@@ -2,9 +2,12 @@ package repositories
 
 import (
 	"database/sql"
+	"github.com/jinzhu/gorm"
+	"github.com/kataras/golog"
 	"sync"
 	"youtuerp/database"
 	"youtuerp/models"
+	"youtuerp/tools"
 )
 
 type IOrderMaster interface {
@@ -37,20 +40,31 @@ func (o OrderMasterRepository) UpdateFormerData(formerType string, data models.R
 	var err error
 	switch formerType {
 	case "former_sea_instruction":
+		var record models.FormerSeaInstruction
 		instruction := data.FormerSeaInstruction
-		err = sqlConn.Model(models.FormerSeaInstruction{ID: instruction.ID}).Update(instruction).Error
+		golog.Infof("sea cap list is %v",instruction.SeaCapLists)
+		sqlConn = sqlConn.First(&record, "id = ? ", instruction.ID)
+		return sqlConn.Transaction(func(tx *gorm.DB) error {
+			if len(instruction.SeaCapLists) >= 1 {
+				if err := tx.Association("SeaCapLists").Replace(instruction.SeaCapLists).Error; err != nil {
+					return err
+				}
+			}
+			return sqlConn.Set("gorm:association_autocreate", false).Update(tools.StructToChange(instruction)).Error
+		})
+	case "former_sea_booking":
 	}
 	return err
 }
 
 func (o OrderMasterRepository) UpdateExtendInfo(id uint, data models.OrderExtendInfo) error {
-	return database.GetDBCon().Model(&models.OrderExtendInfo{ID: id}).Update(data).Error
+	return database.GetDBCon().Model(&models.OrderExtendInfo{ID: id}).Updates(tools.StructToChange(data)).Error
 }
 
 func (o OrderMasterRepository) FormerSeaInstruction(orderMasterId uint, formerType interface{}, attr map[string]interface{}) (models.FormerSeaInstruction, error) {
 	attr["order_master_id"] = orderMasterId
 	var data models.FormerSeaInstruction
-	err := database.GetDBCon().Where(models.FormerSeaInstruction{OrderMasterId: orderMasterId, Type: formerType.(string)}).Attrs(attr).FirstOrCreate(&data).Error
+	err := database.GetDBCon().Where(models.FormerSeaInstruction{OrderMasterId: orderMasterId, Type: formerType.(string)}).Preload("SeaCapLists").Attrs(attr).FirstOrCreate(&data).Error
 	return data, err
 }
 
@@ -99,9 +113,13 @@ func (o OrderMasterRepository) FindMaster(per, page uint, filter map[string]inte
 func (o OrderMasterRepository) UpdateMaster(id uint, order models.OrderMaster) error {
 	var record models.OrderMaster
 	sqlCon := database.GetDBCon().First(&record, "id = ? ", id)
-	sqlCon.Association("Roles").Replace(order.Roles)
-	err := sqlCon.Set("gorm:association_autocreate", false).Update(order).Error
-	return err
+	return sqlCon.Transaction(func(tx *gorm.DB) error {
+		if err := sqlCon.Association("Roles").Replace(order.Roles).Error; err != nil {
+			return err
+		}
+		err := sqlCon.Set("gorm:association_autocreate", false).Update(order).Error
+		return err
+	})
 }
 
 func (o OrderMasterRepository) CreateMaster(order models.OrderMaster) (models.OrderMaster, error) {

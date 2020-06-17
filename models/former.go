@@ -113,8 +113,8 @@ type SeaCapList struct {
 	OrderMasterId uint      `sql:"index" json:"order_master_id"`
 	SourceId      uint      `gorm:"index:source_id_and_source_type" json:"source_id"`
 	SourceType    string    `gorm:"size:32; index:source_id_and_source_type" json:"source_type"`
-	Number        uint      `json:"number"`
-	CapType       uint      `json:"cap_type"`
+	Number        int       `json:"number"`
+	CapType       string    `gorm:"size:32" json:"cap_type"`
 }
 
 type SeaCargoInfo struct {
