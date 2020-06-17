@@ -208,6 +208,8 @@ func (o *OrderMaster) GetFormerData(ctx iris.Context) {
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "formerData": formerData})
 }
 
+//TODO-Tao 需要解决只更新修改的内容，未修改的内容无序进行更新
+// 现有的解决方案是所有的字段进行更新
 func (o *OrderMaster) UpdateFormerData(ctx iris.Context) {
 	var (
 		formerType string

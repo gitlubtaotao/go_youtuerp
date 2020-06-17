@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 	"time"
-	"youtuerp/admin/middleware"
+	"youtuerp/admin/middleware/routes"
 	"youtuerp/conf"
 )
 
@@ -55,7 +55,7 @@ func NewApp() *iris.Application {
 	app := iris.New()
 	app.Use(RequestInfo)
 	app.Use(defaultVersion)
-	route := middleware.NewRoute(app)
+	route := routes.NewRoute(app)
 	app.Use(LogConfig())
 	app.Use(setAllowedMethod())
 	app.AllowMethods(iris.MethodOptions)
