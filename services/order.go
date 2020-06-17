@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"github.com/kataras/golog"
 	"reflect"
 	"time"
 	"youtuerp/conf"
@@ -73,6 +74,8 @@ func (o OrderMasterService) GetFormerData(id uint, formerType string, formerItem
 	switch formerType {
 	case "former_sea_instruction":
 		data, err = o.GetFormerInstruction(orderMaster, formerType, formerItemType)
+	case "former_sea_booking":
+		data, err = o.getFormerBooking(orderMaster, formerType)
 	}
 	return data, err
 }
@@ -169,9 +172,60 @@ func (o OrderMasterService) GetFormerInstruction(master models.OrderMaster, form
 	if !status {
 		return data, errors.New("传入的参数有误")
 	}
-	data, err = o.repo.FormerSeaInstruction(master.ID, formerItemType, attr)
+	data, err = o.repo.GetFormerInstruction(master.ID, formerItemType, attr)
 	return data, err
 }
+
+//得到订舱的数据
+func (o OrderMasterService) getFormerBooking(order models.OrderMaster, formerType string) (interface{}, error) {
+	var (
+		data interface{}
+		err  error
+	)
+	if formerType == "former_sea_booking" {
+		data, err = o.repo.GetFormerBooking(order.ID, formerType)
+		if err == nil {
+			return data, err
+		}
+		instruction, err := o.GetFormerInstruction(order, "former_sea_instruction", models.InstructionMaster)
+		if err != nil {
+			return data, err
+		}
+		result := o.AutoFillData(models.FormerSeaBook{}, instruction)
+		data, err = o.repo.GetFormerBooking(order.ID, formerType, result)
+	}
+	return data, err
+}
+
+func (o OrderMasterService) AutoFillData(src interface{}, dst interface{}) map[string]interface{} {
+	data := tools.StructToChange(dst)
+	dataTypeOf := reflect.TypeOf(dst)
+	typeOf := reflect.TypeOf(src)
+	result := make(map[string]interface{})
+	for i := 0; i < typeOf.NumField(); i++ {
+		name := typeOf.Field(i).Tag.Get("json")
+		if value, ok := data[name]; ok {
+			result[name] = value
+		}
+	}
+	//海运委托单对柜型柜量特殊处理
+	if dataTypeOf.Name() == "FormerSeaInstruction" {
+		golog.Infof("current ")
+		capList := make([]map[string]interface{}, 0)
+		changeData := dst.(models.FormerSeaInstruction)
+		for _, item := range changeData.SeaCapLists {
+			capList = append(capList, map[string]interface{}{
+				"number":          item.Number,
+				"cap_type":        item.CapType,
+				"order_master_id": item.OrderMasterId,
+			})
+		}
+		result["sea_cap_lists"] = capList
+		golog.Infof("current sea cap list is %v", reflect.TypeOf(result["sea_cap_lists"]).Kind().String())
+	}
+	return result
+}
+
 
 func NewOrderMasterService() IOrderMasterService {
 	return OrderMasterService{

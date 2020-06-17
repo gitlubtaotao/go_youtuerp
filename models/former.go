@@ -75,11 +75,10 @@ type FormerSeaBook struct {
 	PlaceOfIssue       string     `gorm:"size:64" json:"place_of_issue"`
 	DateOfIssue        *time.Time `json:"date_of_issue"`
 	CargoReceivedDate  *time.Time `json:"cargo_received_date"`
-	
 	Marks             string `gorm:"size:2048" json:"marks"`
 	DescriptionOfGood string `gorm:"size:2048" json:"description_of_good"`
 	Size              string `gorm:"size:522" json:"size"`
-	Number            uint   `json:"number"`
+	Number            int   `json:"number"`
 	PackageTypeId     uint   `json:"package_type_id"`
 	GrossWeight       string `gorm:"size:64" json:"gross_weight"`
 	Volume            string `gorm:"size:64" comment:"体积" json:"volume"`
@@ -92,9 +91,9 @@ type FormerSeaBook struct {
 	ShipmentItemId    uint   `comment:"装运条款" json:"shipment_item_id"`
 	Remarks           string `gorm:"size:1024" json:"remarks"`
 	ChargeDescription string `gorm:"size:1024" json:"charge_description"`
-	
 	SeaCapLists []SeaCapList `gorm:"polymorphic:Source;" json:"sea_cap_lists"`
 }
+
 
 type FormerSeaSoNo struct {
 	ID                    uint       `gorm:"primary_key"json:"id"`

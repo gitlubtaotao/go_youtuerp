@@ -11,11 +11,14 @@ import (
 )
 
 type IOrderMaster interface {
+	GetFormerBooking(orderId uint, formerType string, attr ...map[string]interface{}) (interface{}, error)
 	//保存表单数据
 	UpdateFormerData(formerType string, data models.RenderFormerData) error
+	//保存订单其他数据信息
 	UpdateExtendInfo(id uint, data models.OrderExtendInfo) error
 	//获取海运委托单
-	FormerSeaInstruction(orderMasterId uint, formerType interface{}, attr map[string]interface{}) (models.FormerSeaInstruction, error)
+	GetFormerInstruction(orderMasterId uint, formerType interface{}, attr map[string]interface{}) (models.FormerSeaInstruction, error)
+	
 	//删除订单
 	DeleteMaster(id uint) error
 	//更新订单状态
@@ -35,6 +38,31 @@ type OrderMasterRepository struct {
 	mu sync.Mutex
 }
 
+func (o OrderMasterRepository) GetFormerBooking(orderId uint, formerType string, attr ...map[string]interface{}) (result interface{}, err error) {
+	if formerType == "former_sea_booking" {
+		var booking models.FormerSeaBook
+		var capList []models.SeaCapList
+		if len(attr) > 0 {
+			if item, ok := attr[0]["sea_cap_lists"]; ok {
+				value := item.([]map[string]interface{})
+				for _, v := range value {
+					capList = append(capList, models.SeaCapList{
+						OrderMasterId: v["order_master_id"].(uint),
+						Number:        v["number"].(int),
+						CapType:       v["cap_type"].(string),
+					})
+				}
+			}
+			sqlCon := database.GetDBCon().Where("order_master_id = ?", orderId).Preload("SeaCapLists").Attrs(attr[0]).FirstOrCreate(&booking)
+			err = sqlCon.Association("SeaCapLists").Append(capList).Error
+		} else {
+			err = database.GetDBCon().First(&booking, "order_master_id = ?", orderId).Preload("SeaCapLists").Error
+		}
+		return booking, err
+	}
+	return
+}
+
 func (o OrderMasterRepository) UpdateFormerData(formerType string, data models.RenderFormerData) error {
 	sqlConn := database.GetDBCon()
 	var err error
@@ -42,7 +70,7 @@ func (o OrderMasterRepository) UpdateFormerData(formerType string, data models.R
 	case "former_sea_instruction":
 		var record models.FormerSeaInstruction
 		instruction := data.FormerSeaInstruction
-		golog.Infof("sea cap list is %v",instruction.SeaCapLists)
+		golog.Infof("sea cap list is %v", instruction.SeaCapLists)
 		sqlConn = sqlConn.First(&record, "id = ? ", instruction.ID)
 		return sqlConn.Transaction(func(tx *gorm.DB) error {
 			if len(instruction.SeaCapLists) >= 1 {
@@ -61,7 +89,7 @@ func (o OrderMasterRepository) UpdateExtendInfo(id uint, data models.OrderExtend
 	return database.GetDBCon().Model(&models.OrderExtendInfo{ID: id}).Updates(tools.StructToChange(data)).Error
 }
 
-func (o OrderMasterRepository) FormerSeaInstruction(orderMasterId uint, formerType interface{}, attr map[string]interface{}) (models.FormerSeaInstruction, error) {
+func (o OrderMasterRepository) GetFormerInstruction(orderMasterId uint, formerType interface{}, attr map[string]interface{}) (models.FormerSeaInstruction, error) {
 	attr["order_master_id"] = orderMasterId
 	var data models.FormerSeaInstruction
 	err := database.GetDBCon().Where(models.FormerSeaInstruction{OrderMasterId: orderMasterId, Type: formerType.(string)}).Preload("SeaCapLists").Attrs(attr).FirstOrCreate(&data).Error
