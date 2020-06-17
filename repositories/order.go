@@ -39,7 +39,7 @@ type OrderMasterRepository struct {
 }
 
 func (o OrderMasterRepository) GetFormerBooking(orderId uint, formerType string, attr ...map[string]interface{}) (result interface{}, err error) {
-	if formerType == "former_sea_booking" {
+	if formerType == "former_sea_book" {
 		var booking models.FormerSeaBook
 		var capList []models.SeaCapList
 		if len(attr) > 0 {
@@ -56,7 +56,7 @@ func (o OrderMasterRepository) GetFormerBooking(orderId uint, formerType string,
 			sqlCon := database.GetDBCon().Where("order_master_id = ?", orderId).Preload("SeaCapLists").Attrs(attr[0]).FirstOrCreate(&booking)
 			err = sqlCon.Association("SeaCapLists").Append(capList).Error
 		} else {
-			err = database.GetDBCon().First(&booking, "order_master_id = ?", orderId).Preload("SeaCapLists").Error
+			err = database.GetDBCon().Preload("SeaCapLists").First(&booking, "order_master_id = ?", orderId).Error
 		}
 		return booking, err
 	}
@@ -64,23 +64,12 @@ func (o OrderMasterRepository) GetFormerBooking(orderId uint, formerType string,
 }
 
 func (o OrderMasterRepository) UpdateFormerData(formerType string, data models.RenderFormerData) error {
-	sqlConn := database.GetDBCon()
 	var err error
 	switch formerType {
 	case "former_sea_instruction":
-		var record models.FormerSeaInstruction
-		instruction := data.FormerSeaInstruction
-		golog.Infof("sea cap list is %v", instruction.SeaCapLists)
-		sqlConn = sqlConn.First(&record, "id = ? ", instruction.ID)
-		return sqlConn.Transaction(func(tx *gorm.DB) error {
-			if len(instruction.SeaCapLists) >= 1 {
-				if err := tx.Association("SeaCapLists").Replace(instruction.SeaCapLists).Error; err != nil {
-					return err
-				}
-			}
-			return sqlConn.Set("gorm:association_autocreate", false).Update(tools.StructToChange(instruction)).Error
-		})
-	case "former_sea_booking":
+		err = o.updateFormerSeaInstruction(data)
+	case "former_sea_book":
+		err = o.updateFormerSeaBooking(data)
 	}
 	return err
 }
@@ -174,6 +163,37 @@ func (o OrderMasterRepository) CreateMaster(order models.OrderMaster) (models.Or
 	}
 	tx.Commit()
 	return order, nil
+}
+
+func (o OrderMasterRepository) updateFormerSeaInstruction(data models.RenderFormerData) error {
+	sqlConn := database.GetDBCon()
+	var record models.FormerSeaInstruction
+	instruction := data.FormerSeaInstruction
+	golog.Infof("sea cap list is %v", instruction.SeaCapLists)
+	sqlConn = sqlConn.First(&record, "id = ? ", instruction.ID)
+	return sqlConn.Transaction(func(tx *gorm.DB) error {
+		if len(instruction.SeaCapLists) >= 1 {
+			if err := tx.Association("SeaCapLists").Replace(instruction.SeaCapLists).Error; err != nil {
+				return err
+			}
+		}
+		return sqlConn.Set("gorm:association_autocreate", false).Update(tools.StructToChange(instruction)).Error
+	})
+}
+func (o OrderMasterRepository) updateFormerSeaBooking(data models.RenderFormerData) error {
+	sqlConn := database.GetDBCon()
+	var record models.FormerSeaBook
+	book := data.FormerSeaBook
+	golog.Infof("sea cap list is %v", book.SeaCapLists)
+	sqlConn = sqlConn.First(&record, "id = ? ", book.ID)
+	return sqlConn.Transaction(func(tx *gorm.DB) error {
+		if len(book.SeaCapLists) >= 1 {
+			if err := tx.Association("SeaCapLists").Replace(book.SeaCapLists).Error; err != nil {
+				return err
+			}
+		}
+		return sqlConn.Set("gorm:association_autocreate", false).Update(tools.StructToChange(book)).Error
+	})
 }
 
 func NewOrderMasterRepository() IOrderMaster {

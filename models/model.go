@@ -25,6 +25,7 @@ type SelectResult struct {
 }
 
 type RenderFormerData struct {
-	OrderExtendInfo OrderExtendInfo                   `json:"order_extend_info"`
+	OrderExtendInfo      OrderExtendInfo      `json:"order_extend_info"`
 	FormerSeaInstruction FormerSeaInstruction `json:"former_sea_instruction"`
+	FormerSeaBook        FormerSeaBook        `json:"former_sea_book"`
 }

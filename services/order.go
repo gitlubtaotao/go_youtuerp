@@ -74,7 +74,7 @@ func (o OrderMasterService) GetFormerData(id uint, formerType string, formerItem
 	switch formerType {
 	case "former_sea_instruction":
 		data, err = o.GetFormerInstruction(orderMaster, formerType, formerItemType)
-	case "former_sea_booking":
+	case "former_sea_book":
 		data, err = o.getFormerBooking(orderMaster, formerType)
 	}
 	return data, err
@@ -182,7 +182,7 @@ func (o OrderMasterService) getFormerBooking(order models.OrderMaster, formerTyp
 		data interface{}
 		err  error
 	)
-	if formerType == "former_sea_booking" {
+	if formerType == "former_sea_book" {
 		data, err = o.repo.GetFormerBooking(order.ID, formerType)
 		if err == nil {
 			return data, err
