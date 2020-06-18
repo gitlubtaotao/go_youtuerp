@@ -11,6 +11,9 @@ import (
 )
 
 type IOrderMaster interface {
+	//获取表单so的信息
+	GetFormerSoNo(orderId uint, formerType string, attr ...map[string]interface{}) (interface{}, error)
+	//获取订舱单的信息
 	GetFormerBooking(orderId uint, formerType string, attr ...map[string]interface{}) (interface{}, error)
 	//保存表单数据
 	UpdateFormerData(formerType string, data models.RenderFormerData) error
@@ -18,7 +21,6 @@ type IOrderMaster interface {
 	UpdateExtendInfo(id uint, data models.OrderExtendInfo) error
 	//获取海运委托单
 	GetFormerInstruction(orderMasterId uint, formerType interface{}, attr map[string]interface{}) (models.FormerSeaInstruction, error)
-
 	//删除订单
 	DeleteMaster(id uint) error
 	//更新订单状态
@@ -36,6 +38,12 @@ type IOrderMaster interface {
 type OrderMasterRepository struct {
 	BaseRepository
 	mu sync.Mutex
+}
+
+func (o OrderMasterRepository) GetFormerSoNo(orderId uint, formerType string, attr ...map[string]interface{}) (interface{}, error) {
+	var data models.FormerSeaSoNo
+	err := database.GetDBCon().Where(models.FormerSeaSoNo{OrderMasterId: orderId}).Attrs(map[string]interface{}{"order_master_id": orderId}).FirstOrCreate(&data).Error
+	return data, err
 }
 
 func (o OrderMasterRepository) GetFormerBooking(orderId uint, formerType string, attr ...map[string]interface{}) (result interface{}, err error) {
@@ -70,6 +78,8 @@ func (o OrderMasterRepository) UpdateFormerData(formerType string, data models.R
 		err = o.updateFormerSeaInstruction(data)
 	case "former_sea_book":
 		err = o.updateFormerSeaBooking(data)
+	case "former_sea_so_no":
+		err = o.updateFormerSoNo(formerType, data)
 	}
 	return err
 }
@@ -202,6 +212,15 @@ func (o OrderMasterRepository) updateFormerSeaBooking(data models.RenderFormerDa
 		}
 		return nil
 	})
+}
+
+func (o OrderMasterRepository) updateFormerSoNo(formerType string, data models.RenderFormerData) error {
+	if formerType == "former_sea_so_no" {
+		var soNo = data.FormerSeaSoNo
+		golog.Infof("current time is %v",soNo)
+		return database.GetDBCon().Model(&models.FormerSeaSoNo{ID: soNo.ID}).Update(tools.StructToChange(soNo)).Error
+	}
+	return nil
 }
 
 func NewOrderMasterRepository() IOrderMaster {

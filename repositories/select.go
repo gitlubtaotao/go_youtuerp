@@ -34,7 +34,6 @@ func (s *SelectRepository) FirstRecord(tableName string, filter map[string]inter
 	return selectResult, nil
 }
 
-
 func (s *SelectRepository) FindTable(tableName string, name string, scope map[string]interface{},
 	selectKeys []string) (selectResult []models.SelectResult, err error) {
 	sqlCon := database.GetDBCon().Table(tableName)
@@ -44,7 +43,7 @@ func (s *SelectRepository) FindTable(tableName string, name string, scope map[st
 	if name != "" {
 		sqlCon = s.defaultScope(sqlCon, tableName, name)
 	}
-	sqlCon = sqlCon.Scopes(s.Ransack(scope)) .Where("deleted_at is NULL").Scopes(s.Paginate(50, 1)).Select(selectKeys)
+	sqlCon = sqlCon.Scopes(s.Ransack(scope)).Where("deleted_at is NULL").Scopes(s.Paginate(50, 1)).Select(selectKeys)
 	rows, err := sqlCon.Rows()
 	if err != nil {
 		return []models.SelectResult{}, nil
@@ -68,13 +67,13 @@ func (s SelectRepository) defaultScope(db *gorm.DB, taleName string, name string
 
 func (s SelectRepository) defaultWhere(name string) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
-		return db.Where("name link ? ", "%"+name+"%")
+		return db.Where("name like ? ", "%"+name)
 	}
 }
 
 func (s SelectRepository) companyWhere(name string) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
-		return db.Where("name_nick link ? ", "%"+name+"%").Or("name_cn link ? ", "%"+name+"%")
+		return db.Where("name_nick like ? ", "%"+name)
 	}
 }
 

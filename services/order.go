@@ -13,7 +13,6 @@ import (
 
 type IOrderMasterService interface {
 	//保存操作盘中的数据
-	
 	UpdateOperationInfo(id uint, formerType string, readData models.RenderFormerData) error
 	//获取表单中对应的数据
 	GetFormerData(id uint, formerType string, formerItemType string) (interface{}, error)
@@ -68,14 +67,18 @@ func (o OrderMasterService) GetFormerData(id uint, formerType string, formerItem
 		err         error
 		orderMaster models.OrderMaster
 	)
-	if orderMaster, err = o.repo.FirstMaster(id); err != nil {
-		return data, err
+	if formerItemType != "former_sea_so_no" {
+		if orderMaster, err = o.repo.FirstMaster(id); err != nil {
+			return data, err
+		}
 	}
 	switch formerType {
 	case "former_sea_instruction":
 		data, err = o.GetFormerInstruction(orderMaster, formerType, formerItemType)
 	case "former_sea_book":
 		data, err = o.getFormerBooking(orderMaster, formerType)
+	case "former_sea_so_no":
+		data, err = o.repo.GetFormerSoNo(orderMaster.ID, formerItemType)
 	}
 	return data, err
 }
@@ -225,7 +228,6 @@ func (o OrderMasterService) AutoFillData(src interface{}, dst interface{}) map[s
 	}
 	return result
 }
-
 
 func NewOrderMasterService() IOrderMasterService {
 	return OrderMasterService{

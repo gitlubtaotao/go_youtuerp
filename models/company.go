@@ -14,8 +14,8 @@ type Company struct {
 	AccountPeriod     string     `gorm:"size:16;index:account_period"`        // 公司结算类型
 	Age               int        // 公司账龄
 	Amount            int        // 月结金额
-	NameNick          string     `gorm:"unique;not null" form:"name_nick" json:"name_nick" validate:"required"`
-	NameCn            string     `gorm:"unique;not null" form:"name_cn" json:"name_cn" validate:"required"`
+	NameNick          string     `gorm:"unique;not null;size:64;index:name_nick_name" json:"name_nick" validate:"required"`
+	NameCn            string     `gorm:"unique;not null;size:125;index:name_nick_name" form:"name_cn" json:"name_cn" validate:"required"`
 	NameEn            string     `gorm:"unique;not null" form:"name_en" json:"name_en" validate:"required"`
 	BusinessTypeName  string     `gorm:"size:64"`
 	Status            string     `gorm:"size:64;index:status"`
