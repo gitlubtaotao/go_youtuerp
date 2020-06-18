@@ -18,7 +18,7 @@ type IOrderMaster interface {
 	UpdateExtendInfo(id uint, data models.OrderExtendInfo) error
 	//获取海运委托单
 	GetFormerInstruction(orderMasterId uint, formerType interface{}, attr map[string]interface{}) (models.FormerSeaInstruction, error)
-	
+
 	//删除订单
 	DeleteMaster(id uint) error
 	//更新订单状态
@@ -170,14 +170,19 @@ func (o OrderMasterRepository) updateFormerSeaInstruction(data models.RenderForm
 	var record models.FormerSeaInstruction
 	instruction := data.FormerSeaInstruction
 	golog.Infof("sea cap list is %v", instruction.SeaCapLists)
-	sqlConn = sqlConn.First(&record, "id = ? ", instruction.ID)
+	if err := sqlConn.First(&record, "id = ? ", instruction.ID).Error; err != nil {
+		return err
+	}
 	return sqlConn.Transaction(func(tx *gorm.DB) error {
+		if err := sqlConn.Set("gorm:association_autoupdate", false).Set("gorm:association_autocreate", false).Model(&record).Update(tools.StructToChange(instruction)).Error; err != nil {
+			return err
+		}
 		if len(instruction.SeaCapLists) >= 1 {
-			if err := tx.Association("SeaCapLists").Replace(instruction.SeaCapLists).Error; err != nil {
+			if err := tx.Model(&record).Association("SeaCapLists").Replace(instruction.SeaCapLists).Error; err != nil {
 				return err
 			}
 		}
-		return sqlConn.Set("gorm:association_autocreate", false).Update(tools.StructToChange(instruction)).Error
+		return nil
 	})
 }
 func (o OrderMasterRepository) updateFormerSeaBooking(data models.RenderFormerData) error {
@@ -187,12 +192,15 @@ func (o OrderMasterRepository) updateFormerSeaBooking(data models.RenderFormerDa
 	golog.Infof("sea cap list is %v", book.SeaCapLists)
 	sqlConn = sqlConn.First(&record, "id = ? ", book.ID)
 	return sqlConn.Transaction(func(tx *gorm.DB) error {
+		if err := sqlConn.Set("gorm:association_autoupdate", false).Set("gorm:association_autocreate", false).Update(tools.StructToChange(book)).Error; err != nil {
+			return err
+		}
 		if len(book.SeaCapLists) >= 1 {
 			if err := tx.Association("SeaCapLists").Replace(book.SeaCapLists).Error; err != nil {
 				return err
 			}
 		}
-		return sqlConn.Set("gorm:association_autocreate", false).Update(tools.StructToChange(book)).Error
+		return nil
 	})
 }
 
