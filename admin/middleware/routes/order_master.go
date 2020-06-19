@@ -25,6 +25,9 @@ func (o *OrderMaster) Index() {
 		p.Get("/{id:uint}/operation", j.Serve, record.Operation)
 		p.Get("/{id:uint}/getFormerData", j.Serve, record.GetFormerData)
 		p.Post("/{id:uint}/UpdateFormerData", j.Serve, record.UpdateFormerData)
+		p.Get("/{id:uint}/GetSoNoOptions", j.Serve, record.GetSoNoOptions)
+		p.Post("/{id:uint}/UpdateCargoInfo",j.Serve,record.UpdateCargoInfo)
+		p.Post("/DeleteCargoInfo",j.Serve,record.DeleteCargoInfo)
 	})
 }
 

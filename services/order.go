@@ -12,8 +12,11 @@ import (
 )
 
 type IOrderMasterService interface {
+	DeleteCargoInfo(ids []int,formerType string) error
 	//保存操作盘中的数据
 	UpdateOperationInfo(id uint, formerType string, readData models.RenderFormerData) error
+	//保存具体的获取详情
+	UpdateCargoInfo(id uint, formerType string, readData models.RenderFormerData) (data interface{}, err error)
 	//获取表单中对应的数据
 	GetFormerData(id uint, formerType string, formerItemType string) (interface{}, error)
 	//获取委托单的数据
@@ -47,6 +50,17 @@ var orderStatusArray = []interface{}{
 type OrderMasterService struct {
 	repo repositories.IOrderMaster
 	BaseService
+}
+
+func (o OrderMasterService) DeleteCargoInfo(ids []int, formerType string) error {
+	return o.repo.DeleteCargoInfo(ids,formerType)
+}
+
+func (o OrderMasterService) UpdateCargoInfo(id uint, formerType string, readData models.RenderFormerData) (data interface{}, err error) {
+	if formerType == "sea_cargo_info" {
+		return o.repo.UpdateSeaCargoInfo(readData.SeaCargoInfo)
+	}
+	return nil, nil
 }
 
 func (o OrderMasterService) UpdateOperationInfo(id uint, formerType string, readData models.RenderFormerData) error {

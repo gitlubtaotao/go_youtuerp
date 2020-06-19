@@ -11,6 +11,10 @@ import (
 )
 
 type IOrderMaster interface {
+	//根据ids删除货物信息
+	DeleteCargoInfo(ids []int,formerType string) error
+	//更新海运货物信息
+	UpdateSeaCargoInfo(infos []models.SeaCargoInfo) (interface{}, error)
 	//获取表单so的信息
 	GetFormerSoNo(orderId uint, formerType string, attr ...map[string]interface{}) (interface{}, error)
 	//获取订舱单的信息
@@ -40,6 +44,13 @@ type OrderMasterRepository struct {
 	mu sync.Mutex
 }
 
+func (o OrderMasterRepository) DeleteCargoInfo(ids []int,formerType string) error {
+	if formerType == "sea_cargo_info"{
+		return database.GetDBCon().Where("id IN (?)",ids).Delete(models.SeaCargoInfo{}).Error
+	}
+	return nil
+}
+
 func (o OrderMasterRepository) GetFormerSoNo(orderId uint, formerType string, attr ...map[string]interface{}) (interface{}, error) {
 	var data models.FormerSeaSoNo
 	err := database.GetDBCon().Where(models.FormerSeaSoNo{OrderMasterId: orderId}).Attrs(map[string]interface{}{"order_master_id": orderId}).FirstOrCreate(&data).Error
@@ -61,10 +72,10 @@ func (o OrderMasterRepository) GetFormerBooking(orderId uint, formerType string,
 					})
 				}
 			}
-			sqlCon := database.GetDBCon().Where("order_master_id = ?", orderId).Preload("SeaCapLists").Attrs(attr[0]).FirstOrCreate(&booking)
+			sqlCon := database.GetDBCon().Where("order_master_id = ?", orderId).Preload("SeaCapLists").Preload("SeaCargoInfos").Attrs(attr[0]).FirstOrCreate(&booking)
 			err = sqlCon.Association("SeaCapLists").Append(capList).Error
 		} else {
-			err = database.GetDBCon().Preload("SeaCapLists").First(&booking, "order_master_id = ?", orderId).Error
+			err = database.GetDBCon().Preload("SeaCapLists").Preload("SeaCargoInfos").First(&booking, "order_master_id = ?", orderId).Error
 		}
 		return booking, err
 	}
@@ -80,6 +91,8 @@ func (o OrderMasterRepository) UpdateFormerData(formerType string, data models.R
 		err = o.updateFormerSeaBooking(data)
 	case "former_sea_so_no":
 		err = o.updateFormerSoNo(formerType, data)
+	case "sea_cargo_info":
+		_,err = o.UpdateSeaCargoInfo(data.SeaCargoInfo)
 	}
 	return err
 }
@@ -91,7 +104,7 @@ func (o OrderMasterRepository) UpdateExtendInfo(id uint, data models.OrderExtend
 func (o OrderMasterRepository) GetFormerInstruction(orderMasterId uint, formerType interface{}, attr map[string]interface{}) (models.FormerSeaInstruction, error) {
 	attr["order_master_id"] = orderMasterId
 	var data models.FormerSeaInstruction
-	err := database.GetDBCon().Where(models.FormerSeaInstruction{OrderMasterId: orderMasterId, Type: formerType.(string)}).Preload("SeaCapLists").Attrs(attr).FirstOrCreate(&data).Error
+	err := database.GetDBCon().Where(models.FormerSeaInstruction{OrderMasterId: orderMasterId, Type: formerType.(string)}).Preload("SeaCapLists").Preload("SeaCargoInfos").Attrs(attr).FirstOrCreate(&data).Error
 	return data, err
 }
 
@@ -217,10 +230,33 @@ func (o OrderMasterRepository) updateFormerSeaBooking(data models.RenderFormerDa
 func (o OrderMasterRepository) updateFormerSoNo(formerType string, data models.RenderFormerData) error {
 	if formerType == "former_sea_so_no" {
 		var soNo = data.FormerSeaSoNo
-		golog.Infof("current time is %v",soNo)
+		golog.Infof("current time is %v", soNo)
 		return database.GetDBCon().Model(&models.FormerSeaSoNo{ID: soNo.ID}).Update(tools.StructToChange(soNo)).Error
 	}
 	return nil
+}
+
+//更新货物详情
+func (o OrderMasterRepository) UpdateSeaCargoInfo(infos []models.SeaCargoInfo) (interface{}, error) {
+	sqlConn := database.GetDBCon()
+	var data []models.SeaCargoInfo
+	err := sqlConn.Transaction(func(tx *gorm.DB) error {
+		for _, item := range infos {
+			if item.ID != 0 {
+				if err := tx.Model(&models.SeaCargoInfo{ID: item.ID}).Update(tools.StructToChange(item)).Error; err != nil {
+					return err
+				}
+			} else {
+				if err := tx.Create(&item).Error; err != nil {
+					return err
+				}
+				data = append(data,item)
+			}
+		}
+		// 在事务中做一些数据库操作 (这里应该使用 'tx' ，而不是 'db')
+		return nil
+	})
+	return data, err
 }
 
 func NewOrderMasterRepository() IOrderMaster {

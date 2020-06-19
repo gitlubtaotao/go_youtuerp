@@ -94,6 +94,7 @@ type FormerSeaBook struct {
 	Remarks            string       `gorm:"size:1024" json:"remarks"`
 	ChargeDescription  string       `gorm:"size:1024" json:"charge_description"`
 	SeaCapLists        []SeaCapList `gorm:"polymorphic:Source;" json:"sea_cap_lists"`
+	SeaCargoInfos       []SeaCargoInfo `gorm:"polymorphic:Source;" json:"sea_cargo_infos"`
 }
 
 type FormerSeaSoNo struct {
@@ -128,14 +129,14 @@ type SeaCargoInfo struct {
 	SealNo            string    `gorm:"size:64" json:"seal_no"`
 	VerifiedGrossMass string    `gorm:"size:32" json:"verified_gross_mass"`
 	IncludeContainer  uint      `comment:"称重方式" json:"include_container"`
-	GrossUnit         uint      `comment:"重量单位"`
+	GrossUnit         uint      `comment:"重量单位" json:"gross_unit"`
 	GrossWeight       string    `gorm:"size:32" comment:"毛重" json:"gross_weight"`
 	ContainerWeight   string    `gorm:"size:32" comment:"柜重" json:"container_weight"`
 	VgmWeight         string    `gorm:"size:32" comment:"VGM重量" json:"vgm_weight"`
 	Volume            string    `gorm:"size:32" json:"volume"`
 	Number            uint      `json:"number"`
 	PackageTypeId     uint      `json:"package_type_id"`
-	CapTypeId         uint      `json:"cap_type_id"`
+	CapType           string    `gorm:"size:16" json:"cap_type"`
 	DescriptionOfGood string    `gorm:"size:256" json:"description_of_good"`
 	Marks             string    `gorm:"size:256" json:"marks"`
 }

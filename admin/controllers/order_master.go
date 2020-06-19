@@ -24,9 +24,6 @@ type OrderMaster struct {
 	enum            conf.Enum
 }
 
-
-
-
 var (
 	tool     = tools.OtherHelper{}
 	toolTime = tools.TimeHelper{}
@@ -213,19 +210,76 @@ func (o *OrderMaster) GetFormerData(ctx iris.Context) {
 func (o *OrderMaster) UpdateFormerData(ctx iris.Context) {
 	var (
 		formerType string
-		id uint
-		err error
-		params models.RenderFormerData
+		id         uint
+		err        error
+		params     models.RenderFormerData
 	)
 	_ = ctx.ReadJSON(&params)
 	formerType = ctx.URLParam("former_type")
-	id,err = ctx.Params().GetUint("id")
-	if err != nil{
-		o.Render400(ctx,err,err.Error())
+	id, err = ctx.Params().GetUint("id")
+	if err != nil {
+		o.Render400(ctx, err, err.Error())
 		return
 	}
-	go o.service.UpdateOperationInfo(id,formerType,params)
+	go o.service.UpdateOperationInfo(id, formerType, params)
 	o.RenderSuccessJson(ctx, iris.Map{})
+}
+
+func (o *OrderMaster) UpdateCargoInfo(ctx iris.Context) {
+	var (
+		id         uint
+		err        error
+		params     models.RenderFormerData
+		formerType string
+	)
+	_ = ctx.ReadJSON(&params)
+	formerType = ctx.URLParam("former_type")
+	id, err = ctx.Params().GetUint("id")
+	if err != nil {
+		o.Render400(ctx, err, err.Error())
+		return
+	}
+	data, _ := o.service.UpdateCargoInfo(id, formerType, params)
+	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": data})
+}
+
+func (o *OrderMaster) DeleteCargoInfo(ctx iris.Context) {
+	formerType := ctx.URLParam("former_type")
+	var deleteIds map[string][]int
+	if err := ctx.ReadJSON(&deleteIds); err != nil {
+		o.Render400(ctx, err, err.Error())
+		return
+	}
+	err := o.service.DeleteCargoInfo(deleteIds["ids"], formerType)
+	if err != nil {
+		o.Render500(ctx, err, "")
+	} else {
+		o.RenderSuccessJson(ctx, iris.Map{})
+	}
+}
+
+//获取SoNo 下拉信息
+func (o *OrderMaster) GetSoNoOptions(ctx iris.Context) {
+	var (
+		id   uint
+		err  error
+		data interface{}
+	)
+	if id, err = ctx.Params().GetUint("id"); err != nil {
+		o.Render400(ctx, err, err.Error())
+		return
+	}
+	data, err = o.service.GetFormerData(id, "former_sea_so_no", "")
+	if err != nil {
+		o.Render400(ctx, err, err.Error())
+		return
+	}
+	formerSoNo := data.(models.FormerSeaSoNo)
+	if formerSoNo.SoNo == "" {
+		o.RenderSuccessJson(ctx, iris.Map{"so_no": []string{}})
+	} else {
+		o.RenderSuccessJson(ctx, iris.Map{"so_no": strings.Split(formerSoNo.SoNo, ",")})
+	}
 }
 
 func (o *OrderMaster) Before(ctx iris.Context) {

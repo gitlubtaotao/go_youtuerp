@@ -29,4 +29,5 @@ type RenderFormerData struct {
 	FormerSeaInstruction FormerSeaInstruction `json:"former_sea_instruction"`
 	FormerSeaBook        FormerSeaBook        `json:"former_sea_book"`
 	FormerSeaSoNo        FormerSeaSoNo        `json:"former_sea_so_no"`
+	SeaCargoInfo         []SeaCargoInfo       `json:"sea_cargo_info"`
 }
