@@ -47,8 +47,8 @@ type FormerSeaInstruction struct {
 	InvoiceNo           string         `gorm:"size:32" json:"invoice_no"`
 	Remarks             string         `gorm:"size:1024" json:"remarks"`
 	ShapingOnBoardDate  *time.Time     `json:"shaping_on_board_date"`
-	SeaCapLists         []SeaCapList   `gorm:"polymorphic:Source;" json:"sea_cap_lists"`
-	SeaCargoInfos       []SeaCargoInfo `gorm:"polymorphic:Source;" json:"sea_cargo_infos"`
+	SeaCapLists         []SeaCapList   `gorm:"polymorphic:Source;association_autoupdate:false;association_autocreate:false" json:"sea_cap_lists"`
+	SeaCargoInfos       []SeaCargoInfo `gorm:"polymorphic:Source;association_autoupdate:false;association_autocreate:false" json:"sea_cargo_infos"`
 }
 
 type FormerSeaBook struct {
@@ -93,8 +93,8 @@ type FormerSeaBook struct {
 	ShipmentItemId     uint         `comment:"装运条款" json:"shipment_item_id"`
 	Remarks            string       `gorm:"size:1024" json:"remarks"`
 	ChargeDescription  string       `gorm:"size:1024" json:"charge_description"`
-	SeaCapLists        []SeaCapList `gorm:"polymorphic:Source;" json:"sea_cap_lists"`
-	SeaCargoInfos       []SeaCargoInfo `gorm:"polymorphic:Source;" json:"sea_cargo_infos"`
+	SeaCapLists        []SeaCapList `gorm:"polymorphic:Source;association_autoupdate:false;association_autocreate:false" json:"sea_cap_lists"`
+	SeaCargoInfos       []SeaCargoInfo `gorm:"polymorphic:Source;association_autoupdate:false;association_autocreate:false" json:"sea_cargo_infos"`
 }
 
 type FormerSeaSoNo struct {

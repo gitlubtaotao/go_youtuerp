@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-	"github.com/kataras/golog"
 	"reflect"
 	"time"
 	"youtuerp/conf"
@@ -214,6 +213,7 @@ func (o OrderMasterService) getFormerBooking(order models.OrderMaster, formerTyp
 	return data, err
 }
 
+//获取自动重填的信息
 func (o OrderMasterService) AutoFillData(src interface{}, dst interface{}) map[string]interface{} {
 	data := tools.StructToChange(dst)
 	dataTypeOf := reflect.TypeOf(dst)
@@ -227,7 +227,6 @@ func (o OrderMasterService) AutoFillData(src interface{}, dst interface{}) map[s
 	}
 	//海运委托单对柜型柜量特殊处理
 	if dataTypeOf.Name() == "FormerSeaInstruction" {
-		golog.Infof("current ")
 		capList := make([]map[string]interface{}, 0)
 		changeData := dst.(models.FormerSeaInstruction)
 		for _, item := range changeData.SeaCapLists {
@@ -238,7 +237,8 @@ func (o OrderMasterService) AutoFillData(src interface{}, dst interface{}) map[s
 			})
 		}
 		result["sea_cap_lists"] = capList
-		golog.Infof("current sea cap list is %v", reflect.TypeOf(result["sea_cap_lists"]).Kind().String())
+		//todo-tao 创建订舱单时需要把货物信息进行创建
+		result["sea_cargo_infos"] = changeData.SeaCargoInfos
 	}
 	return result
 }

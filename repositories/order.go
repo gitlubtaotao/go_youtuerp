@@ -12,7 +12,7 @@ import (
 
 type IOrderMaster interface {
 	//根据ids删除货物信息
-	DeleteCargoInfo(ids []int,formerType string) error
+	DeleteCargoInfo(ids []int, formerType string) error
 	//更新海运货物信息
 	UpdateSeaCargoInfo(infos []models.SeaCargoInfo) (interface{}, error)
 	//获取表单so的信息
@@ -44,9 +44,9 @@ type OrderMasterRepository struct {
 	mu sync.Mutex
 }
 
-func (o OrderMasterRepository) DeleteCargoInfo(ids []int,formerType string) error {
-	if formerType == "sea_cargo_info"{
-		return database.GetDBCon().Where("id IN (?)",ids).Delete(models.SeaCargoInfo{}).Error
+func (o OrderMasterRepository) DeleteCargoInfo(ids []int, formerType string) error {
+	if formerType == "sea_cargo_info" {
+		return database.GetDBCon().Where("id IN (?)", ids).Delete(models.SeaCargoInfo{}).Error
 	}
 	return nil
 }
@@ -60,20 +60,8 @@ func (o OrderMasterRepository) GetFormerSoNo(orderId uint, formerType string, at
 func (o OrderMasterRepository) GetFormerBooking(orderId uint, formerType string, attr ...map[string]interface{}) (result interface{}, err error) {
 	if formerType == "former_sea_book" {
 		var booking models.FormerSeaBook
-		var capList []models.SeaCapList
 		if len(attr) > 0 {
-			if item, ok := attr[0]["sea_cap_lists"]; ok {
-				value := item.([]map[string]interface{})
-				for _, v := range value {
-					capList = append(capList, models.SeaCapList{
-						OrderMasterId: v["order_master_id"].(uint),
-						Number:        v["number"].(int),
-						CapType:       v["cap_type"].(string),
-					})
-				}
-			}
-			sqlCon := database.GetDBCon().Where("order_master_id = ?", orderId).Preload("SeaCapLists").Preload("SeaCargoInfos").Attrs(attr[0]).FirstOrCreate(&booking)
-			err = sqlCon.Association("SeaCapLists").Append(capList).Error
+			return o.createSeaBooking(orderId, attr[0])
 		} else {
 			err = database.GetDBCon().Preload("SeaCapLists").Preload("SeaCargoInfos").First(&booking, "order_master_id = ?", orderId).Error
 		}
@@ -92,7 +80,7 @@ func (o OrderMasterRepository) UpdateFormerData(formerType string, data models.R
 	case "former_sea_so_no":
 		err = o.updateFormerSoNo(formerType, data)
 	case "sea_cargo_info":
-		_,err = o.UpdateSeaCargoInfo(data.SeaCargoInfo)
+		_, err = o.UpdateSeaCargoInfo(data.SeaCargoInfo)
 	}
 	return err
 }
@@ -188,11 +176,56 @@ func (o OrderMasterRepository) CreateMaster(order models.OrderMaster) (models.Or
 	return order, nil
 }
 
+//创建海运订舱单
+func (o OrderMasterRepository) createSeaBooking(orderId uint, attr map[string]interface{}) (models.FormerSeaBook, error) {
+	var (
+		capList       []models.SeaCapList
+		booking       models.FormerSeaBook
+		seasCargoInfo []models.SeaCargoInfo
+		err           error
+	)
+	if item, ok := attr["sea_cap_lists"]; ok {
+		value := item.([]map[string]interface{})
+		for _, v := range value {
+			capList = append(capList, models.SeaCapList{
+				OrderMasterId: v["order_master_id"].(uint),
+				Number:        v["number"].(int),
+				CapType:       v["cap_type"].(string),
+			})
+		}
+		attr["sea_cap_lists"] = nil
+	}
+	if value, ok := attr["sea_cargo_infos"]; ok {
+		if seaCargoInfo, ok := value.([]models.SeaCargoInfo); ok {
+			for i := 0; i < len(seaCargoInfo); i++ {
+				seaCargoInfo[i].ID = 0
+				seaCargoInfo[i].SourceId = booking.ID
+				seaCargoInfo[i].SourceType = "former_sea_books"
+			}
+			seasCargoInfo = seaCargoInfo
+		}
+		attr["sea_cargo_infos"] = nil
+	}
+	golog.Infof("sea cap info %v", seasCargoInfo)
+	golog.Infof("sea cap list %v", capList)
+	err = database.GetDBCon().Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("order_master_id = ?", orderId).Attrs(attr).FirstOrCreate(&booking).Error; err != nil {
+			return err
+		}
+		if err := tx.Model(&booking).Association("SeaCapLists").Append(capList).Error; err != nil {
+			return err
+		}
+		if err := tx.Model(&booking).Association("SeaCargoInfos").Append(seasCargoInfo).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	return booking, err
+}
 func (o OrderMasterRepository) updateFormerSeaInstruction(data models.RenderFormerData) error {
 	sqlConn := database.GetDBCon()
 	var record models.FormerSeaInstruction
 	instruction := data.FormerSeaInstruction
-	golog.Infof("sea cap list is %v", instruction.SeaCapLists)
 	if err := sqlConn.First(&record, "id = ? ", instruction.ID).Error; err != nil {
 		return err
 	}
@@ -250,7 +283,7 @@ func (o OrderMasterRepository) UpdateSeaCargoInfo(infos []models.SeaCargoInfo) (
 				if err := tx.Create(&item).Error; err != nil {
 					return err
 				}
-				data = append(data,item)
+				data = append(data, item)
 			}
 		}
 		// 在事务中做一些数据库操作 (这里应该使用 'tx' ，而不是 'db')
