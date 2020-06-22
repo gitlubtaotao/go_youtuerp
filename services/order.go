@@ -227,16 +227,8 @@ func (o OrderMasterService) AutoFillData(src interface{}, dst interface{}) map[s
 	}
 	//海运委托单对柜型柜量特殊处理
 	if dataTypeOf.Name() == "FormerSeaInstruction" {
-		capList := make([]map[string]interface{}, 0)
 		changeData := dst.(models.FormerSeaInstruction)
-		for _, item := range changeData.SeaCapLists {
-			capList = append(capList, map[string]interface{}{
-				"number":          item.Number,
-				"cap_type":        item.CapType,
-				"order_master_id": item.OrderMasterId,
-			})
-		}
-		result["sea_cap_lists"] = capList
+		result["sea_cap_lists"] = changeData.SeaCapLists
 		//todo-tao 创建订舱单时需要把货物信息进行创建
 		result["sea_cargo_infos"] = changeData.SeaCargoInfos
 	}

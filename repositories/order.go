@@ -185,15 +185,16 @@ func (o OrderMasterRepository) createSeaBooking(orderId uint, attr map[string]in
 		err           error
 	)
 	if item, ok := attr["sea_cap_lists"]; ok {
-		value := item.([]map[string]interface{})
-		for _, v := range value {
-			capList = append(capList, models.SeaCapList{
-				OrderMasterId: v["order_master_id"].(uint),
-				Number:        v["number"].(int),
-				CapType:       v["cap_type"].(string),
-			})
+		if value,ok := item.([]models.SeaCapList);ok {
+			for _, v := range value {
+				capList = append(capList, models.SeaCapList{
+					OrderMasterId: v.OrderMasterId,
+					Number:        v.Number,
+					CapType:       v.CapType,
+				})
+			}
+			attr["sea_cap_lists"] = nil
 		}
-		attr["sea_cap_lists"] = nil
 	}
 	if value, ok := attr["sea_cargo_infos"]; ok {
 		if seaCargoInfo, ok := value.([]models.SeaCargoInfo); ok {
@@ -206,8 +207,6 @@ func (o OrderMasterRepository) createSeaBooking(orderId uint, attr map[string]in
 		}
 		attr["sea_cargo_infos"] = nil
 	}
-	golog.Infof("sea cap info %v", seasCargoInfo)
-	golog.Infof("sea cap list %v", capList)
 	err = database.GetDBCon().Transaction(func(tx *gorm.DB) error {
 		if err := tx.Where("order_master_id = ?", orderId).Attrs(attr).FirstOrCreate(&booking).Error; err != nil {
 			return err
