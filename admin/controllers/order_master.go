@@ -74,7 +74,7 @@ func (o *OrderMaster) Create(ctx iris.Context) {
 		o.Render400(ctx, err, err.Error())
 		return
 	}
-	o.RenderSuccessJson(ctx, iris.Map{})
+	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": order})
 }
 
 func (o *OrderMaster) Edit(ctx iris.Context) {
