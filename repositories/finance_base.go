@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"database/sql"
-	"github.com/kataras/golog"
 	"reflect"
 	"youtuerp/database"
 	"youtuerp/models"
@@ -12,7 +11,6 @@ type IFinanceBase interface {
 	Update(id uint, record interface{}) error
 	Create(record interface{}) (interface{}, error)
 	Delete(id uint, model interface{}) error
-	
 	FindRate(per, page uint, filter map[string]interface{},
 		selectKeys []string, orders []string) ([]models.FinanceRate, uint, error)
 	FindFeeType(per, page uint, filter map[string]interface{}, selectKeys []string,
@@ -66,9 +64,7 @@ func (f FinanceBase) FindFeeType(per, page uint, filter map[string]interface{},
 
 func (f FinanceBase) Create(record interface{}) (interface{}, error) {
 	var err error
-	golog.Infof("record is %v", record)
 	rt := reflect.TypeOf(record)
-	golog.Infof("record type is %v", rt.Name())
 	if rt.Name() == "FinanceRate" {
 		rate := record.(models.FinanceRate)
 		err = database.GetDBCon().Create(&rate).Error

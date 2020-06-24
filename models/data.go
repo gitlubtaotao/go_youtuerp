@@ -77,9 +77,10 @@ const (
 	CodeTransshipment   = "Transshipment"
 	CodeTradeTerms      = "TradeTerms"
 	CodeShippingTerms   = "ShippingTerms"
-	PackageType = "PackageType"
+	PackageType         = "PackageType"
+	CIQType             = "CIQType"
+	FinanceTag          = "FinanceTag"
 )
-
 
 func (r BaseDataCode) TableName() string {
 	return "base_data_codes"

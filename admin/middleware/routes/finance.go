@@ -10,8 +10,20 @@ type Finance struct {
 }
 
 func (f *Finance) Index() {
+	f.fee()
 	f.feeType()
 	f.rate()
+}
+
+func (f *Finance) fee() {
+	r := f.Route
+	j := r.jwtAccess()
+	r.app.PartyFunc("/finance/fees", func(c iris.Party) {
+		record := controllers.FinanceFee{}
+		c.Use(record.Before)
+		c.Post("/create", j.Serve, record.Create)
+		c.Get("/{id:uint}/OrderFees", j.Serve, record.OrderFees)
+	})
 }
 
 func (f *Finance) feeType() {

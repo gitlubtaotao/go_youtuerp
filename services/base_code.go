@@ -79,10 +79,10 @@ func (b BaseCode) Find(per, page uint, filter map[string]interface{}, selectKeys
 
 func (b BaseCode) FindAllLevel() (data []map[string]string, err error) {
 	red := redis.NewRedis()
-	data = red.HCollectOptions(models.BaseDataLevel{}.TableName())
-	if len(data) > 0 {
-		return
-	}
+	//data = red.HCollectOptions(models.BaseDataLevel{}.TableName())
+	//if len(data) > 0 {
+	//	return
+	//}
 	var levels []models.BaseDataLevel
 	if levels, err = b.repo.FindAllLevel(); err != nil {
 		return
@@ -90,12 +90,7 @@ func (b BaseCode) FindAllLevel() (data []map[string]string, err error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	for _, k := range levels {
-		_ = red.HSetValue(models.BaseDataLevel{}.TableName(), k.Code, map[string]interface{}{
-			"code":    k.Code,
-			"name":    k.Name,
-			"en_name": k.EnName,
-			"id":      k.ID,
-		})
+		_ = red.HSetValue(models.BaseDataLevel{}.TableName(), k.Code, map[string]interface{}{"code": k.Code, "name": k.Name, "en_name": k.EnName, "id": k.ID,})
 		temp := map[string]string{"code": k.Code, "name": k.Name, "en_name": k.EnName,}
 		data = append(data, temp)
 	}

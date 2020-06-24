@@ -79,3 +79,5 @@ func HSetValue(table string, id interface{}, value map[string]interface{}) {
 			table, id, err)
 	}
 }
+
+
