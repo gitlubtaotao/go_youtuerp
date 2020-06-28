@@ -16,7 +16,6 @@ func (r Redis) HGetCrm(id interface{}, field string) (value string) {
 	return value
 }
 
-
 func (r Redis) HGetCompany(id interface{}, field string) (value string) {
 	var err error
 	value, err = r.getUserCompany(models.Company{}.TableName(), id, field)
@@ -25,7 +24,6 @@ func (r Redis) HGetCompany(id interface{}, field string) (value string) {
 	}
 	return value
 }
-
 
 func (r Redis) HGetRecord(table string, id interface{}, field string) (value string) {
 	var err error
@@ -100,7 +98,7 @@ func (r Redis) getUserCompany(tableName string, id interface{}, field string) (v
 		return value, nil
 	}
 	if err := r.HSetCompany(tableName, id); err != nil {
-		return "",err
+		return "", err
 	}
 	return r.HGet(key, field)
 }
@@ -158,6 +156,27 @@ func SystemRateSetting() string {
 	}
 	return value
 }
+
+//获取是否跳过审批
+func SystemFinanceApprove() string {
+	value, err := GetSystemSetting("finance", "skip_approve")
+	if err != nil {
+		golog.Errorf("system finance approve is err %v", err)
+		return ""
+	}
+	return value
+}
+
+//获取是否跳过复核
+func SystemFinanceAudit() string {
+	value, err := GetSystemSetting("finance", "skip_audit")
+	if err != nil {
+		golog.Errorf("system finance audit is err %v", err)
+		return ""
+	}
+	return value
+}
+
 
 func GetSystemSetting(key string, field string) (value string, err error) {
 	red := NewRedis()

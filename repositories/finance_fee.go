@@ -8,6 +8,8 @@ import (
 )
 
 type IFinanceFee interface {
+	//更改费用状态
+	ChangeStatusFees(ids []uint, status string) error
 	//删除订单费用信息
 	DeleteFees([]uint) error
 	//批量插入订单费用信息或者更新费用信息
@@ -18,8 +20,12 @@ type IFinanceFee interface {
 type FinanceFee struct {
 }
 
+func (f FinanceFee) ChangeStatusFees(ids []uint, status string) error {
+	return database.GetDBCon().Where("id IN (?)", ids).Model(&models.FinanceFee{}).Updates(map[string]interface{}{"status": status}).Error
+}
+
 func (f FinanceFee) DeleteFees(ids []uint) error {
-	return database.GetDBCon().Where("id IN (?) and status IN (?)", ids,[]string{models.FinanceFeeStatusInit,models.FinanceFeeStatusDismiss}).Delete(models.FinanceFee{}).Error
+	return database.GetDBCon().Where("id IN (?) and status IN (?)", ids, []string{models.FinanceFeeStatusInit, models.FinanceFeeStatusDismiss}).Delete(models.FinanceFee{}).Error
 }
 
 func (f FinanceFee) BulkInsertOrUpdate(financeFees []models.FinanceFee) ([]models.FinanceFee, error) {

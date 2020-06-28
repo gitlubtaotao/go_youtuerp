@@ -29,7 +29,6 @@ type FinanceFee struct {
 	FinanceStatementId  uint       `json:"finance_statement_id"`
 	FinanceStatementNo  string     `gorm:"size:32;index:finance_statement_no" json:"finance_statement_no"`
 	Status              string     `gorm:"size:16;index:status;default:'init'" json:"status"`
-	VerifyStatus        string     `gorm:"size:16;index:verify_status;default:'init'" json:"verify_status"`
 	InvoiceAmount       float64    `gorm:"PRECISION:4" json:"invoice_amount"`
 	InvoiceStatus       string     `gorm:"size:16;index:invoice_status;default:'init'" json:"invoice_status"`
 	TypeId              uint       `gorm:"index:type_id;default:1" json:"type_id"`
@@ -74,13 +73,13 @@ func (FinanceFee) TableName() string {
 }
 
 const (
-	FinanceFeeStatusInit = "init"
-	FinanceFeeStatusDismiss = "dismiss"
-	FinanceFeeStatusPending = "pending"
-	FinanceFeeStatusApproval = "approval"
-	FinanceFeeStatusReview = "review"
-	FinanceFeeStatusUnapplied = "unapplied"
+	FinanceFeeStatusInit        = "init"
+	FinanceFeeStatusDismiss     = "dismiss"
+	FinanceFeeStatusVerify      = "verify"
+	FinanceFeeStatusPending     = "pending"
+	FinanceFeeStatusApproval    = "approval"
+	FinanceFeeStatusReview      = "review"
+	FinanceFeeStatusUnapplied   = "unapplied"
 	FinanceFeeStatusPartApplied = "part_applied"
-	FinanceFeeStatusApplied = "applied"
+	FinanceFeeStatusApplied     = "applied"
 )
-
