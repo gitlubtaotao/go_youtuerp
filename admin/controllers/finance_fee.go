@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"github.com/kataras/golog"
 	"github.com/kataras/iris/v12"
 	"net/http"
@@ -95,6 +96,31 @@ func (f *FinanceFee) DeleteFee(ctx iris.Context) {
 		} else {
 			f.RenderSuccessJson(ctx, iris.Map{})
 		}
+	}
+}
+
+func (f *FinanceFee) ChangeStatus(ctx iris.Context) {
+	var (
+		temp   map[string][]uint
+		err    error
+		ids    []uint
+		status string
+	)
+	if err = ctx.ReadJSON(&temp); err != nil {
+		f.Render400(ctx, err, "")
+		return
+	}
+	if _, ok := temp["ids"]; !ok {
+		err = errors.New(ctx.GetLocale().GetMessage("err.params_error"))
+		f.Render400(ctx, err, err.Error())
+		return
+	}
+	ids = temp["ids"]
+	status = ctx.URLParam("status")
+	if err = f.service.ChangeStatusFees(ids, status); err != nil {
+		f.Render400(ctx, err, err.Error())
+	} else {
+		f.RenderSuccessJson(ctx, iris.Map{})
 	}
 }
 
