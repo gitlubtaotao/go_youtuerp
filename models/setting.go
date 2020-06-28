@@ -80,3 +80,7 @@ const (
 	NumberSettingDayClear   = "day"
 	NumberSettingNonZero    = "non_zero"
 )
+const (
+	SettingFeeRateNow   = "now"
+	SettingFeeRateMonth = "month"
+)

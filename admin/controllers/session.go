@@ -4,9 +4,11 @@ import (
 	"errors"
 	"github.com/kataras/golog"
 	"github.com/kataras/iris/v12"
+	"net/http"
 	"sync"
 	"time"
 	"youtuerp/models"
+	"youtuerp/redis"
 	"youtuerp/services"
 	"youtuerp/tools"
 	"youtuerp/tools/uploader"
@@ -27,7 +29,7 @@ func (s *SessionController) Login(ctx iris.Context) {
 	var loginInfo login
 	s.initSession()
 	err := ctx.ReadJSON(&loginInfo)
-	golog.Errorf("eee is %v,login info %v",err,loginInfo)
+	golog.Errorf("eee is %v,login info %v", err, loginInfo)
 	if err != nil {
 		s.Render400(ctx, err, err.Error())
 		return
@@ -74,7 +76,11 @@ func (s *SessionController) Show(ctx iris.Context) {
 	if err != nil {
 		s.Render500(ctx, err, "")
 	}
-	s.RenderSuccessJson(ctx, s.handleUserInfo(currentUser, userMap))
+	_, _ = ctx.JSON(iris.Map{
+		"code": http.StatusOK,
+		"data": s.handleUserInfo(currentUser, userMap),
+		"setting": s.getSystemSetting(),
+	})
 	return
 }
 
@@ -119,7 +125,10 @@ func (s *SessionController) Update(ctx iris.Context) {
 		return
 	}
 	userMap, _ := s.StructToMap(currentUser, ctx)
-	s.RenderSuccessJson(ctx, s.handleUserInfo(currentUser, userMap))
+	_, _ = ctx.JSON(iris.Map{
+		"code": http.StatusOK,
+		"data": s.handleUserInfo(currentUser, userMap),
+	})
 }
 
 func (s *SessionController) UploadAvatar(ctx iris.Context) {
@@ -143,6 +152,12 @@ func (s *SessionController) UploadAvatar(ctx iris.Context) {
 func (s *SessionController) initSession() {
 	s.SService = services.NewSessionService()
 	s.EService = services.NewEmployeeService()
+}
+
+func (s *SessionController) getSystemSetting() map[string]interface{} {
+	setting := make(map[string]interface{})
+	setting["system_standard_currency"] = redis.SystemFinanceCurrency()
+	return setting
 }
 
 //保存当前登录用户的信息

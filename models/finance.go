@@ -8,17 +8,17 @@ type FinanceFee struct {
 	CreatedAt           time.Time  `json:"created_at"`
 	UpdatedAt           time.Time  `json:"updated_at"`
 	DeletedAt           *time.Time `sql:"index"`
-	Name                string     `gorm:"size:64;index:name" json:"name"`
+	Name                string     `gorm:"size:64;index:name" json:"name" validate:"required"`
 	NameCn              string     `json:"name_cn"`
 	NameEn              string     `json:"name_en"`
-	PayOrReceive        string     `gorm:"size:16;index:pay_or_receive" comment:"类型"`
+	PayOrReceive        string     `gorm:"size:16;index:pay_or_receive" comment:"类型" json:"pay_or_receive" validate:"required"`
 	PayTypeId           uint       `gorm:"index:pay_type_id" comment:"结算方式" json:"pay_type_id"`
-	FinanceCurrencyId   uint       `gorm:"index:finance_currency_id" comment:"币种类型" json:"finance_currency_id"`
-	FinanceCurrencyRate float64    `gorm:"PRECISION: 4" json:"finance_currency_rate"`
-	Quantity            float64    `gorm:"PRECISION: 4" json:"quantity"`
-	UnitPrice           float64    `gorm:"PRECISION:4" json:"unit_price"`
+	FinanceCurrencyId   uint       `gorm:"index:finance_currency_id" comment:"币种类型" json:"finance_currency_id" validate:"required"`
+	FinanceCurrencyRate float64    `gorm:"PRECISION: 4" json:"finance_currency_rate" validate:"required"`
+	Quantity            float64    `gorm:"PRECISION: 4" json:"quantity" validate:"required"`
+	UnitPrice           float64    `gorm:"PRECISION:4" json:"unit_price" validate:"required"`
 	TaxRate             float64    `gorm:"PRECISION:4" json:"tax_rate"`
-	TaxAmount           float64    `gorm:"PRECISION:4" json:"tax_amount"`
+	TaxAmount           float64    `gorm:"PRECISION:4" json:"tax_amount" validate:"required"`
 	NotTaxAmount        float64    `gorm:"PRECISION:4" json:"not_tax_amount"`
 	ReceiveAmount       float64    `gorm:"PRECISION:4" json:"receive_amount"`
 	Receivable          float64    `gorm:"PRECISION:4" json:"receivable"`
@@ -72,3 +72,15 @@ func (FinanceFeeType) TableName() string {
 func (FinanceFee) TableName() string {
 	return "finance_fees"
 }
+
+const (
+	FinanceFeeStatusInit = "init"
+	FinanceFeeStatusDismiss = "dismiss"
+	FinanceFeeStatusPending = "pending"
+	FinanceFeeStatusApproval = "approval"
+	FinanceFeeStatusReview = "review"
+	FinanceFeeStatusUnapplied = "unapplied"
+	FinanceFeeStatusPartApplied = "part_applied"
+	FinanceFeeStatusApplied = "applied"
+)
+

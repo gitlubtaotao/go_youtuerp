@@ -4,7 +4,6 @@ import (
 	"github.com/kataras/golog"
 	"github.com/kataras/iris/v12"
 	"net/http"
-	"youtuerp/models"
 	"youtuerp/services"
 )
 
@@ -41,19 +40,12 @@ func (s *SelectController) GetCompany(ctx iris.Context) {
 		s.renderError(ctx, err)
 		return
 	}
-	if len(readData.Scope) == 0 {
-		readData.Scope = map[string]interface{}{"company_type": 4}
-	}
-	readData.Scope["status"] = models.CompanyStatusApproved
-	if len(readData.SelectKeys) == 0 {
-		readData.SelectKeys = []string{"id", "name_en",
-			"name_nick", "name_cn","frequently_use_info"}
-	}
-	readData.TableName = "user_companies"
+	
 	name := ctx.URLParamDefault("name", "")
-	data, _ := s.service.FindTable(readData.TableName, name, readData.Scope, readData.SelectKeys)
+	data, _ := s.service.GetCompanySelect(name,readData.Scope,readData.SelectKeys)
 	_, _ = s.ctx.JSON(iris.Map{"code": http.StatusOK, "data": data})
 }
+
 
 func (s *SelectController) Employee(ctx iris.Context) {
 	service := services.NewEmployeeService()

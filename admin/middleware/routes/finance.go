@@ -23,6 +23,7 @@ func (f *Finance) fee() {
 		c.Use(record.Before)
 		c.Post("/create", j.Serve, record.Create)
 		c.Get("/{id:uint}/OrderFees", j.Serve, record.OrderFees)
+		c.Post("/DeleteFee", j.Serve, record.DeleteFee)
 	})
 }
 

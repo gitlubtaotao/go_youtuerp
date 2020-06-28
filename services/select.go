@@ -10,6 +10,8 @@ import (
 )
 
 type ISelectService interface {
+	//获取公司信息下拉选择
+	GetCompanySelect(searchName string, scope map[string]interface{}, selectKeys []string)([]map[string]interface{}, error)
 	GetOperationSelect(formerType string) map[string]interface{}
 	FindTable(tableName string, name string, scope map[string]interface{}, selectKeys []string) (selectResult []map[string]interface{}, err error)
 }
@@ -20,13 +22,26 @@ type SelectService struct {
 	sy   sync.Mutex
 }
 
+
+func (s SelectService) GetCompanySelect(searchName string, scope map[string]interface{}, selectKeys []string)([]map[string]interface{}, error) {
+	if len(scope) == 0 {
+		scope = map[string]interface{}{"company_type": 4}
+	}
+	scope["status"] = models.CompanyStatusApproved
+	if len(selectKeys) == 0 {
+		selectKeys = []string{"id", "name_en", "name_nick", "name_cn", "frequently_use_info"}
+	}
+	return s.FindTable("user_companies",searchName,scope,selectKeys)
+}
+
+
 func (s SelectService) GetOperationSelect(formerType string) map[string]interface{} {
 	returnAttr := make(map[string]interface{})
-	crmOptions, _ := s.FindTable("user_companies", "", map[string]interface{}{"company_type": []int{1,3},"status": models.CompanyStatusApproved}, []string{"id", "name_cn"})
+	crmOptions, _ := s.FindTable("user_companies", "", map[string]interface{}{"company_type": []int{1, 3}, "status": models.CompanyStatusApproved}, []string{"id", "name_cn"})
 	returnAttr["crmOptions"] = crmOptions
 	stringArray := []string{models.CodePayType, models.CodeCapType, models.CodeInstructionType,
 		models.CodeCustomType, models.CodeBillProduceType, models.CodeTransshipment,
-		models.CodeTradeTerms, models.CodeShippingTerms,models.PackageType}
+		models.CodeTradeTerms, models.CodeShippingTerms, models.PackageType}
 	codeService := NewBaseCode()
 	for i := 0; i < len(stringArray); i++ {
 		returnAttr[stringArray[i]] = codeService.FindCollect(stringArray[i])

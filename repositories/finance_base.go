@@ -2,12 +2,16 @@ package repositories
 
 import (
 	"database/sql"
+	"github.com/kataras/golog"
 	"reflect"
+	"time"
 	"youtuerp/database"
 	"youtuerp/models"
 )
 
 type IFinanceBase interface {
+	//根据系统设置的按月汇率或者按实时汇率查询对应的汇率信息
+	GetAllFeeRate(rateSetting string, attr map[string]interface{}) (feeRate []models.FinanceRate, err error)
 	Update(id uint, record interface{}) error
 	Create(record interface{}) (interface{}, error)
 	Delete(id uint, model interface{}) error
@@ -18,6 +22,30 @@ type IFinanceBase interface {
 }
 type FinanceBase struct {
 	BaseRepository
+}
+
+func (f FinanceBase) GetAllFeeRate(rateSetting string, attr map[string]interface{}) (feeRate []models.FinanceRate, err error) {
+	sqlCon := database.GetDBCon().Model(&models.FinanceRate{})
+	var rows *sql.Rows
+	if rateSetting == models.SettingFeeRateNow {
+		attr["start_month"] = 0
+		attr["end_month"] = 0
+	} else if rateSetting == models.SettingFeeRateMonth {
+		attr["year"] = time.Now().Year()
+		attr["start_month"] = int(time.Now().Month())
+		attr["end_month"] = int(time.Now().Month()) + 1
+	}
+	golog.Infof("rate setting is %v current month %v", rateSetting, int(time.Now().Month()))
+	rows, err = sqlCon.Where(attr).Order("id desc").Group("finance_currency_id").Select("finance_currency_id,rate").Rows()
+	if err != nil {
+		return feeRate, err
+	}
+	for rows.Next() {
+		var data models.FinanceRate
+		_ = sqlCon.ScanRows(rows, &data)
+		feeRate = append(feeRate, data)
+	}
+	return feeRate, err
 }
 
 func (f FinanceBase) Update(id uint, record interface{}) error {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/kataras/golog"
@@ -28,6 +29,7 @@ func main() {
 	} else {
 		golog.SetLevel("error")
 	}
+	golog.SetPrefix(conf.Configuration.Env + "-")
 	config := iris.WithConfiguration(iris.YAML("../conf/iris.yaml"))
 	_ = app.Run(iris.Addr(":8082"), config, iris.WithoutServerError(iris.ErrServerClosed))
 }
@@ -69,4 +71,9 @@ func traceMethod() {
 	defer trace.Stop()
 }
 
-
+func jsonOutput(l *golog.Log) bool {
+	enc := json.NewEncoder(l.Logger.Printer)
+	enc.SetIndent("", "    ")
+	err := enc.Encode(l)
+	return err == nil
+}

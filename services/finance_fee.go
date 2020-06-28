@@ -6,19 +6,31 @@ import (
 )
 
 type IFinanceFee interface {
+	DeleteFees(ids []uint) error
+	BulkInsert([]models.FinanceFee) ([]models.FinanceFee, error)
 	//获取订单对应的费用
 	OrderFees(orderId uint, payOrReceive ...string) (map[string][]models.FinanceFee, error)
-	OrderFeesOptions() map[string]interface{}
+	OrderFeesOptions(companyId uint) map[string]interface{}
 }
 
 type FinanceFee struct {
 	repo repositories.IFinanceFee
 }
 
-func (f FinanceFee) OrderFeesOptions() map[string]interface{} {
+func (f FinanceFee) DeleteFees(ids []uint) error {
+	return f.repo.DeleteFees(ids)
+}
+
+func (f FinanceFee) BulkInsert(financeFess []models.FinanceFee) ([]models.FinanceFee, error) {
+	return f.repo.BulkInsertOrUpdate(financeFess)
+}
+
+func (f FinanceFee) OrderFeesOptions(companyId uint) map[string]interface{} {
 	var data = make(map[string]interface{})
 	financeBaseService := NewFinanceBase()
 	codeService := NewBaseCode()
+	rateOptions, _ := financeBaseService.GetAllFeeRate(companyId)
+	data["currency_rate_options"] = rateOptions
 	data["fee_type_options"] = financeBaseService.FindFeeTypeRedis()
 	data["finance_currency"] = codeService.FindCollect(models.CodeFinanceCurrency)
 	data["pay_type_options"] = codeService.FindCollect(models.CIQType)

@@ -17,12 +17,20 @@ type IFinanceBase interface {
 	Create(record interface{}, language string) (interface{}, error)
 	//获取费用种类的redis数据
 	FindFeeTypeRedis() []map[string]string
+	//根据系统设置的按月汇率或者按实时汇率查询对应的汇率信息
+	GetAllFeeRate(companyId uint) ([]models.FinanceRate, error)
 }
 
 type FinanceBase struct {
 	BaseService
 	repo repositories.IFinanceBase
 }
+
+func (f FinanceBase) GetAllFeeRate(companyId uint) ([]models.FinanceRate, error) {
+	rateSetting := redis.SystemRateSetting()
+	return f.repo.GetAllFeeRate(rateSetting, map[string]interface{}{"company_id": companyId})
+}
+
 
 func (f FinanceBase) FindFeeTypeRedis() []map[string]string {
 	red := redis.NewRedis()
@@ -36,7 +44,7 @@ func (f FinanceBase) FindFeeTypeRedis() []map[string]string {
 	for _, k := range records {
 		go f.saveRedisData(k)
 		temp := map[string]string{"id": strconv.Itoa(int(k.ID)),
-			"name": k.Name,"name_cn": k.NameCn,"name_en": k.NameEn,"finance_currency_id": strconv.Itoa(int(k.FinanceCurrencyId))}
+			"name": k.Name, "name_cn": k.NameCn, "name_en": k.NameEn, "finance_currency_id": strconv.Itoa(int(k.FinanceCurrencyId))}
 		data = append(data, temp)
 	}
 	return data
@@ -47,7 +55,7 @@ func (f FinanceBase) Update(id uint, record interface{}, language string) error 
 	if message := valid.ResultError(language); message != "" {
 		return errors.New(message)
 	}
-	if err :=  f.repo.Update(id, record);err != nil{
+	if err := f.repo.Update(id, record); err != nil {
 		return err
 	}
 	go f.saveRedisData(record)
