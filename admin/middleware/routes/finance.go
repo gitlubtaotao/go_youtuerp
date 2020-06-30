@@ -25,6 +25,7 @@ func (f *Finance) fee() {
 		c.Get("/{id:uint}/OrderFees", j.Serve, record.OrderFees)
 		c.Post("/DeleteFee", j.Serve, record.DeleteFee)
 		c.Post("/ChangeStatus", j.Serve, record.ChangeStatus)
+		c.Post("/CopyFee", j.Serve, record.CopyFee)
 	})
 }
 

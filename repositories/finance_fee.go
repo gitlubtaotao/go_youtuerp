@@ -8,6 +8,11 @@ import (
 )
 
 type IFinanceFee interface {
+	//主要通过费用ID进行查询
+	FindFeesById(ids []uint, otherKeys ...string) ([]models.FinanceFee, error)
+	//查询费用信息
+	FindFees(per, page uint, filter map[string]interface{}, selectKeys []string,
+		orders []string)
 	//更改费用状态
 	ChangeStatusFees(ids []uint, status string) error
 	//删除订单费用信息
@@ -20,12 +25,31 @@ type IFinanceFee interface {
 type FinanceFee struct {
 }
 
+func (f FinanceFee) FindFeesById(ids []uint, otherKeys ...string) ([]models.FinanceFee, error) {
+	var financeFees []models.FinanceFee
+	sqlConn := database.GetDBCon().Where("id IN (?)", ids)
+	if len(otherKeys) >= 1 {
+		sqlConn = sqlConn.Select(otherKeys)
+	}
+	err := sqlConn.Find(&financeFees).Error
+	return financeFees, err
+}
+
+func (f FinanceFee) FindFees(per, page uint, filter map[string]interface{}, selectKeys []string,
+	orders []string) {
+	
+}
+
 func (f FinanceFee) ChangeStatusFees(ids []uint, status string) error {
 	return database.GetDBCon().Where("id IN (?)", ids).Model(&models.FinanceFee{}).Updates(map[string]interface{}{"status": status}).Error
 }
 
 func (f FinanceFee) DeleteFees(ids []uint) error {
-	return database.GetDBCon().Where("id IN (?) and status IN (?)", ids, []string{models.FinanceFeeStatusInit, models.FinanceFeeStatusDismiss}).Delete(models.FinanceFee{}).Error
+	return database.GetDBCon().Where("id IN (?) and status IN (?)", ids, []string{
+		models.FinanceFeeStatusInit,
+		models.FinanceFeeStatusDismiss,
+		models.FinanceFeeStatusVerify,
+	}).Delete(models.FinanceFee{}).Error
 }
 
 func (f FinanceFee) BulkInsertOrUpdate(financeFees []models.FinanceFee) ([]models.FinanceFee, error) {

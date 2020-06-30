@@ -4,6 +4,7 @@ import (
 	"errors"
 	"reflect"
 	"strconv"
+	"time"
 	"youtuerp/models"
 	"youtuerp/redis"
 	"youtuerp/repositories"
@@ -18,7 +19,7 @@ type IFinanceBase interface {
 	//获取费用种类的redis数据
 	FindFeeTypeRedis() []map[string]string
 	//根据系统设置的按月汇率或者按实时汇率查询对应的汇率信息
-	GetAllFeeRate(companyId uint) ([]models.FinanceRate, error)
+	GetAllFeeRate(companyId uint, otherFilter ...map[string]interface{}) ([]models.FinanceRate, error)
 }
 
 type FinanceBase struct {
@@ -26,11 +27,22 @@ type FinanceBase struct {
 	repo repositories.IFinanceBase
 }
 
-func (f FinanceBase) GetAllFeeRate(companyId uint) ([]models.FinanceRate, error) {
+func (f FinanceBase) GetAllFeeRate(companyId uint, filterOther ...map[string]interface{}) ([]models.FinanceRate, error) {
 	rateSetting := redis.SystemRateSetting()
-	return f.repo.GetAllFeeRate(rateSetting, map[string]interface{}{"company_id": companyId})
+	//按照实时的汇率进行计算
+	if rateSetting == models.SettingFeeRateNow {
+		return f.repo.GetAllFeeRate(map[string]interface{}{"start_month": 0, "end_month": 0, "company_id": companyId})
+	}
+	if len(filterOther) == 0 {
+		filterOther = append(filterOther, map[string]interface{}{
+			"year":        time.Now().Year(),
+			"start_month": int(time.Now().Month()),
+			"end_month":   int(time.Now().Month()) + 1,
+		})
+	}
+	filterOther = append(filterOther, map[string]interface{}{"company_id": companyId})
+	return f.repo.GetAllFeeRate(filterOther...)
 }
-
 
 func (f FinanceBase) FindFeeTypeRedis() []map[string]string {
 	red := redis.NewRedis()

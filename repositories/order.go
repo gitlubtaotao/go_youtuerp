@@ -11,6 +11,8 @@ import (
 )
 
 type IOrderMaster interface {
+	//通过ids查询订单
+	FindMasterByIds(ids []uint, otherFilter ...string) ([]models.ResultOrderMaster, error)
 	//根据ids删除货物信息
 	DeleteCargoInfo(ids []int, formerType string) error
 	//更新海运货物信息
@@ -42,6 +44,24 @@ type IOrderMaster interface {
 type OrderMasterRepository struct {
 	BaseRepository
 	mu sync.Mutex
+}
+
+func (o OrderMasterRepository) FindMasterByIds(ids []uint, otherKeys ...string) ([]models.ResultOrderMaster, error) {
+	var orderMasters []models.ResultOrderMaster
+	sqlConn := database.GetDBCon().Model(&models.OrderMaster{}).Where("order_masters.id IN (?)", ids).Scopes(o.joinExtendInfo)
+	if len(otherKeys) >= 0 {
+		sqlConn = sqlConn.Select(otherKeys)
+	}
+	rows, err := sqlConn.Rows()
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var data models.ResultOrderMaster
+		_ = sqlConn.ScanRows(rows, &data)
+		orderMasters = append(orderMasters, data)
+	}
+	return orderMasters, err
 }
 
 func (o OrderMasterRepository) DeleteCargoInfo(ids []int, formerType string) error {
@@ -125,7 +145,6 @@ func (o OrderMasterRepository) FindMaster(per, page uint, filter map[string]inte
 		}
 	}
 	sqlConn = o.crud.Where(sqlConn, filter, selectKeys, o.Paginate(per, page), o.OrderBy(orders)).Preload("Roles")
-	_ = sqlConn.Error
 	rows, err = sqlConn.Rows()
 	if err != nil {
 		return
@@ -136,6 +155,11 @@ func (o OrderMasterRepository) FindMaster(per, page uint, filter map[string]inte
 		masters = append(masters, data)
 	}
 	return
+}
+
+//
+func (o OrderMasterRepository) joinExtendInfo(db *gorm.DB) *gorm.DB {
+	return db.Joins("inner join order_extend_infos on order_extend_infos.order_master_id = order_masters.id")
 }
 
 func (o OrderMasterRepository) UpdateMaster(id uint, order models.OrderMaster) error {
@@ -185,7 +209,7 @@ func (o OrderMasterRepository) createSeaBooking(orderId uint, attr map[string]in
 		err           error
 	)
 	if item, ok := attr["sea_cap_lists"]; ok {
-		if value,ok := item.([]models.SeaCapList);ok {
+		if value, ok := item.([]models.SeaCapList); ok {
 			for _, v := range value {
 				capList = append(capList, models.SeaCapList{
 					OrderMasterId: v.OrderMasterId,
@@ -244,7 +268,6 @@ func (o OrderMasterRepository) updateFormerSeaBooking(data models.RenderFormerDa
 	sqlConn := database.GetDBCon()
 	var record models.FormerSeaBook
 	book := data.FormerSeaBook
-	golog.Infof("sea cap list is %v", book.SeaCapLists)
 	sqlConn = sqlConn.First(&record, "id = ? ", book.ID)
 	return sqlConn.Transaction(func(tx *gorm.DB) error {
 		if err := sqlConn.Set("gorm:association_autoupdate", false).Set("gorm:association_autocreate", false).Update(tools.StructToChange(book)).Error; err != nil {

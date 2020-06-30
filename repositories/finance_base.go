@@ -2,16 +2,14 @@ package repositories
 
 import (
 	"database/sql"
-	"github.com/kataras/golog"
 	"reflect"
-	"time"
 	"youtuerp/database"
 	"youtuerp/models"
 )
 
 type IFinanceBase interface {
 	//根据系统设置的按月汇率或者按实时汇率查询对应的汇率信息
-	GetAllFeeRate(rateSetting string, attr map[string]interface{}) (feeRate []models.FinanceRate, err error)
+	GetAllFeeRate(otherFilter ...map[string]interface{}) (feeRate []models.FinanceRate, err error)
 	Update(id uint, record interface{}) error
 	Create(record interface{}) (interface{}, error)
 	Delete(id uint, model interface{}) error
@@ -24,19 +22,15 @@ type FinanceBase struct {
 	BaseRepository
 }
 
-func (f FinanceBase) GetAllFeeRate(rateSetting string, attr map[string]interface{}) (feeRate []models.FinanceRate, err error) {
+func (f FinanceBase) GetAllFeeRate(filterOther ...map[string]interface{}) (feeRate []models.FinanceRate, err error) {
 	sqlCon := database.GetDBCon().Model(&models.FinanceRate{})
 	var rows *sql.Rows
-	if rateSetting == models.SettingFeeRateNow {
-		attr["start_month"] = 0
-		attr["end_month"] = 0
-	} else if rateSetting == models.SettingFeeRateMonth {
-		attr["year"] = time.Now().Year()
-		attr["start_month"] = int(time.Now().Month())
-		attr["end_month"] = int(time.Now().Month()) + 1
+	if len(filterOther) >= 1 {
+		for _, filter := range filterOther {
+			sqlCon = sqlCon.Where(filter)
+		}
 	}
-	golog.Infof("rate setting is %v current month %v", rateSetting, int(time.Now().Month()))
-	rows, err = sqlCon.Where(attr).Order("id desc").Group("finance_currency_id").Select("finance_currency_id,rate").Rows()
+	rows, err = sqlCon.Order("id desc").Group("finance_currency_id").Select("finance_currency_id,rate").Rows()
 	if err != nil {
 		return feeRate, err
 	}

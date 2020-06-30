@@ -21,7 +21,6 @@ type OrderMaster struct {
 	ReceivableStatus string          `gorm:"size:16;index:receive_received_status;default:unfinished" sql:"index" json:"receivable_status"`
 	ReceivedStatus   string          `gorm:"size:16;index:receive_received_status;default:unfinished" json:"received_status"`
 	Remarks          string          `gorm:"size:522" json:"remarks"`
-	SupplyAgentId    uint            `sql:"index" json:"supply_agent_id"`
 	Roles            []Role          `gorm:"polymorphic:Source;" json:"roles"`
 	SeaCargoInfos    []SeaCargoInfo  `gorm:"polymorphic:Source;association_autocreate:false;association_autoupdate:false" json:"sea_cargo_infos"`
 	OrderExtendInfo  OrderExtendInfo `gorm:"foreignkey:order_master_id;association_foreignkey:id" json:"order_extend_info"`
@@ -51,6 +50,7 @@ type OrderExtendInfo struct {
 	CourierCodeId uint       `sql:"index" json:"courier_code_id"`
 	CourierNo     string     `gorm:"size:16;index:courier_no" json:"courier_no"`
 	ShipperId     uint       `json:"shipper_id"`
+	SupplyAgentId uint       `sql:"index" json:"supply_agent_id"`
 }
 
 type ResultOrderMaster struct {

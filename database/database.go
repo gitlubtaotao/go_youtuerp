@@ -44,6 +44,7 @@ func (d *DataBase) InitDataBase() error {
 		return err
 	}
 	dataEngine.DB().SetMaxOpenConns(1200)
+	dataEngine.DB().SetMaxIdleConns(100)
 	dataEngine.LogMode(true)
 	dataEngine.SetLogger(log.New(os.Stdout, "\r\n", 0))
 	if err = d.Migration(); err != nil {

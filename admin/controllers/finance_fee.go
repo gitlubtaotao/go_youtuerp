@@ -15,6 +15,12 @@ type FinanceFee struct {
 	service services.IFinanceFee
 }
 
+//复制费用
+type CopyFeeReceive struct {
+	FeeIds         []uint `json:"fee_ids"`
+	OrderMasterIds []uint `json:"order_master_ids"`
+}
+
 func (f *FinanceFee) Create(ctx iris.Context) {
 	var (
 		financeFees []models.FinanceFee
@@ -120,6 +126,25 @@ func (f *FinanceFee) ChangeStatus(ctx iris.Context) {
 	if err = f.service.ChangeStatusFees(ids, status); err != nil {
 		f.Render400(ctx, err, err.Error())
 	} else {
+		f.RenderSuccessJson(ctx, iris.Map{})
+	}
+}
+
+//根据选择的订单，将费用复制不同的订单中
+func (f *FinanceFee) CopyFee(ctx iris.Context) {
+	var (
+		receiveIds CopyFeeReceive
+		err        error
+	)
+	if err = ctx.ReadJSON(&receiveIds); err != nil {
+		f.Render400(ctx, err, "")
+		return
+	}
+	currentUser, _ := f.CurrentUser(ctx)
+	err  = f.service.CopyFee(receiveIds.OrderMasterIds, receiveIds.FeeIds, currentUser.UserCompanyId)
+	if err != nil{
+		f.Render500(ctx,err,"")
+	}else{
 		f.RenderSuccessJson(ctx, iris.Map{})
 	}
 }

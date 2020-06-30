@@ -11,7 +11,9 @@ import (
 )
 
 type IOrderMasterService interface {
-	DeleteCargoInfo(ids []int,formerType string) error
+	//通过订单Ids查询订单
+	FindMasterByIds(ids []uint, otherFilter ...string) ([]models.ResultOrderMaster, error)
+	DeleteCargoInfo(ids []int, formerType string) error
 	//保存操作盘中的数据
 	UpdateOperationInfo(id uint, formerType string, readData models.RenderFormerData) error
 	//保存具体的获取详情
@@ -51,8 +53,12 @@ type OrderMasterService struct {
 	BaseService
 }
 
+func (o OrderMasterService) FindMasterByIds(ids []uint, otherFilter ...string) ([]models.ResultOrderMaster, error) {
+	return o.repo.FindMasterByIds(ids, otherFilter...)
+}
+
 func (o OrderMasterService) DeleteCargoInfo(ids []int, formerType string) error {
-	return o.repo.DeleteCargoInfo(ids,formerType)
+	return o.repo.DeleteCargoInfo(ids, formerType)
 }
 
 func (o OrderMasterService) UpdateCargoInfo(id uint, formerType string, readData models.RenderFormerData) (data interface{}, err error) {
@@ -167,6 +173,10 @@ func (o OrderMasterService) CreateMaster(order models.OrderMaster, language stri
 		t := time.Now()
 		order.CreatedAt = &t
 	}
+	order.PaidStatus = models.FinanceStatusUnfinished
+	order.PayableStatus = models.FinanceStatusUnfinished
+	order.ReceivableStatus = models.FinanceStatusUnfinished
+	order.ReceivedStatus = models.FinanceStatusUnfinished
 	return o.repo.CreateMaster(order)
 }
 

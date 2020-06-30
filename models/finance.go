@@ -83,3 +83,6 @@ const (
 	FinanceFeeStatusPartApplied = "part_applied"
 	FinanceFeeStatusApplied     = "applied"
 )
+const (
+	FinanceFeeInvoiceInit = "init"
+)
