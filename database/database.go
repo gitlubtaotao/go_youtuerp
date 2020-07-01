@@ -75,5 +75,6 @@ func (d *DataBase) Migration() error {
 		&models.FormerSeaSoNo{}, &models.SeaCargoInfo{}, &models.SeaCapList{},
 	)
 	db.AutoMigrate(&models.FinanceFee{})
+	db.AutoMigrate(&models.Attachment{})
 	return nil
 }

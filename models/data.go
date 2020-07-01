@@ -61,6 +61,21 @@ type BaseWarehouse struct {
 	Region         string     `gorm:"size:256" json:"region"`
 }
 
+//附件管理
+type Attachment struct {
+	ID         uint      `gorm:"primary_key"json:"id"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+	Name       string    `gorm:"size:128" comment:"文件名称"  json:"name"`
+	Size       int64     `comment:"文件大小" json:"size"`
+	TypeOf     string    `gorm:"size:16" comment:"文件类型" json:"type_of"`
+	Key        string    `gorm:"size:128"`
+	Url        string    `gorm:"-" json:"url"`
+	Label      string    `gorm:"size:16" comment:"文件标志"  json:"label"`
+	SourceID   uint      `gorm:"index:idx_source_id_type"`
+	SourceType string    `gorm:"size:64;index:idx_source_id_type"`
+}
+
 const (
 	BaseTypeSea = iota + 1
 	BaseTypeAir

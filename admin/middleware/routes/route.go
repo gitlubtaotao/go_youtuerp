@@ -23,6 +23,7 @@ func (r *Route) DefaultRegister() {
 	NewRouteFinance(r).Index()
 	NewRouteCrm(r).Index()
 	NewRouteOa(r).Index()
+	NewAttachmentRoute(r).Index()
 }
 
 func (r *Route) SelectRegister() {
