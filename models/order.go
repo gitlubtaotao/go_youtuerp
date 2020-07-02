@@ -97,10 +97,13 @@ type ResultOrderMaster struct {
 }
 
 const (
-	OrderStatusPro      = "processing"
-	OrderStatusFinished = "finished"
-	OrderStatusLocked   = "locked"
-	OrderStatusCancel   = "cancel"
+	OrderStatusInit      = "init"
+	OrderStatusAudit     = "unaudited"
+	OrderStatusTakeOrder = "unprocessed"
+	OrderStatusPro       = "processing"
+	OrderStatusFinished  = "finished"
+	OrderStatusLocked    = "locked"
+	OrderStatusCancel    = "cancel"
 )
 const (
 	OrderMasterTransportType1 = iota + 1

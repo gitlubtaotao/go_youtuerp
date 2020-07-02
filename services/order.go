@@ -6,6 +6,7 @@ import (
 	"time"
 	"youtuerp/conf"
 	"youtuerp/models"
+	"youtuerp/redis"
 	"youtuerp/repositories"
 	"youtuerp/tools"
 )
@@ -46,6 +47,8 @@ var orderStatusArray = []interface{}{
 	models.OrderStatusPro,
 	models.OrderStatusFinished,
 	models.OrderStatusLocked,
+	models.OrderStatusAudit,
+	models.OrderStatusTakeOrder,
 }
 
 type OrderMasterService struct {
@@ -164,7 +167,11 @@ func (o OrderMasterService) FindMaster(per, page uint, filter map[string]interfa
 }
 
 func (o OrderMasterService) CreateMaster(order models.OrderMaster, language string) (models.OrderMaster, error) {
-	order.Status = models.OrderStatusPro
+	if redis.OrderAuditMechanism() == "false" {
+		order.Status = models.OrderStatusPro
+	} else {
+		order.Status = models.OrderStatusAudit
+	}
 	valid := NewValidatorService(order)
 	if message := valid.ResultError(language); message != "" {
 		return models.OrderMaster{}, errors.New(message)

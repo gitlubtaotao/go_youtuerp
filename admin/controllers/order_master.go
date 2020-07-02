@@ -133,7 +133,7 @@ func (o *OrderMaster) ChangeStatus(ctx iris.Context) {
 	}
 	status = ctx.URLParam("status")
 	if err = o.service.ChangeStatus(id, status); err != nil {
-		o.Render400(ctx, err, "")
+		o.Render400(ctx, err, err.Error())
 	} else {
 		o.RenderSuccessJson(ctx, iris.Map{})
 	}
@@ -171,7 +171,7 @@ func (o *OrderMaster) Operation(ctx iris.Context) {
 	go func() {
 		mx.Lock()
 		defer mx.Unlock()
-		order, _ = o.service.FirstMaster(id, "OrderExtendInfo")
+		order, _ = o.service.FirstMaster(id, "OrderExtendInfo","Roles")
 		data, _ = o.service.GetFormerInstruction(order, formerType, models.InstructionMaster)
 		sy.Done()
 	}()

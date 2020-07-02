@@ -176,7 +176,17 @@ func SystemFinanceAudit() string {
 	}
 	return value
 }
-
+func OrderAuditMechanism() string {
+	value, err := GetSystemSetting("base", "order_audit_mechanism")
+	if err != nil {
+		golog.Errorf("system order audit mechanism is err %v", err)
+		return ""
+	}
+	if value == "" {
+		return "false"
+	}
+	return value
+}
 
 func GetSystemSetting(key string, field string) (value string, err error) {
 	red := NewRedis()

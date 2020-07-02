@@ -80,6 +80,7 @@ func (s *SessionController) Show(ctx iris.Context) {
 		"code": http.StatusOK,
 		"data": s.handleUserInfo(currentUser, userMap),
 		"setting": s.getSystemSetting(),
+		
 	})
 	return
 }
@@ -157,6 +158,7 @@ func (s *SessionController) initSession() {
 func (s *SessionController) getSystemSetting() map[string]interface{} {
 	setting := make(map[string]interface{})
 	setting["system_standard_currency"] = redis.SystemFinanceCurrency()
+	setting["order_audit_mechanism"] = redis.OrderAuditMechanism()
 	return setting
 }
 
