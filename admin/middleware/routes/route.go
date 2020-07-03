@@ -19,7 +19,7 @@ func (r *Route) DefaultRegister() {
 	r.OtherRegister()
 	NewRouteSession(r).Index()
 	NewRouteBase(r).Index()
-	NewRouteOrderMaster(r).Index()
+	NewRouteOrder(r).Index()
 	NewRouteFinance(r).Index()
 	NewRouteCrm(r).Index()
 	NewRouteOa(r).Index()

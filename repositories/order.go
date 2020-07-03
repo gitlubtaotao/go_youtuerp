@@ -3,28 +3,18 @@ package repositories
 import (
 	"database/sql"
 	"github.com/jinzhu/gorm"
-	"github.com/kataras/golog"
 	"sync"
 	"youtuerp/database"
 	"youtuerp/models"
-	"youtuerp/tools"
 )
 
 type IOrderMaster interface {
 	//通过ids查询订单
 	FindMasterByIds(ids []uint, otherFilter ...string) ([]models.ResultOrderMaster, error)
-	//根据ids删除货物信息
-	DeleteCargoInfo(ids []int, formerType string) error
-	//更新海运货物信息
-	UpdateSeaCargoInfo(infos []models.SeaCargoInfo) (interface{}, error)
 	//获取表单so的信息
 	GetFormerSoNo(orderId uint, formerType string, attr ...map[string]interface{}) (interface{}, error)
 	//获取订舱单的信息
 	GetFormerBooking(orderId uint, formerType string, attr ...map[string]interface{}) (interface{}, error)
-	//保存表单数据
-	UpdateFormerData(formerType string, data models.RenderFormerData) error
-	//保存订单其他数据信息
-	UpdateExtendInfo(id uint, data models.OrderExtendInfo) error
 	//获取海运委托单
 	GetFormerInstruction(orderMasterId uint, formerType interface{}, attr map[string]interface{}) (models.FormerSeaInstruction, error)
 	//删除订单
@@ -64,12 +54,7 @@ func (o OrderMasterRepository) FindMasterByIds(ids []uint, otherKeys ...string) 
 	return orderMasters, err
 }
 
-func (o OrderMasterRepository) DeleteCargoInfo(ids []int, formerType string) error {
-	if formerType == "sea_cargo_info" {
-		return database.GetDBCon().Where("id IN (?)", ids).Delete(models.SeaCargoInfo{}).Error
-	}
-	return nil
-}
+
 
 func (o OrderMasterRepository) GetFormerSoNo(orderId uint, formerType string, attr ...map[string]interface{}) (interface{}, error) {
 	var data models.FormerSeaSoNo
@@ -88,25 +73,6 @@ func (o OrderMasterRepository) GetFormerBooking(orderId uint, formerType string,
 		return booking, err
 	}
 	return
-}
-
-func (o OrderMasterRepository) UpdateFormerData(formerType string, data models.RenderFormerData) error {
-	var err error
-	switch formerType {
-	case "former_sea_instruction":
-		err = o.updateFormerSeaInstruction(data)
-	case "former_sea_book":
-		err = o.updateFormerSeaBooking(data)
-	case "former_sea_so_no":
-		err = o.updateFormerSoNo(formerType, data)
-	case "sea_cargo_info":
-		_, err = o.UpdateSeaCargoInfo(data.SeaCargoInfo)
-	}
-	return err
-}
-
-func (o OrderMasterRepository) UpdateExtendInfo(id uint, data models.OrderExtendInfo) error {
-	return database.GetDBCon().Model(&models.OrderExtendInfo{ID: id}).Updates(tools.StructToChange(data)).Error
 }
 
 func (o OrderMasterRepository) GetFormerInstruction(orderMasterId uint, formerType interface{}, attr map[string]interface{}) (models.FormerSeaInstruction, error) {
@@ -245,74 +211,7 @@ func (o OrderMasterRepository) createSeaBooking(orderId uint, attr map[string]in
 	})
 	return booking, err
 }
-func (o OrderMasterRepository) updateFormerSeaInstruction(data models.RenderFormerData) error {
-	sqlConn := database.GetDBCon()
-	var record models.FormerSeaInstruction
-	instruction := data.FormerSeaInstruction
-	if err := sqlConn.First(&record, "id = ? ", instruction.ID).Error; err != nil {
-		return err
-	}
-	return sqlConn.Transaction(func(tx *gorm.DB) error {
-		if err := sqlConn.Set("gorm:association_autoupdate", false).Set("gorm:association_autocreate", false).Model(&record).Update(tools.StructToChange(instruction)).Error; err != nil {
-			return err
-		}
-		if len(instruction.SeaCapLists) >= 1 {
-			if err := tx.Model(&record).Association("SeaCapLists").Replace(instruction.SeaCapLists).Error; err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-}
-func (o OrderMasterRepository) updateFormerSeaBooking(data models.RenderFormerData) error {
-	sqlConn := database.GetDBCon()
-	var record models.FormerSeaBook
-	book := data.FormerSeaBook
-	sqlConn = sqlConn.First(&record, "id = ? ", book.ID)
-	return sqlConn.Transaction(func(tx *gorm.DB) error {
-		if err := sqlConn.Set("gorm:association_autoupdate", false).Set("gorm:association_autocreate", false).Update(tools.StructToChange(book)).Error; err != nil {
-			return err
-		}
-		if len(book.SeaCapLists) >= 1 {
-			if err := tx.Association("SeaCapLists").Replace(book.SeaCapLists).Error; err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-}
 
-func (o OrderMasterRepository) updateFormerSoNo(formerType string, data models.RenderFormerData) error {
-	if formerType == "former_sea_so_no" {
-		var soNo = data.FormerSeaSoNo
-		golog.Infof("current time is %v", soNo)
-		return database.GetDBCon().Model(&models.FormerSeaSoNo{ID: soNo.ID}).Update(tools.StructToChange(soNo)).Error
-	}
-	return nil
-}
-
-//更新货物详情
-func (o OrderMasterRepository) UpdateSeaCargoInfo(infos []models.SeaCargoInfo) (interface{}, error) {
-	sqlConn := database.GetDBCon()
-	var data []models.SeaCargoInfo
-	err := sqlConn.Transaction(func(tx *gorm.DB) error {
-		for _, item := range infos {
-			if item.ID != 0 {
-				if err := tx.Model(&models.SeaCargoInfo{ID: item.ID}).Update(tools.StructToChange(item)).Error; err != nil {
-					return err
-				}
-			} else {
-				if err := tx.Create(&item).Error; err != nil {
-					return err
-				}
-				data = append(data, item)
-			}
-		}
-		// 在事务中做一些数据库操作 (这里应该使用 'tx' ，而不是 'db')
-		return nil
-	})
-	return data, err
-}
 
 func NewOrderMasterRepository() IOrderMaster {
 	return OrderMasterRepository{}

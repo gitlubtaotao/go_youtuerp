@@ -12,8 +12,11 @@ import (
 type ISelectService interface {
 	//获取公司信息下拉选择
 	GetCompanySelect(searchName string, scope map[string]interface{}, selectKeys []string)([]map[string]interface{}, error)
+	//获取操作盘下拉选择
 	GetOperationSelect(formerType string) map[string]interface{}
+	//根据不同的table查询数据
 	FindTable(tableName string, name string, scope map[string]interface{}, selectKeys []string) (selectResult []map[string]interface{}, err error)
+	
 }
 
 type SelectService struct {
@@ -37,7 +40,7 @@ func (s SelectService) GetCompanySelect(searchName string, scope map[string]inte
 
 func (s SelectService) GetOperationSelect(formerType string) map[string]interface{} {
 	returnAttr := make(map[string]interface{})
-	crmOptions, _ := s.FindTable("user_companies", "", map[string]interface{}{"company_type": []int{1, 3}, "status": models.CompanyStatusApproved}, []string{"id", "name_cn"})
+	crmOptions, _ := s.FindTable("user_companies", "", map[string]interface{}{"company_type": []int{1, 3}, "status": models.CompanyStatusApproved}, []string{"id", "name_cn","name_nick","name_en"})
 	returnAttr["crmOptions"] = crmOptions
 	stringArray := []string{models.CodePayType, models.CodeCapType, models.CodeInstructionType,
 		models.CodeCustomType, models.CodeBillProduceType, models.CodeTransshipment,

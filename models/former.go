@@ -52,49 +52,49 @@ type FormerSeaInstruction struct {
 }
 
 type FormerSeaBook struct {
-	ID                 uint         `gorm:"primary_key"json:"id"`
-	CreatedAt          time.Time    `json:"created_at"`
-	OrderMasterId      uint         `sql:"index" json:"order_master_id"`
-	UpdatedAt          time.Time    `json:"updated_at"`
-	InstructionId      uint         `sql:"index" json:"company_instruction_id"`
-	ShipperId          uint         `json:"shipper_id"`
-	ShipperContent     string       `gorm:"size:1024" json:"shipper_content"`
-	ConsigneeId        uint         `json:"consignee_id"`
-	ConsigneeContent   string       `gorm:"size:1024" json:"consignee_content"`
-	NotifyPartyId      uint         `json:"notify_party_id"`
-	NotifyPartyContent string       `gorm:"size:1024" json:"notify_party_content"`
-	PodAgentId         uint         `json:"pod_agent_id"`
-	PodAgentContent    string       `gorm:"size:1024" json:"pod_agent_content"`
-	MblNo              string       `gorm:"size:16" json:"mbl_no"`
-	OceanChangePayId   uint         `json:"ocean_change_pay_id"`
-	OtherChangePayId   uint         `json:"other_change_pay_id"`
-	VerifyDate         *time.Time   `json:"verify_date"`
-	UserVerifyId       uint         `json:"user_verify_id"`
-	PayPolId           uint         `json:"pay_pol_id"`
-	TlxNo              string       `gorm:"size:16" json:"tlx_no"`
-	MblNoDate          *time.Time   `json:"mbl_no_date"`
-	PlaceOfIssue       string       `gorm:"size:64" json:"place_of_issue"`
-	DateOfIssue        *time.Time   `json:"date_of_issue"`
-	CargoReceivedDate  *time.Time   `json:"cargo_received_date"`
-	Marks              string       `gorm:"size:2048" json:"marks"`
-	DescriptionOfGood  string       `gorm:"size:2048" json:"description_of_good"`
-	Size               string       `gorm:"size:522" json:"size"`
-	Number             int          `json:"number"`
-	PackageTypeId      uint         `json:"package_type_id"`
-	GrossWeight        string       `gorm:"size:64" json:"gross_weight"`
-	Volume             string       `gorm:"size:64" comment:"体积" json:"volume"`
-	PlaceOfDelivery    string       `gorm:"size:1024" json:"place_of_delivery"`
-	PlaceOfReceipt     string       `gorm:"size:1024" json:"place_of_receipt"`
-	ShapingOnBoardDate *time.Time   `json:"shaping_on_board_date"`
-	MblRemarks         string       `gorm:"size:1024" json:"mbl_remarks"`
-	SupplyAgentId      uint         `sql:"index" json:"supply_agent_id"`
-	MiscBillId         uint         `json:"misc_bill_id"`
-	TradeTermsId       uint         `comment:"贸易条款" json:"trade_terms_id"`
-	ShipmentItemId     uint         `comment:"装运条款" json:"shipment_item_id"`
-	Remarks            string       `gorm:"size:1024" json:"remarks"`
-	ChargeDescription  string       `gorm:"size:1024" json:"charge_description"`
-	SeaCapLists        []SeaCapList `gorm:"polymorphic:Source;" json:"sea_cap_lists"`
-	SeaCargoInfos       []SeaCargoInfo `gorm:"polymorphic:Source;" json:"sea_cargo_infos"`
+	ID                 uint           `gorm:"primary_key"json:"id"`
+	CreatedAt          time.Time      `json:"created_at"`
+	OrderMasterId      uint           `sql:"index" json:"order_master_id"`
+	UpdatedAt          time.Time      `json:"updated_at"`
+	InstructionId      uint           `sql:"index" json:"company_instruction_id"`
+	ShipperId          uint           `json:"shipper_id"`
+	ShipperContent     string         `gorm:"size:1024" json:"shipper_content"`
+	ConsigneeId        uint           `json:"consignee_id"`
+	ConsigneeContent   string         `gorm:"size:1024" json:"consignee_content"`
+	NotifyPartyId      uint           `json:"notify_party_id"`
+	NotifyPartyContent string         `gorm:"size:1024" json:"notify_party_content"`
+	PodAgentId         uint           `json:"pod_agent_id"`
+	PodAgentContent    string         `gorm:"size:1024" json:"pod_agent_content"`
+	MblNo              string         `gorm:"size:16" json:"mbl_no"`
+	OceanChangePayId   uint           `json:"ocean_change_pay_id"`
+	OtherChangePayId   uint           `json:"other_change_pay_id"`
+	VerifyDate         *time.Time     `json:"verify_date"`
+	UserVerifyId       uint           `json:"user_verify_id"`
+	PayPolId           uint           `json:"pay_pol_id"`
+	TlxNo              string         `gorm:"size:16" json:"tlx_no"`
+	MblNoDate          *time.Time     `json:"mbl_no_date"`
+	PlaceOfIssue       string         `gorm:"size:64" json:"place_of_issue"`
+	DateOfIssue        *time.Time     `json:"date_of_issue"`
+	CargoReceivedDate  *time.Time     `json:"cargo_received_date"`
+	Marks              string         `gorm:"size:2048" json:"marks"`
+	DescriptionOfGood  string         `gorm:"size:2048" json:"description_of_good"`
+	Size               string         `gorm:"size:522" json:"size"`
+	Number             int            `json:"number"`
+	PackageTypeId      uint           `json:"package_type_id"`
+	GrossWeight        string         `gorm:"size:64" json:"gross_weight"`
+	Volume             string         `gorm:"size:64" comment:"体积" json:"volume"`
+	PlaceOfDelivery    string         `gorm:"size:1024" json:"place_of_delivery"`
+	PlaceOfReceipt     string         `gorm:"size:1024" json:"place_of_receipt"`
+	ShapingOnBoardDate *time.Time     `json:"shaping_on_board_date"`
+	MblRemarks         string         `gorm:"size:1024" json:"mbl_remarks"`
+	SupplyAgentId      uint           `sql:"index" json:"supply_agent_id"`
+	MiscBillId         uint           `json:"misc_bill_id"`
+	TradeTermsId       uint           `comment:"贸易条款" json:"trade_terms_id"`
+	ShipmentItemId     uint           `comment:"装运条款" json:"shipment_item_id"`
+	Remarks            string         `gorm:"size:1024" json:"remarks"`
+	ChargeDescription  string         `gorm:"size:1024" json:"charge_description"`
+	SeaCapLists        []SeaCapList   `gorm:"polymorphic:Source;" json:"sea_cap_lists"`
+	SeaCargoInfos      []SeaCargoInfo `gorm:"polymorphic:Source;" json:"sea_cargo_infos"`
 }
 
 type FormerSeaSoNo struct {
@@ -108,6 +108,59 @@ type FormerSeaSoNo struct {
 	VgmSubmissionDeadline *time.Time `json:"vgm_submission_deadline"`
 	SiCutOff              *time.Time `json:"si_cut_off"`
 }
+
+//其他服务类型
+type FormerOtherService struct {
+	ID                     uint      `gorm:"primary_key"json:"id"`
+	CreatedAt              time.Time `json:"created_at"`
+	InstructionId          uint      `gorm:"index:idx_instruction_id" json:"instruction_id"`
+	FumigationCompanyId    uint      `json:"fumigation_company_id" comment:"熏蒸公司" `
+	TraderCompanyId        uint      `json:"trader_company_id"`
+	CommodityInspectionId  uint      `json:"commodity_inspection_id"`
+	MagneticInspectionId   uint      `json:"magnetic_inspection_id"`
+	AccreditationCompanyId uint      `json:"accreditation_company_id"`
+	InsuranceCompanyId     uint      `json:"insurance_company_id"`
+	Remarks                string    `gorm:"size:512" json:"remarks"`
+	OrderMasterId          uint      `gorm:"index:idx_order_master_id" json:"order_master_id"`
+}
+
+type FormerTrailerOrder struct {
+	ID                  uint         `gorm:"primary_key"json:"id"`
+	CreatedAt           time.Time    `json:"created_at"`
+	OrderMasterId       uint         `gorm:"index:idx_order_master_id" json:"order_master_id"`
+	InstructionId       uint         `gorm:"index:idx_instruction_id" json:"instruction_id"`
+	TrailerCompanyId    uint         `json:"trailer_company_id"`
+	TrailerContactName  string       `gorm:"size:32" json:"trailer_contact_name"`
+	TrailerContactPhone string       `gorm:"size:16" json:"trailer_contact_phone"`
+	TrailerNumber       string       `gorm:"size:16" json:"trailer_number" comment:"车牌号码"`
+	OfWay               uint         `json:"of_way"`
+	SoNo                string       `gorm:"size:16" json:"so_no"`
+	LoadingDate         *time.Time   `json:"loading_date"`
+	PolId               uint         `json:"pol_id"`
+	IsDrivingLicense    bool         `json:"is_driving_license" comment:"转关带司机本"`
+	IsDeclare           bool         `json:"is_declare" comment:"报关单证随车"`
+	IsWeighing          bool         `json:"is_weighing" comment:"需要过磅"`
+	IsLockers           bool         `json:"is_lockers"`
+	Marks               string       `gorm:"size:2048" json:"marks"`
+	DescriptionOfGood   string       `gorm:"size:2048" json:"description_of_good"`
+	Size                string       `gorm:"size:522" json:"size"`
+	Number              int          `json:"number"`
+	PackageTypeId       uint         `json:"package_type_id"`
+	GrossWeight         string       `gorm:"size:64" json:"gross_weight"`
+	Volume              string       `gorm:"size:64" comment:"体积" json:"volume"`
+	Remarks             string       `gorm:"size:512" json:"remarks"`
+	SeaCapLists         []SeaCapList `gorm:"polymorphic:Source;" json:"sea_cap_lists"`
+	TrailerCabinetNumbers []TrailerCabinetNumber `gorm:"foreignkey:FormerTrailerOrderId" json:"trailer_cabinet_numbers"`
+}
+
+type TrailerCabinetNumber struct {
+	ID                   uint      `gorm:"primary_key"json:"id"`
+	CreatedAt            time.Time `json:"created_at"`
+	FormerTrailerOrderId uint      `gorm:"index:idx_former_trailer_order_id" json:"former_trailer_order_id"`
+	CabinetNumber        string    `gorm:"size:32" json:"cabinet_number"`
+	SealNumber           string    `gorm:"size:32" json:"seal_number"`
+}
+
 type SeaCapList struct {
 	ID            uint      `gorm:"primary_key"json:"id"`
 	CreatedAt     time.Time `json:"created_at"`
@@ -162,4 +215,7 @@ func (SeaCargoInfo) TableName() string {
 }
 func (SeaCapList) TableName() string {
 	return "sea_cap_lists"
+}
+func (FormerTrailerOrder) TableName() string  {
+	return "former_trailer_orders"
 }

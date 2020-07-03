@@ -171,7 +171,7 @@ func (o *OrderMaster) Operation(ctx iris.Context) {
 	go func() {
 		mx.Lock()
 		defer mx.Unlock()
-		order, _ = o.service.FirstMaster(id, "OrderExtendInfo","Roles")
+		order, _ = o.service.FirstMaster(id, "OrderExtendInfo", "Roles")
 		data, _ = o.service.GetFormerInstruction(order, formerType, models.InstructionMaster)
 		sy.Done()
 	}()
@@ -205,80 +205,29 @@ func (o *OrderMaster) GetFormerData(ctx iris.Context) {
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "formerData": formerData})
 }
 
-//TODO-Tao 需要解决只更新修改的内容，未修改的内容无序进行更新
-// 现有的解决方案是所有的字段进行更新
-func (o *OrderMaster) UpdateFormerData(ctx iris.Context) {
-	var (
-		formerType string
-		id         uint
-		err        error
-		params     models.RenderFormerData
-	)
-	_ = ctx.ReadJSON(&params)
-	formerType = ctx.URLParam("former_type")
-	id, err = ctx.Params().GetUint("id")
-	if err != nil {
-		o.Render400(ctx, err, err.Error())
-		return
-	}
-	go o.service.UpdateOperationInfo(id, formerType, params)
-	o.RenderSuccessJson(ctx, iris.Map{})
-}
 
-func (o *OrderMaster) UpdateCargoInfo(ctx iris.Context) {
-	var (
-		id         uint
-		err        error
-		params     models.RenderFormerData
-		formerType string
-	)
-	_ = ctx.ReadJSON(&params)
-	formerType = ctx.URLParam("former_type")
-	id, err = ctx.Params().GetUint("id")
-	if err != nil {
-		o.Render400(ctx, err, err.Error())
-		return
-	}
-	data, _ := o.service.UpdateCargoInfo(id, formerType, params)
-	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": data})
-}
 
-func (o *OrderMaster) DeleteCargoInfo(ctx iris.Context) {
-	formerType := ctx.URLParam("former_type")
-	var deleteIds map[string][]int
-	if err := ctx.ReadJSON(&deleteIds); err != nil {
-		o.Render400(ctx, err, err.Error())
-		return
-	}
-	err := o.service.DeleteCargoInfo(deleteIds["ids"], formerType)
-	if err != nil {
-		o.Render500(ctx, err, "")
-	} else {
-		o.RenderSuccessJson(ctx, iris.Map{})
-	}
-}
+
+
+
 
 //获取SoNo 下拉信息
 func (o *OrderMaster) GetSoNoOptions(ctx iris.Context) {
 	var (
-		id   uint
-		err  error
-		data interface{}
+		id     uint
+		err    error
+		result []string
 	)
 	if id, err = ctx.Params().GetUint("id"); err != nil {
 		o.Render400(ctx, err, err.Error())
 		return
 	}
-	data, err = o.service.GetFormerData(id, "former_sea_so_no", "")
+	server := services.NewFormerServer()
+	result, err = server.GetFormerSoNoOptions(id, "1")
 	if err != nil {
-		o.Render400(ctx, err, err.Error())
-		return
-	}
-	formerSoNo := data.(models.FormerSeaSoNo)
-	if formerSoNo.SoNo == "" {
-		o.RenderSuccessJson(ctx, iris.Map{"so_no": []string{}})
+		o.Render500(ctx, err, "")
 	} else {
-		o.RenderSuccessJson(ctx, iris.Map{"so_no": strings.Split(formerSoNo.SoNo, ",")})
+		o.RenderSuccessJson(ctx, iris.Map{"so_no": result})
 	}
 }
 

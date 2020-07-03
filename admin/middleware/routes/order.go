@@ -5,11 +5,16 @@ import (
 	"youtuerp/admin/controllers"
 )
 
-type OrderMaster struct {
+type Order struct {
 	Route *Route
 }
 
-func (o *OrderMaster) Index() {
+func (o *Order) Index() {
+	o.order()
+	o.formerServer()
+}
+
+func (o *Order) order() {
 	r := o.Route
 	j := r.jwtAccess()
 	r.app.PartyFunc("/order/masters", func(p iris.Party) {
@@ -24,13 +29,24 @@ func (o *OrderMaster) Index() {
 		p.Delete("/{id:uint}/delete", j.Serve, record.Delete)
 		p.Get("/{id:uint}/operation", j.Serve, record.Operation)
 		p.Get("/{id:uint}/getFormerData", j.Serve, record.GetFormerData)
-		p.Post("/{id:uint}/UpdateFormerData", j.Serve, record.UpdateFormerData)
 		p.Get("/{id:uint}/GetSoNoOptions", j.Serve, record.GetSoNoOptions)
-		p.Post("/{id:uint}/UpdateCargoInfo",j.Serve,record.UpdateCargoInfo)
-		p.Post("/DeleteCargoInfo",j.Serve,record.DeleteCargoInfo)
+	})
+}
+func (o *Order) formerServer() {
+	r := o.Route
+	j := r.jwtAccess()
+	r.app.PartyFunc("/order/masters", func(p iris.Party) {
+		record := controllers.FormerServer{}
+		p.Use(record.Before)
+		p.Get("/{id:uint}/getOtherServer",j.Serve,record.GetOtherServer)
+		p.Post("/{id:uint}/UpdateFormerData", j.Serve, record.UpdateFormerData)
+		p.Post("/{id:uint}/UpdateCargoInfo", j.Serve, record.UpdateCargoInfo)
+		p.Post("/DeleteCargoInfo", j.Serve, record.DeleteCargoInfo)
+		p.Post("/SaveOtherServer",j.Serve,record.SaveOtherServer)
+		p.Delete("/{id:uint}/DeleteOtherServer",j.Serve,record.DeleteOtherServer)
 	})
 }
 
-func NewRouteOrderMaster(route *Route) *OrderMaster {
-	return &OrderMaster{route}
+func NewRouteOrder(route *Route) *Order {
+	return &Order{route}
 }

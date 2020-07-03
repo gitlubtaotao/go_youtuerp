@@ -14,11 +14,8 @@ import (
 type IOrderMasterService interface {
 	//通过订单Ids查询订单
 	FindMasterByIds(ids []uint, otherFilter ...string) ([]models.ResultOrderMaster, error)
-	DeleteCargoInfo(ids []int, formerType string) error
-	//保存操作盘中的数据
-	UpdateOperationInfo(id uint, formerType string, readData models.RenderFormerData) error
-	//保存具体的获取详情
-	UpdateCargoInfo(id uint, formerType string, readData models.RenderFormerData) (data interface{}, err error)
+	
+	
 	//获取表单中对应的数据
 	GetFormerData(id uint, formerType string, formerItemType string) (interface{}, error)
 	//获取委托单的数据
@@ -60,28 +57,8 @@ func (o OrderMasterService) FindMasterByIds(ids []uint, otherFilter ...string) (
 	return o.repo.FindMasterByIds(ids, otherFilter...)
 }
 
-func (o OrderMasterService) DeleteCargoInfo(ids []int, formerType string) error {
-	return o.repo.DeleteCargoInfo(ids, formerType)
-}
 
-func (o OrderMasterService) UpdateCargoInfo(id uint, formerType string, readData models.RenderFormerData) (data interface{}, err error) {
-	if formerType == "sea_cargo_info" {
-		return o.repo.UpdateSeaCargoInfo(readData.SeaCargoInfo)
-	}
-	return nil, nil
-}
 
-func (o OrderMasterService) UpdateOperationInfo(id uint, formerType string, readData models.RenderFormerData) error {
-	extendInfo := readData.OrderExtendInfo
-	var err error
-	if extendInfo.ID != 0 {
-		err = o.repo.UpdateExtendInfo(extendInfo.ID, extendInfo)
-	}
-	if err != nil {
-		return err
-	}
-	return o.repo.UpdateFormerData(formerType, readData)
-}
 
 func (o OrderMasterService) GetFormerData(id uint, formerType string, formerItemType string) (interface{}, error) {
 	var (
