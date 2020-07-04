@@ -125,32 +125,35 @@ type FormerOtherService struct {
 }
 
 type FormerTrailerOrder struct {
-	ID                  uint         `gorm:"primary_key"json:"id"`
-	CreatedAt           time.Time    `json:"created_at"`
-	OrderMasterId       uint         `gorm:"index:idx_order_master_id" json:"order_master_id"`
-	InstructionId       uint         `gorm:"index:idx_instruction_id" json:"instruction_id"`
-	TrailerCompanyId    uint         `json:"trailer_company_id"`
-	TrailerContactName  string       `gorm:"size:32" json:"trailer_contact_name"`
-	TrailerContactPhone string       `gorm:"size:16" json:"trailer_contact_phone"`
-	TrailerNumber       string       `gorm:"size:16" json:"trailer_number" comment:"车牌号码"`
-	OfWay               uint         `json:"of_way"`
-	SoNo                string       `gorm:"size:16" json:"so_no"`
-	LoadingDate         *time.Time   `json:"loading_date"`
-	PolId               uint         `json:"pol_id"`
-	IsDrivingLicense    bool         `json:"is_driving_license" comment:"转关带司机本"`
-	IsDeclare           bool         `json:"is_declare" comment:"报关单证随车"`
-	IsWeighing          bool         `json:"is_weighing" comment:"需要过磅"`
-	IsLockers           bool         `json:"is_lockers"`
-	Marks               string       `gorm:"size:2048" json:"marks"`
-	DescriptionOfGood   string       `gorm:"size:2048" json:"description_of_good"`
-	Size                string       `gorm:"size:522" json:"size"`
-	Number              int          `json:"number"`
-	PackageTypeId       uint         `json:"package_type_id"`
-	GrossWeight         string       `gorm:"size:64" json:"gross_weight"`
-	Volume              string       `gorm:"size:64" comment:"体积" json:"volume"`
-	Remarks             string       `gorm:"size:512" json:"remarks"`
-	SeaCapLists         []SeaCapList `gorm:"polymorphic:Source;" json:"sea_cap_lists"`
+	ID                    uint                   `gorm:"primary_key"json:"id"`
+	CreatedAt             time.Time              `json:"created_at"`
+	OrderMasterId         uint                   `gorm:"index:idx_order_master_id" json:"order_master_id"`
+	InstructionId         uint                   `gorm:"index:idx_instruction_id" json:"instruction_id"`
+	TrailerCompanyId      uint                   `json:"trailer_company_id"`
+	TrailerContactName    string                 `gorm:"size:32" json:"trailer_contact_name"`
+	TrailerContactPhone   string                 `gorm:"size:16" json:"trailer_contact_phone"`
+	TrailerNumber         string                 `gorm:"size:16" json:"trailer_number" comment:"车牌号码"`
+	OfWay                 uint                   `json:"of_way"`
+	OfType                uint                   `gorm:"index:idx_of_type" json:"of_type"`
+	SoNo                  string                 `gorm:"size:16" json:"so_no"`
+	LoadingDate           *time.Time             `json:"loading_date"`
+	PolId                 uint                   `json:"pol_id"`
+	IsDrivingLicense      bool                   `json:"is_driving_license" comment:"转关带司机本"`
+	IsDeclare             bool                   `json:"is_declare" comment:"报关单证随车"`
+	IsWeighing            bool                   `json:"is_weighing" comment:"需要过磅"`
+	IsLockers             bool                   `json:"is_lockers"`
+	Marks                 string                 `gorm:"size:2048" json:"marks"`
+	DescriptionOfGood     string                 `gorm:"size:2048" json:"description_of_good"`
+	Size                  string                 `gorm:"size:522" json:"size"`
+	Number                int                    `json:"number"`
+	PackageTypeId         uint                   `json:"package_type_id"`
+	GrossWeight           string                 `gorm:"size:64" json:"gross_weight"`
+	Volume                string                 `gorm:"size:64" comment:"体积" json:"volume"`
+	Remarks               string                 `gorm:"size:512" json:"remarks"`
+	SeaCapLists           []SeaCapList           `gorm:"polymorphic:Source;" json:"sea_cap_lists"`
 	TrailerCabinetNumbers []TrailerCabinetNumber `gorm:"foreignkey:FormerTrailerOrderId" json:"trailer_cabinet_numbers"`
+	Departure             string                 `gorm:"size:256" json:"departure"`
+	Destination           string                 `gorm:"size:256" json:"destination"`
 }
 
 type TrailerCabinetNumber struct {
@@ -216,6 +219,16 @@ func (SeaCargoInfo) TableName() string {
 func (SeaCapList) TableName() string {
 	return "sea_cap_lists"
 }
-func (FormerTrailerOrder) TableName() string  {
+func (FormerOtherService) TableName() string {
+	return "former_other_services"
+}
+
+func (FormerTrailerOrder) TableName() string {
 	return "former_trailer_orders"
 }
+
+const (
+	FormerDockTrailer = iota
+	FormerInlandTrailer
+	FormerHKTrailer
+)

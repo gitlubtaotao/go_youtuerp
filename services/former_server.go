@@ -62,9 +62,7 @@ func (f FormerServer) UpdateOperationInfo(id uint, formerType string, readData m
 func (f FormerServer) GetOtherServerOptions(orderMasterId uint, transportType string) (map[string]interface{}, error) {
 	var resultMap = make(map[string]interface{})
 	portServer := NewBasePort()
-	if transportType == "1" {
-		resultMap["portOptions"] = portServer.FindCollect("1")
-	}
+	resultMap["portOptions"] = portServer.FindCollect("1")
 	baseCodeServer := NewBaseCode()
 	resultMap["packageOptions"] = baseCodeServer.FindCollect(models.PackageType)
 	resultMap["capTypeOptions"] = baseCodeServer.FindCollect(models.CodeCapType)
@@ -105,13 +103,11 @@ func (f FormerServer) GetOtherServer(orderMasterId uint, transportType string) (
 		return map[string]interface{}{}, err
 	}
 	returnMap["formerOtherServers"] = formerOtherServers
-	if transportType == "1" {
-		formerTrailerOrders, err = f.repo.GetFormerTrailerOrder(orderMasterId)
-		if err != nil {
-			return map[string]interface{}{}, err
-		}
-		returnMap["formerTrailerOrders"] = formerTrailerOrders
+	formerTrailerOrders, err = f.repo.GetFormerTrailerOrder(orderMasterId)
+	if err != nil {
+		return map[string]interface{}{}, err
 	}
+	returnMap["formerTrailerOrders"] = formerTrailerOrders
 	return returnMap, err
 }
 

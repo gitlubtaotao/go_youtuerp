@@ -33,7 +33,9 @@ type FormerServer struct {
 func (f FormerServer) DeleteOtherServer(id uint, formerType string) error {
 	switch formerType {
 	case "former_trailer_order":
-		return  f.deleteFormerTrailerOrder(id)
+		return f.deleteFormerTrailerOrder(id)
+	case "former_other_service":
+		return  database.GetDBCon().Delete(models.FormerOtherService{},"id = ?",id).Error
 	}
 	return nil
 }
@@ -46,6 +48,8 @@ func (f FormerServer) SaveOtherServer(formerType string, data models.RenderForme
 	switch formerType {
 	case "former_trailer_order":
 		id, err = f.saveFormerTrailerOrder(data.FormerTrailerOrder)
+	case "former_other_service":
+		id, err = f.saveFormerOtherService(data.FormerOtherService)
 	}
 	return id, err
 }
@@ -195,9 +199,18 @@ func (f FormerServer) deleteFormerTrailerOrder(id uint) error {
 		if err := tx.Delete(models.TrailerCabinetNumber{}, "former_trailer_order_id = ?", id).Error; err != nil {
 			return err
 		}
-		return  tx.Delete(models.SeaCapList{},"source_id = ? and source_type = ?",id,models.FormerTrailerOrder{}.TableName()).Error
+		return tx.Delete(models.SeaCapList{}, "source_id = ? and source_type = ?", id, models.FormerTrailerOrder{}.TableName()).Error
 	})
 	return err
+}
+
+func (f FormerServer) saveFormerOtherService(data models.FormerOtherService) (uint, error) {
+	if data.ID == 0 {
+		err := database.GetDBCon().Create(&data).Error
+		return data.ID, err
+	}
+	err := database.GetDBCon().Model(models.FormerOtherService{ID: data.ID}).Update(tools.StructToChange(data)).Error
+	return data.ID, err
 }
 
 func NewFormerServerRepository() IFormerServer {
