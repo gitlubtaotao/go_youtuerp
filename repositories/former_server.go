@@ -25,7 +25,10 @@ type IFormerServer interface {
 	GetFormerOtherService(orderMasterId uint) ([]models.FormerOtherService, error)
 	//获取拖车单
 	GetFormerTrailerOrder(orderMasterId uint) ([]models.FormerTrailerOrder, error)
+	//获取场装单
 	GetFormerWarehouseService(orderMasterId uint) ([]models.FormerWarehouseService, error)
+	//获取报关单
+	GetFormerCustomClearance(orderMasterId uint) ([]models.FormerCustomClearance, error)
 }
 
 type FormerServer struct {
@@ -39,9 +42,12 @@ func (f FormerServer) DeleteOtherServer(id uint, formerType string) error {
 		return database.GetDBCon().Delete(models.FormerOtherService{}, "id = ?", id).Error
 	case "former_warehouse_service":
 		return database.GetDBCon().Delete(models.FormerWarehouseService{}, "id = ?", id).Error
+	case "former_custom_clearance":
+		return database.GetDBCon().Delete(models.FormerCustomClearance{}, "id = ?", id).Error
 	}
 	return nil
 }
+
 
 func (f FormerServer) SaveOtherServer(formerType string, data models.RenderFormerData) (uint, error) {
 	var (
@@ -55,6 +61,8 @@ func (f FormerServer) SaveOtherServer(formerType string, data models.RenderForme
 		id, err = f.saveFormerOtherService(data.FormerOtherService)
 	case "former_warehouse_service":
 		id, err = f.saveFormerWarehouseService(data.FormerWarehouseService)
+	case "former_custom_clearance":
+		id, err = f.saveFormerCustomClearance(data.FormerCustomClearance)
 	}
 	return id, err
 }
@@ -70,7 +78,6 @@ func (f FormerServer) UpdateFormerData(formerType string, data models.RenderForm
 		err = f.updateFormerSoNo(formerType, data)
 	case "sea_cargo_info":
 		_, err = f.UpdateSeaCargoInfo(data.SeaCargoInfo)
-		
 	}
 	return err
 }
@@ -119,6 +126,12 @@ func (f FormerServer) GetFormerWarehouseService(orderMasterId uint) ([]models.Fo
 	var formerWarehouseService []models.FormerWarehouseService
 	err := database.GetDBCon().Where("order_master_id = ?", orderMasterId).Order("id desc").Find(&formerWarehouseService).Error
 	return formerWarehouseService, err
+}
+
+func (f FormerServer) GetFormerCustomClearance(orderMasterId uint) ([]models.FormerCustomClearance, error) {
+	var formerCustomerClearance []models.FormerCustomClearance
+	err := database.GetDBCon().Where("order_master_id = ?", orderMasterId).Order("id desc").Find(&formerCustomerClearance).Error
+	return formerCustomerClearance, err
 }
 
 func (f FormerServer) DeleteCargoInfo(ids []int, formerType string) error {
@@ -184,7 +197,7 @@ func (f FormerServer) saveFormerTrailerOrder(data models.FormerTrailerOrder) (ui
 	var temp models.FormerTrailerOrder
 	sqlConn = sqlConn.First(&temp, "id = ? ", data.ID)
 	err := sqlConn.Transaction(func(tx *gorm.DB) error {
-		if err := sqlConn.Set("gorm:association_autoupdate", false).Set("gorm:association_autocreate", false).Update(tools.StructToChange(data)).Error; err != nil {
+		if err := sqlConn.Set("gorm:association_autoupdate", false).Set("gorm:association_autocreate", false).Updates(tools.StructToChange(data)).Error; err != nil {
 			return err
 		}
 		if len(data.SeaCapLists) >= 1 {
@@ -221,7 +234,7 @@ func (f FormerServer) saveFormerOtherService(data models.FormerOtherService) (ui
 		err := database.GetDBCon().Create(&data).Error
 		return data.ID, err
 	}
-	err := database.GetDBCon().Model(models.FormerOtherService{ID: data.ID}).Update(tools.StructToChange(data)).Error
+	err := database.GetDBCon().Model(models.FormerOtherService{ID: data.ID}).Updates(tools.StructToChange(data)).Error
 	return data.ID, err
 }
 
@@ -231,7 +244,17 @@ func (f FormerServer) saveFormerWarehouseService(data models.FormerWarehouseServ
 		err := database.GetDBCon().Create(&data).Error
 		return data.ID, err
 	}
-	err := database.GetDBCon().Model(models.FormerWarehouseService{ID: data.ID}).Update(tools.StructToChange(data)).Error
+	err := database.GetDBCon().Model(models.FormerWarehouseService{ID: data.ID}).Updates(tools.StructToChange(data)).Error
+	return data.ID, err
+}
+
+//保存对应的报关单
+func (f FormerServer) saveFormerCustomClearance(data models.FormerCustomClearance) (uint, error) {
+	if data.ID == 0 {
+		err := database.GetDBCon().Create(&data).Error
+		return data.ID, err
+	}
+	err := database.GetDBCon().Model(models.FormerCustomClearance{ID: data.ID}).Updates(tools.StructToChange(data)).Error
 	return data.ID, err
 }
 

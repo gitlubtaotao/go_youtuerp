@@ -98,11 +98,12 @@ func (f FormerServer) GetOtherServer(orderMasterId uint, transportType string) (
 		formerOtherServers      []models.FormerOtherService
 		formerTrailerOrders     []models.FormerTrailerOrder
 		formerWarehouseServices []models.FormerWarehouseService
+		formerCustomClearance   []models.FormerCustomClearance
 		err                     error
 		sy                      sync.Mutex
 		sw                      sync.WaitGroup
 	)
-	sw.Add(3)
+	sw.Add(4)
 	go func() {
 		sy.Lock()
 		defer sy.Unlock()
@@ -130,11 +131,21 @@ func (f FormerServer) GetOtherServer(orderMasterId uint, transportType string) (
 		}
 		sw.Done()
 	}()
+	go func() {
+		sy.Lock()
+		defer sy.Unlock()
+		formerCustomClearance, err = f.repo.GetFormerCustomClearance(orderMasterId)
+		if err != nil {
+			golog.Errorf("GetOtherServer is err %v ", err)
+		}
+		sw.Done()
+	}()
 	sw.Wait()
 	return map[string]interface{}{
 		"formerTrailerOrders":     formerTrailerOrders,
 		"formerOtherServers":      formerOtherServers,
 		"formerWarehouseServices": formerWarehouseServices,
+		"formerCustomClearances":   formerCustomClearance,
 	}, nil
 }
 

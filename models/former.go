@@ -4,10 +4,10 @@ import "time"
 
 type FormerSeaInstruction struct {
 	ID                  uint           `gorm:"primary_key"json:"id"`
-	CreatedAt           time.Time      `json:"created_at"`
+	CreatedAt           time.Time      ``
+	UpdatedAt           time.Time      ``
 	Type                string         `gorm:"size:16" comment:"委托类型" sql:"index" json:"type"`
 	OrderMasterId       uint           `sql:"index" json:"order_master_id"`
-	UpdatedAt           time.Time      `json:"updated_at"`
 	InstructionId       uint           `sql:"index" json:"instruction_id"`
 	ShipperId           uint           `json:"shipper_id"`
 	ShipperContent      string         `gorm:"size:1024" json:"shipper_content"`
@@ -53,9 +53,9 @@ type FormerSeaInstruction struct {
 
 type FormerSeaBook struct {
 	ID                 uint           `gorm:"primary_key"json:"id"`
-	CreatedAt          time.Time      `json:"created_at"`
+	CreatedAt          time.Time      ``
+	UpdatedAt          time.Time      ``
 	OrderMasterId      uint           `sql:"index" json:"order_master_id"`
-	UpdatedAt          time.Time      `json:"updated_at"`
 	InstructionId      uint           `sql:"index" json:"company_instruction_id"`
 	ShipperId          uint           `json:"shipper_id"`
 	ShipperContent     string         `gorm:"size:1024" json:"shipper_content"`
@@ -99,9 +99,9 @@ type FormerSeaBook struct {
 
 type FormerSeaSoNo struct {
 	ID                    uint       `gorm:"primary_key"json:"id"`
-	CreatedAt             time.Time  `json:"created_at"`
+	CreatedAt             time.Time  ``
+	UpdatedAt             time.Time  ``
 	OrderMasterId         uint       `sql:"index" json:"order_master_id"`
-	UpdatedAt             time.Time  `json:"updated_at"`
 	SoNo                  string     `gorm:"size:1024" json:"so_no"`
 	CyOpenDate            *time.Time `json:"cy_open_date"`
 	VoucherCutOff         *time.Time `json:"voucher_cut_off"`
@@ -112,7 +112,8 @@ type FormerSeaSoNo struct {
 //其他服务类型
 type FormerOtherService struct {
 	ID                     uint      `gorm:"primary_key"json:"id"`
-	CreatedAt              time.Time `json:"created_at"`
+	CreatedAt              time.Time ``
+	UpdatedAt              time.Time ``
 	InstructionId          uint      `gorm:"index:idx_instruction_id" json:"instruction_id"`
 	FumigationCompanyId    uint      `json:"fumigation_company_id" comment:"熏蒸公司" `
 	TraderCompanyId        uint      `json:"trader_company_id"`
@@ -127,7 +128,8 @@ type FormerOtherService struct {
 //拖车单
 type FormerTrailerOrder struct {
 	ID                    uint                   `gorm:"primary_key"json:"id"`
-	CreatedAt             time.Time              `json:"created_at"`
+	CreatedAt             time.Time              ``
+	UpdatedAt             time.Time              ``
 	OrderMasterId         uint                   `gorm:"index:idx_order_master_id" json:"order_master_id"`
 	InstructionId         uint                   `gorm:"index:idx_instruction_id" json:"instruction_id"`
 	TrailerCompanyId      uint                   `json:"trailer_company_id"`
@@ -167,7 +169,7 @@ type TrailerCabinetNumber struct {
 
 type SeaCapList struct {
 	ID            uint      `gorm:"primary_key"json:"id"`
-	CreatedAt     time.Time `json:"created_at"`
+	CreatedAt     time.Time ``
 	OrderMasterId uint      `sql:"index" json:"order_master_id"`
 	SourceId      uint      `gorm:"index:source_id_and_source_type" json:"source_id"`
 	SourceType    string    `gorm:"size:32; index:source_id_and_source_type" json:"source_type"`
@@ -178,7 +180,7 @@ type SeaCapList struct {
 //海运装货信息
 type SeaCargoInfo struct {
 	ID                uint      `gorm:"primary_key"json:"id"`
-	CreatedAt         time.Time `json:"created_at"`
+	CreatedAt         time.Time ``
 	SourceId          uint      `gorm:"index:source_id_and_source_type" json:"source_id"`
 	SourceType        string    ` gorm:"size:32;index:source_id_and_source_type" json:"source_type"`
 	OrderMasterId     uint      `sql:"index" json:"order_master_id"`
@@ -199,10 +201,38 @@ type SeaCargoInfo struct {
 	Marks             string    `gorm:"size:256" json:"marks"`
 }
 
+// 报关单
+type FormerCustomClearance struct {
+	ID                 uint       `gorm:"primary_key"json:"id"`
+	CreatedAt          time.Time  ``
+	UpdatedAt          time.Time  ``
+	OrderMasterId      uint       `gorm:"index:idx_order_master_id" json:"order_master_id"`
+	InstructionId      uint       `gorm:"index:idx_instruction_id" json:"instruction_id"`
+	CustomsBrokerId    uint       `json:"customs_broker_id"`
+	OriginCountryId    uint       `json:"origin_country_id"`
+	HsCode             string     `gorm:"size:32" json:"hs_code"`
+	LicenceNo          string     `gorm:"size:32" comment:"许可证号" json:"licence_no"`
+	CustomNo           string     `gorm:"size:32" comment:"报关单号" json:"custom_no"`
+	CustomDate         *time.Time `json:"custom_date"`
+	CustomTypeId       uint       `json:"cutsom_type_id"`
+	CurrencyId         uint       `json:"currency_id"`
+	SubmitDate         *time.Time `json:"submit_date"`
+	InspectNo          string     `gorm:"size:32" json:"inspect_no"`
+	PortId             uint       `json:"port_id"`
+	DepartureCountry   string     `json:"departure_country"`
+	DestinationCountry string     `json:"destination_country"`
+	HasDrawback        bool       `json:"has_drawback"`
+	DrawbackAddress    string     `gorm:"size:256" json:"drawback_address"`
+	FileDeliverAddress string     `gorm:"size:256" json:"file_deliver_address"`
+	OfTransportId      uint       `json:"of_transport_id"`
+	Remarks            string     `gorm:"size:256" json:"remarks"`
+}
+
 //仓库/场装单
 type FormerWarehouseService struct {
 	ID                    uint       `gorm:"primary_key"json:"id"`
-	CreatedAt             time.Time  `json:"created_at"`
+	CreatedAt             time.Time  ``
+	UpdatedAt             time.Time  ``
 	OrderMasterId         uint       `gorm:"index:idx_order_master_id" json:"order_master_id"`
 	InstructionId         uint       `gorm:"index:idx_instruction_id" json:"instruction_id"`
 	WarehouseNo           string     `gorm:"size:32" json:"warehouse_no"`
@@ -251,8 +281,12 @@ func (FormerOtherService) TableName() string {
 func (FormerTrailerOrder) TableName() string {
 	return "former_trailer_orders"
 }
-func (FormerWarehouseService) TableName() string  {
+func (FormerWarehouseService) TableName() string {
 	return "former_warehouse_services"
+}
+
+func (FormerCustomClearance) TableName() string {
+	return "former_custom_clearances"
 }
 
 const (

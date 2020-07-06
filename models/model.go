@@ -33,4 +33,5 @@ type RenderFormerData struct {
 	FormerTrailerOrder     FormerTrailerOrder     `json:"former_trailer_order"`
 	FormerOtherService     FormerOtherService     `json:"former_other_service"`
 	FormerWarehouseService FormerWarehouseService `json:"former_warehouse_service"`
+	FormerCustomClearance  FormerCustomClearance  `json:"former_custom_clearance"`
 }
