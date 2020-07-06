@@ -25,6 +25,7 @@ type IFormerServer interface {
 	GetFormerOtherService(orderMasterId uint) ([]models.FormerOtherService, error)
 	//获取拖车单
 	GetFormerTrailerOrder(orderMasterId uint) ([]models.FormerTrailerOrder, error)
+	GetFormerWarehouseService(orderMasterId uint) ([]models.FormerWarehouseService, error)
 }
 
 type FormerServer struct {
@@ -35,7 +36,9 @@ func (f FormerServer) DeleteOtherServer(id uint, formerType string) error {
 	case "former_trailer_order":
 		return f.deleteFormerTrailerOrder(id)
 	case "former_other_service":
-		return  database.GetDBCon().Delete(models.FormerOtherService{},"id = ?",id).Error
+		return database.GetDBCon().Delete(models.FormerOtherService{}, "id = ?", id).Error
+	case "former_warehouse_service":
+		return database.GetDBCon().Delete(models.FormerWarehouseService{}, "id = ?", id).Error
 	}
 	return nil
 }
@@ -50,6 +53,8 @@ func (f FormerServer) SaveOtherServer(formerType string, data models.RenderForme
 		id, err = f.saveFormerTrailerOrder(data.FormerTrailerOrder)
 	case "former_other_service":
 		id, err = f.saveFormerOtherService(data.FormerOtherService)
+	case "former_warehouse_service":
+		id, err = f.saveFormerWarehouseService(data.FormerWarehouseService)
 	}
 	return id, err
 }
@@ -107,6 +112,13 @@ func (f FormerServer) UpdateSeaCargoInfo(infos []models.SeaCargoInfo) (interface
 		return nil
 	})
 	return data, err
+}
+
+//获取仓库场装单
+func (f FormerServer) GetFormerWarehouseService(orderMasterId uint) ([]models.FormerWarehouseService, error) {
+	var formerWarehouseService []models.FormerWarehouseService
+	err := database.GetDBCon().Where("order_master_id = ?", orderMasterId).Order("id desc").Find(&formerWarehouseService).Error
+	return formerWarehouseService, err
 }
 
 func (f FormerServer) DeleteCargoInfo(ids []int, formerType string) error {
@@ -210,6 +222,16 @@ func (f FormerServer) saveFormerOtherService(data models.FormerOtherService) (ui
 		return data.ID, err
 	}
 	err := database.GetDBCon().Model(models.FormerOtherService{ID: data.ID}).Update(tools.StructToChange(data)).Error
+	return data.ID, err
+}
+
+//保存仓库场装单
+func (f FormerServer) saveFormerWarehouseService(data models.FormerWarehouseService) (uint, error) {
+	if data.ID == 0 {
+		err := database.GetDBCon().Create(&data).Error
+		return data.ID, err
+	}
+	err := database.GetDBCon().Model(models.FormerWarehouseService{ID: data.ID}).Update(tools.StructToChange(data)).Error
 	return data.ID, err
 }
 

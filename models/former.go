@@ -124,6 +124,7 @@ type FormerOtherService struct {
 	OrderMasterId          uint      `gorm:"index:idx_order_master_id" json:"order_master_id"`
 }
 
+//拖车单
 type FormerTrailerOrder struct {
 	ID                    uint                   `gorm:"primary_key"json:"id"`
 	CreatedAt             time.Time              `json:"created_at"`
@@ -174,6 +175,7 @@ type SeaCapList struct {
 	CapType       string    `gorm:"size:32" json:"cap_type"`
 }
 
+//海运装货信息
 type SeaCargoInfo struct {
 	ID                uint      `gorm:"primary_key"json:"id"`
 	CreatedAt         time.Time `json:"created_at"`
@@ -195,6 +197,29 @@ type SeaCargoInfo struct {
 	CapType           string    `gorm:"size:16" json:"cap_type"`
 	DescriptionOfGood string    `gorm:"size:256" json:"description_of_good"`
 	Marks             string    `gorm:"size:256" json:"marks"`
+}
+
+//仓库/场装单
+type FormerWarehouseService struct {
+	ID                    uint       `gorm:"primary_key"json:"id"`
+	CreatedAt             time.Time  `json:"created_at"`
+	OrderMasterId         uint       `gorm:"index:idx_order_master_id" json:"order_master_id"`
+	InstructionId         uint       `gorm:"index:idx_instruction_id" json:"instruction_id"`
+	WarehouseNo           string     `gorm:"size:32" json:"warehouse_no"`
+	WarehouseDate         *time.Time `json:"warehouse_date"`
+	WarehouseName         string     `gorm:"size:64" json:"warehouse_name"`
+	WarehouseAddress      string     `gorm:"size:256" json:"warehouse_address"`
+	WarehouseContact      string     `gorm:"size:32" json:"warehouse_contact"`
+	WarehouseContactPhone string     `gorm:"size:16" json:"warehouse_contact_phone"`
+	Marks                 string     `gorm:"size:2048" json:"marks"`
+	DescriptionOfGood     string     `gorm:"size:2048" json:"description_of_good"`
+	Size                  string     `gorm:"size:522" json:"size"`
+	Number                int        `json:"number"`
+	PackageTypeId         uint       `json:"package_type_id"`
+	GrossWeight           string     `gorm:"size:64" json:"gross_weight"`
+	Volume                string     `gorm:"size:64" comment:"体积" json:"volume"`
+	DeliveryRemarks       string     `gorm:"size:256" json:"delivery_remarks"`
+	DistributionRemarks   string     `gorm:"size:256" json:"distribution_remarks"`
 }
 
 const (
@@ -225,6 +250,9 @@ func (FormerOtherService) TableName() string {
 
 func (FormerTrailerOrder) TableName() string {
 	return "former_trailer_orders"
+}
+func (FormerWarehouseService) TableName() string  {
+	return "former_warehouse_services"
 }
 
 const (

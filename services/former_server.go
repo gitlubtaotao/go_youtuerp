@@ -1,7 +1,9 @@
 package services
 
 import (
+	"github.com/kataras/golog"
 	"strings"
+	"sync"
 	"youtuerp/models"
 	"youtuerp/repositories"
 )
@@ -93,22 +95,47 @@ func (f FormerServer) GetFormerSoNoOptions(orderMasterId uint, transportType str
 
 func (f FormerServer) GetOtherServer(orderMasterId uint, transportType string) (map[string]interface{}, error) {
 	var (
-		formerOtherServers  []models.FormerOtherService
-		formerTrailerOrders []models.FormerTrailerOrder
-		err                 error
-		returnMap           = make(map[string]interface{})
+		formerOtherServers      []models.FormerOtherService
+		formerTrailerOrders     []models.FormerTrailerOrder
+		formerWarehouseServices []models.FormerWarehouseService
+		err                     error
+		sy                      sync.Mutex
+		sw                      sync.WaitGroup
 	)
-	formerOtherServers, err = f.repo.GetFormerOtherService(orderMasterId)
-	if err != nil {
-		return map[string]interface{}{}, err
-	}
-	returnMap["formerOtherServers"] = formerOtherServers
-	formerTrailerOrders, err = f.repo.GetFormerTrailerOrder(orderMasterId)
-	if err != nil {
-		return map[string]interface{}{}, err
-	}
-	returnMap["formerTrailerOrders"] = formerTrailerOrders
-	return returnMap, err
+	sw.Add(3)
+	go func() {
+		sy.Lock()
+		defer sy.Unlock()
+		formerOtherServers, err = f.repo.GetFormerOtherService(orderMasterId)
+		if err != nil {
+			golog.Errorf("GetOtherServer is err %v ", err)
+		}
+		sw.Done()
+	}()
+	go func() {
+		sy.Lock()
+		defer sy.Unlock()
+		formerTrailerOrders, err = f.repo.GetFormerTrailerOrder(orderMasterId)
+		if err != nil {
+			golog.Errorf("GetOtherServer is err %v ", err)
+		}
+		sw.Done()
+	}()
+	go func() {
+		sy.Lock()
+		defer sy.Unlock()
+		formerWarehouseServices, err = f.repo.GetFormerWarehouseService(orderMasterId)
+		if err != nil {
+			golog.Errorf("GetOtherServer is err %v ", err)
+		}
+		sw.Done()
+	}()
+	sw.Wait()
+	return map[string]interface{}{
+		"formerTrailerOrders":     formerTrailerOrders,
+		"formerOtherServers":      formerOtherServers,
+		"formerWarehouseServices": formerWarehouseServices,
+	}, nil
 }
 
 func NewFormerServer() IFormerServer {

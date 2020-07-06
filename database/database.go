@@ -73,7 +73,8 @@ func (d *DataBase) Migration() error {
 		&models.OrderExtendInfo{},
 		&models.FormerSeaInstruction{}, &models.FormerSeaBook{},
 		&models.FormerSeaSoNo{}, &models.SeaCargoInfo{}, &models.SeaCapList{},
-		&models.FormerOtherService{},&models.FormerTrailerOrder{},&models.TrailerCabinetNumber{},
+		&models.FormerOtherService{}, &models.FormerTrailerOrder{}, &models.TrailerCabinetNumber{},
+		&models.FormerWarehouseService{},
 	)
 	db.AutoMigrate(&models.FinanceFee{})
 	db.AutoMigrate(&models.Attachment{})

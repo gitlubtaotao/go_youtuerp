@@ -42,10 +42,9 @@ func (s *SelectController) GetCompany(ctx iris.Context) {
 	}
 	
 	name := ctx.URLParamDefault("name", "")
-	data, _ := s.service.GetCompanySelect(name,readData.Scope,readData.SelectKeys)
+	data, _ := s.service.GetCompanySelect(name, readData.Scope, readData.SelectKeys)
 	_, _ = s.ctx.JSON(iris.Map{"code": http.StatusOK, "data": data})
 }
-
 
 func (s *SelectController) Employee(ctx iris.Context) {
 	service := services.NewEmployeeService()
@@ -57,6 +56,16 @@ func (s *SelectController) OwnerCompany(ctx iris.Context) {
 	service := services.NewCompanyService()
 	data := service.AllCompanyRedis()
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": data})
+}
+
+func (s *SelectController) WarehouseAddress(ctx iris.Context) {
+	service := services.NewBaseWarehouse()
+	data, err := service.FindAllBySelect()
+	if err != nil {
+		s.Render500(ctx, err, "")
+	} else {
+		_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": data})
+	}
 }
 
 func (s *SelectController) base(ctx iris.Context) (readData ReadData, err error) {
