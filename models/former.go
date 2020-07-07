@@ -214,13 +214,13 @@ type FormerCustomClearance struct {
 	LicenceNo          string     `gorm:"size:32" comment:"许可证号" json:"licence_no"`
 	CustomNo           string     `gorm:"size:32" comment:"报关单号" json:"custom_no"`
 	CustomDate         *time.Time `json:"custom_date"`
-	CustomTypeId       uint       `json:"cutsom_type_id"`
+	CustomTypeId       uint       `json:"custom_type_id"`
 	CurrencyId         uint       `json:"currency_id"`
 	SubmitDate         *time.Time `json:"submit_date"`
 	InspectNo          string     `gorm:"size:32" json:"inspect_no"`
 	PortId             uint       `json:"port_id"`
-	DepartureCountry   string     `json:"departure_country"`
-	DestinationCountry string     `json:"destination_country"`
+	DepartureCountryId uint       `json:"departure_country_id"`
+	DestinationCountId uint       `json:"destination_country_id"`
 	HasDrawback        bool       `json:"has_drawback"`
 	DrawbackAddress    string     `gorm:"size:256" json:"drawback_address"`
 	FileDeliverAddress string     `gorm:"size:256" json:"file_deliver_address"`

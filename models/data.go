@@ -95,6 +95,7 @@ const (
 	PackageType         = "PackageType"
 	CIQType             = "CIQType"
 	FinanceTag          = "FinanceTag"
+	CodeTransType       = "TransType"
 )
 
 func (r BaseDataCode) TableName() string {

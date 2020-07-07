@@ -68,6 +68,9 @@ func (f FormerServer) GetOtherServerOptions(orderMasterId uint, transportType st
 	baseCodeServer := NewBaseCode()
 	resultMap["packageOptions"] = baseCodeServer.FindCollect(models.PackageType)
 	resultMap["capTypeOptions"] = baseCodeServer.FindCollect(models.CodeCapType)
+	resultMap["transTypeOptions"] = baseCodeServer.FindCollect(models.CodeTransType)
+	resultMap["customTypeOptions"] = baseCodeServer.FindCollect(models.CodeCustomType)
+	resultMap["currencyOptions"] = baseCodeServer.FindCollect(models.CodeFinanceCurrency)
 	return resultMap, nil
 }
 
@@ -145,7 +148,7 @@ func (f FormerServer) GetOtherServer(orderMasterId uint, transportType string) (
 		"formerTrailerOrders":     formerTrailerOrders,
 		"formerOtherServers":      formerOtherServers,
 		"formerWarehouseServices": formerWarehouseServices,
-		"formerCustomClearances":   formerCustomClearance,
+		"formerCustomClearances":  formerCustomClearance,
 	}, nil
 }
 
