@@ -10,6 +10,8 @@ import (
 )
 
 type IBaseCode interface {
+	//从redis 获取对应的字段的值
+	HGetValue(key string, id interface{}, field string) string
 	Update(id uint, code models.BaseDataCode, language string) error
 	Delete(id uint) error
 	Create(code models.BaseDataCode, language string) (models.BaseDataCode, error)
@@ -22,6 +24,11 @@ type BaseCode struct {
 	repo repositories.IBaseCode
 	BaseService
 	mu sync.Mutex
+}
+
+func (b BaseCode) HGetValue(key string, id interface{}, field string) string {
+	red := redis.NewRedis()
+	return red.HGetValue(models.BaseDataCode{}.TableName()+key, id, field)
 }
 
 func (b BaseCode) FindCollect(key string) []map[string]string {

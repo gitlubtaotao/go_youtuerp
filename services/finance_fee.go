@@ -1,15 +1,32 @@
 package services
 
 import (
+	"errors"
 	"github.com/kataras/golog"
 	"time"
 	"youtuerp/models"
 	"youtuerp/redis"
 	"youtuerp/repositories"
+	"youtuerp/tools"
 )
 
 type IFinanceFee interface {
-	CopyFee(orderMasterId []uint, financeFeeIds []uint, companyId int) error
+	/*将查询到的历史费用复制到对应的订单中
+	orderMasterId: 指定订单
+	feeIds: 对应费用ids
+	companyId: 当前操作所属公司
+	closingUnitId: 结算单位
+	payOrReceive: 收入/支出
+	*/
+	BulkHistoryFee(orderMasterId uint, feeIds []uint, companyId uint, closingUnitId uint, payOrReceive string) ([]models.FinanceFee, error)
+	//根据结算单位，时间范围查询该结算单位的历史费用，通过name 进行分组
+	GetHistoryFee(filter map[string]interface{}) ([]map[string]interface{}, error)
+	/*将费用复制不同的订单
+	orderMasterIds: 指定的订单Ids
+	financeFeeIds: 复制费用的Ids
+	companyId：当前公司
+	*/
+	CopyFee(orderMasterIds []uint, financeFeeIds []uint, companyId int) error
 	//通过ids 查询费用信息
 	FindFeesById(ids []uint, otherKeys ...string) ([]models.FinanceFee, error)
 	//根据前端查询条件查询费用信息
@@ -29,6 +46,24 @@ type IFinanceFee interface {
 
 type FinanceFee struct {
 	repo repositories.IFinanceFee
+}
+
+func (f FinanceFee) GetHistoryFee(filter map[string]interface{}) ([]map[string]interface{}, error) {
+	var returnResult []map[string]interface{}
+	financeFees, err := f.repo.GetHistoryFee(filter, 50, []string{})
+	if err != nil {
+		return returnResult, err
+	}
+	tool := tools.OtherHelper{}
+	codeServer := NewBaseCode()
+	for _, fee := range financeFees {
+		result := tool.StructToMap(fee)
+		result["finance_currency_id"] = codeServer.HGetValue(models.CodeFinanceCurrency, result["finance_currency_id"], "")
+		result["type_id"] = codeServer.HGetValue(models.FinanceTag, result["type_id"], "")
+		result["pay_type_id"] = codeServer.HGetValue(models.CIQType, result["pay_type_id"], "")
+		returnResult = append(returnResult, result)
+	}
+	return returnResult, nil
 }
 
 func (f FinanceFee) CopyFee(orderMasterId []uint, financeFeeIds []uint, companyId int) error {
@@ -81,6 +116,49 @@ func (f FinanceFee) OrderFees(orderId uint, payOrReceive ...string) (map[string]
 		"order_master_id": orderId,
 	}
 	return f.repo.OrderFees(attr, payOrReceive...)
+}
+
+func (f FinanceFee) BulkHistoryFee(orderMasterId uint, feeIds []uint, companyId uint, closingUnitId uint, payOrReceive string) ([]models.FinanceFee, error) {
+	var (
+		financeFees  []models.FinanceFee
+		rates        []models.FinanceRate
+		orderMasters []models.ResultOrderMaster
+		err          error
+	)
+	financeFees, err = f.FindFeesById(feeIds)
+	if err != nil {
+		return nil, err
+	}
+	orderMasters, err = f.getOrderMaster([]uint{orderMasterId})
+	if err != nil {
+		return nil, err
+	}
+	if len(orderMasters) == 0 {
+		return nil, errors.New("订单不存在")
+	}
+	order := orderMasters[0]
+	financeBase := NewFinanceBase()
+	if redis.SystemRateSetting() == models.SettingFeeRateNow {
+		rates, err = financeBase.GetAllFeeRate(companyId)
+	} else {
+		rates, err = f.getRateByOrderCreate(companyId, order.CreatedAt)
+	}
+	if err != nil {
+		return nil, err
+	}
+	for i := 0; i < len(financeFees); i++ {
+		financeFees[i] = f.commonHandlerByCopyFee(rates, financeFees[i], order)
+		financeFees[i].ClosingUnitId = closingUnitId
+		financeFees[i].PayOrReceive = payOrReceive
+		if payOrReceive == "pay" {
+			financeFees[i].Payable = financeFees[i].TaxAmount
+			financeFees[i].Receivable = 0
+		} else {
+			financeFees[i].Receivable = financeFees[i].TaxAmount
+			financeFees[i].Payable = 0
+		}
+	}
+	return f.BulkInsert(financeFees)
 }
 
 //按照实时汇率复制费用

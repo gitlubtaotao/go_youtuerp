@@ -8,6 +8,8 @@ import (
 )
 
 type IFinanceFee interface {
+	//根据不同的结算查询历史费用
+	GetHistoryFee(filter map[string]interface{}, limit int, selectKeys []string) ([]models.FinanceFee, error)
 	//主要通过费用ID进行查询
 	FindFeesById(ids []uint, otherKeys ...string) ([]models.FinanceFee, error)
 	//查询费用信息
@@ -23,7 +25,34 @@ type IFinanceFee interface {
 }
 
 type FinanceFee struct {
+	BaseRepository
 }
+
+//获取历史费用
+func (f FinanceFee) GetHistoryFee(filter map[string]interface{}, limit int, selectKeys []string) ([]models.FinanceFee, error) {
+	var financeFees []models.FinanceFee
+	if limit == 0 {
+		limit = 50
+	}
+	sqlCon := database.GetDBCon().Model(&models.FinanceFee{})
+	if len(filter) > 0 {
+		sqlCon = sqlCon.Scopes(f.Ransack(filter))
+	}
+	if len(selectKeys) > 0 {
+		sqlCon = sqlCon.Select(selectKeys)
+	}
+	rows, err := sqlCon.Order("id desc").Group("name").Limit(limit).Rows()
+	if err != nil {
+		return financeFees, err
+	}
+	for rows.Next() {
+		var data models.FinanceFee
+		_ = sqlCon.ScanRows(rows, &data)
+		financeFees = append(financeFees, data)
+	}
+	return financeFees, nil
+}
+
 
 func (f FinanceFee) FindFeesById(ids []uint, otherKeys ...string) ([]models.FinanceFee, error) {
 	var financeFees []models.FinanceFee

@@ -6,6 +6,7 @@ import (
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"sync"
+	"time"
 	"youtuerp/models"
 	"youtuerp/services"
 )
@@ -19,6 +20,8 @@ type FinanceFee struct {
 type CopyFeeReceive struct {
 	FeeIds         []uint `json:"fee_ids"`
 	OrderMasterIds []uint `json:"order_master_ids"`
+	PayOrReceive   string `json:"pay_or_receive"`
+	ClosingUnitId  uint   `json:"closing_unit_id"`
 }
 
 func (f *FinanceFee) Create(ctx iris.Context) {
@@ -141,14 +144,86 @@ func (f *FinanceFee) CopyFee(ctx iris.Context) {
 		return
 	}
 	currentUser, _ := f.CurrentUser(ctx)
-	err  = f.service.CopyFee(receiveIds.OrderMasterIds, receiveIds.FeeIds, currentUser.UserCompanyId)
-	if err != nil{
-		f.Render500(ctx,err,"")
-	}else{
+	err = f.service.CopyFee(receiveIds.OrderMasterIds, receiveIds.FeeIds, currentUser.UserCompanyId)
+	if err != nil {
+		f.Render500(ctx, err, "")
+	} else {
 		f.RenderSuccessJson(ctx, iris.Map{})
 	}
 }
 
+//根据不同的结算单位,查询该结算单位下不重复的费用
+//同时也可以根据订单号进行查询
+func (f *FinanceFee) GetHistoryFee(ctx iris.Context) {
+	var (
+		searchParams = make(map[string]interface{})
+		dateRange    int
+		err          error
+		cusErr       = errors.New(ctx.GetLocale().GetMessage("error.params_error"))
+		financeFees  []map[string]interface{}
+	)
+	if ok := ctx.URLParamExists("closing_unit_id"); !ok {
+		f.Render400(ctx, cusErr, cusErr.Error())
+		return
+	}
+	searchParams["closing_unit_id-eq"] = ctx.URLParam("closing_unit_id")
+	if ok := ctx.URLParamExists("date_range"); ok {
+		dateRange, err = ctx.URLParamInt("date_range")
+		if err != nil {
+			f.Render400(ctx, err, "")
+			return
+		}
+	}
+	if ok := ctx.URLParamExists("pay_or_receive"); !ok {
+		f.Render400(ctx, cusErr, cusErr.Error())
+		return
+	}
+	searchParams["pay_or_receive-eq"] = ctx.URLParam("pay_or_receive")
+	searchParams = f.handlerCreatedAt(dateRange, searchParams)
+	financeFees, err = f.service.GetHistoryFee(searchParams)
+	if err != nil {
+		f.Render500(ctx, err, "")
+	} else {
+		_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": financeFees})
+	}
+}
+
+//根据不同的订单插入历史费用
+func (f *FinanceFee) BulkHistoryFee(ctx iris.Context) {
+	var (
+		orderMasterId uint
+		err           error
+		result        CopyFeeReceive
+	)
+	orderMasterId, err = ctx.Params().GetUint("orderMasterId")
+	if err != nil {
+		f.Render400(ctx, err, "")
+		return
+	}
+	if err = ctx.ReadJSON(&result); err != nil {
+		f.Render400(ctx, err, "")
+		return
+	}
+	currentUser, _ := f.CurrentUser(ctx)
+	if financeFees, err := f.service.BulkHistoryFee(
+		orderMasterId,
+		result.FeeIds,
+		uint(currentUser.UserCompanyId),
+		result.ClosingUnitId,
+		result.PayOrReceive); err != nil {
+		f.Render500(ctx, err, "")
+	} else {
+		_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": financeFees})
+	}
+}
+
+//处理日期显示
+func (f *FinanceFee) handlerCreatedAt(dateRange int, searchParams map[string]interface{}) map[string]interface{} {
+	beg := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.Now().Location())
+	searchParams["created_at-ltEq"] = beg
+	searchParams["created_at-gtEq"] = beg.AddDate(0, -dateRange, 0)
+	return searchParams
+}
 func (f *FinanceFee) Before(ctx iris.Context) {
 	f.service = services.NewFinanceFee()
 	ctx.Next()
