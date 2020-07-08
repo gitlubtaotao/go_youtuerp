@@ -20,9 +20,9 @@ type IFormerServer interface {
 	//保存操作盘对应的信息
 	UpdateOperationInfo(id uint, formerType string, readData models.RenderFormerData) error
 	//获取其他服务的下来选择
-	GetOtherServerOptions(orderMasterId uint, transportType string) (map[string]interface{}, error)
+	GetOtherServerOptions() (map[string]interface{}, error)
 	//获取订单对应的拖车单,报告单,仓库场装单
-	GetOtherServer(orderMasterId uint, transportType string) (map[string]interface{}, error)
+	GetOtherServer(orderMasterId uint) (map[string]interface{}, error)
 	//获取so信息的下拉选择
 	GetFormerSoNoOptions(orderMasterId uint, transportType string) ([]string, error)
 }
@@ -58,10 +58,13 @@ func (f FormerServer) UpdateOperationInfo(id uint, formerType string, readData m
 	if err != nil {
 		return err
 	}
-	return f.repo.UpdateFormerData(formerType, readData)
+	if formerType != ""{
+		return f.repo.UpdateFormerData(formerType, readData)
+	}
+	return nil
 }
 
-func (f FormerServer) GetOtherServerOptions(orderMasterId uint, transportType string) (map[string]interface{}, error) {
+func (f FormerServer) GetOtherServerOptions() (map[string]interface{}, error) {
 	var resultMap = make(map[string]interface{})
 	portServer := NewBasePort()
 	resultMap["portOptions"] = portServer.FindCollect("1")
@@ -82,7 +85,7 @@ func (f FormerServer) GetFormerSoNoOptions(orderMasterId uint, transportType str
 		returnResult []string
 	)
 	if transportType == "1" {
-		data, err = server.GetFormerData(orderMasterId, "former_sea_so_no", "")
+		data, err = server.GetFormerData(orderMasterId, "former_sea_so_no")
 		if err != nil {
 			return []string{}, err
 		}
@@ -96,7 +99,7 @@ func (f FormerServer) GetFormerSoNoOptions(orderMasterId uint, transportType str
 	return returnResult, err
 }
 
-func (f FormerServer) GetOtherServer(orderMasterId uint, transportType string) (map[string]interface{}, error) {
+func (f FormerServer) GetOtherServer(orderMasterId uint) (map[string]interface{}, error) {
 	var (
 		formerOtherServers      []models.FormerOtherService
 		formerTrailerOrders     []models.FormerTrailerOrder

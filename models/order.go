@@ -54,7 +54,7 @@ type OrderExtendInfo struct {
 }
 
 type ResultOrderMaster struct {
-	ID               uint       `json:"id"`
+	ID               uint       ``
 	CreatedAt        time.Time  `json:"created_at"`
 	UpdatedAt        time.Time  `json:"updated_at"`
 	SerialNumber     string     `json:"serial_number"`
@@ -71,9 +71,9 @@ type ResultOrderMaster struct {
 	ReceivableStatus string     `json:"receivable_status"`
 	ReceivedStatus   string     `json:"received_status"`
 	Remarks          string     `gorm:"size:522" json:"remarks"`
-	SupplyAgentId    uint       `sql:"index" json:"supply_agent_id"`
-	Number           uint       `json:"number"`
-	PackageTypeId    uint       `json:"package_type_id"`
+	OrderMasterId    uint       `sql:"index" json:"order_master_id"`
+	Number           uint       `comment:"包装数量" json:"number"`
+	PackageTypeId    uint       `comment:"包装类型" json:"package_type_id"`
 	GrossWeight      string     `gorm:"size:64" comment:"毛重" json:"gross_weight"`
 	Volume           string     `gorm:"size:64" comment:"体积" json:"volume"`
 	MblSO            string     `gorm:"size:16;index:mbl_so" json:"mbl_so"`
@@ -93,6 +93,7 @@ type ResultOrderMaster struct {
 	CourierCodeId    uint       `sql:"index" json:"courier_code_id"`
 	CourierNo        string     `gorm:"size:16;index:courier_no" json:"courier_no"`
 	ShipperId        uint       `json:"shipper_id"`
+	SupplyAgentId    uint       `sql:"index" json:"supply_agent_id"`
 	Roles            []Role     `json:"roles"`
 }
 
@@ -125,6 +126,10 @@ func (OrderMaster) TableName() string {
 
 func (OrderExtendInfo) TableName() string {
 	return "order_extend_infos"
+}
+
+func (ResultOrderMaster) TableName() string {
+	return "order_masters"
 }
 
 func (OrderMaster) DefaultAddColumn() []string {

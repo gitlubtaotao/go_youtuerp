@@ -8,6 +8,9 @@ import (
 )
 
 func (r Redis) HGetCrm(id interface{}, field string) (value string) {
+	if key := id.(uint); key == 0 {
+		return ""
+	}
 	var err error
 	value, err = r.getUserCompany(models.CrmCompany{}.RedisKey(), id, field)
 	if err != nil {

@@ -11,12 +11,11 @@ import (
 
 type ISelectService interface {
 	//获取公司信息下拉选择
-	GetCompanySelect(searchName string, scope map[string]interface{}, selectKeys []string)([]map[string]interface{}, error)
+	GetCompanySelect(searchName string, scope map[string]interface{}, selectKeys []string) ([]map[string]interface{}, error)
 	//获取操作盘下拉选择
-	GetOperationSelect(formerType string) map[string]interface{}
+	GetOperationSelect(transportType uint) map[string]interface{}
 	//根据不同的table查询数据
 	FindTable(tableName string, name string, scope map[string]interface{}, selectKeys []string) (selectResult []map[string]interface{}, err error)
-	
 }
 
 type SelectService struct {
@@ -25,8 +24,7 @@ type SelectService struct {
 	sy   sync.Mutex
 }
 
-
-func (s SelectService) GetCompanySelect(searchName string, scope map[string]interface{}, selectKeys []string)([]map[string]interface{}, error) {
+func (s SelectService) GetCompanySelect(searchName string, scope map[string]interface{}, selectKeys []string) ([]map[string]interface{}, error) {
 	if len(scope) == 0 {
 		scope = map[string]interface{}{"company_type": 4}
 	}
@@ -34,13 +32,12 @@ func (s SelectService) GetCompanySelect(searchName string, scope map[string]inte
 	if len(selectKeys) == 0 {
 		selectKeys = []string{"id", "name_en", "name_nick", "name_cn", "frequently_use_info"}
 	}
-	return s.FindTable("user_companies",searchName,scope,selectKeys)
+	return s.FindTable("user_companies", searchName, scope, selectKeys)
 }
 
-
-func (s SelectService) GetOperationSelect(formerType string) map[string]interface{} {
+func (s SelectService) GetOperationSelect(transportType uint) map[string]interface{} {
 	returnAttr := make(map[string]interface{})
-	crmOptions, _ := s.FindTable("user_companies", "", map[string]interface{}{"company_type": []int{1, 3}, "status": models.CompanyStatusApproved}, []string{"id", "name_cn","name_nick","name_en"})
+	crmOptions, _ := s.FindTable("user_companies", "", map[string]interface{}{"company_type": []int{1, 3}, "status": models.CompanyStatusApproved}, []string{"id", "name_cn", "name_nick", "name_en"})
 	returnAttr["crmOptions"] = crmOptions
 	stringArray := []string{models.CodePayType, models.CodeCapType, models.CodeInstructionType,
 		models.CodeCustomType, models.CodeBillProduceType, models.CodeTransshipment,

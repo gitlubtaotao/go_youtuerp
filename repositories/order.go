@@ -6,6 +6,7 @@ import (
 	"sync"
 	"youtuerp/database"
 	"youtuerp/models"
+	"youtuerp/tools"
 )
 
 type IOrderMaster interface {
@@ -54,8 +55,6 @@ func (o OrderMasterRepository) FindMasterByIds(ids []uint, otherKeys ...string) 
 	return orderMasters, err
 }
 
-
-
 func (o OrderMasterRepository) GetFormerSoNo(orderId uint, formerType string, attr ...map[string]interface{}) (interface{}, error) {
 	var data models.FormerSeaSoNo
 	err := database.GetDBCon().Where(models.FormerSeaSoNo{OrderMasterId: orderId}).Attrs(map[string]interface{}{"order_master_id": orderId}).FirstOrCreate(&data).Error
@@ -103,14 +102,20 @@ func (o OrderMasterRepository) FirstMaster(id uint, load ...string) (models.Orde
 func (o OrderMasterRepository) FindMaster(per, page uint, filter map[string]interface{}, selectKeys []string,
 	orders []string, isTotal bool) (masters []models.ResultOrderMaster, total uint, err error) {
 	var rows *sql.Rows
-	sqlConn := database.GetDBCon().Model(&models.OrderMaster{})
+	sqlConn := database.GetDBCon().Table(models.OrderMaster{}.TableName())
 	sqlConn = sqlConn.Joins("inner join order_extend_infos on order_extend_infos.order_master_id = order_masters.id")
 	if isTotal {
 		if total, err = o.Count(sqlConn, filter); err != nil {
 			return
 		}
 	}
-	sqlConn = o.crud.Where(sqlConn, filter, selectKeys, o.Paginate(per, page), o.OrderBy(orders)).Preload("Roles")
+	if len(selectKeys) == 0 {
+		selectKeys, _ = tools.GetStructFieldByJson(models.ResultOrderMaster{})
+	}
+	if len(orders) == 0 {
+		orders = []string{"order_masters.id desc"}
+	}
+	sqlConn = o.crud.Where(sqlConn, filter, selectKeys, o.Paginate(per, page), o.OrderBy(orders))
 	rows, err = sqlConn.Rows()
 	if err != nil {
 		return
@@ -211,7 +216,6 @@ func (o OrderMasterRepository) createSeaBooking(orderId uint, attr map[string]in
 	})
 	return booking, err
 }
-
 
 func NewOrderMasterRepository() IOrderMaster {
 	return OrderMasterRepository{}

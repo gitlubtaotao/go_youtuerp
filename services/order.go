@@ -12,14 +12,13 @@ import (
 )
 
 type IOrderMasterService interface {
+	//显示订单的起运港
 	//通过订单Ids查询订单
 	FindMasterByIds(ids []uint, otherFilter ...string) ([]models.ResultOrderMaster, error)
-	
-	
 	//获取表单中对应的数据
-	GetFormerData(id uint, formerType string, formerItemType string) (interface{}, error)
+	GetFormerData(id uint, formerType string) (interface{}, error)
 	//获取委托单的数据
-	GetFormerInstruction(master models.OrderMaster, formerType string, formerItemType string) (interface{}, error)
+	GetSeaFormerInstruction(master models.OrderMaster, formerItemType string) (interface{}, error)
 	//删除订单
 	DeleteMaster(id uint) error
 	//显示订单的费用状态
@@ -57,27 +56,23 @@ func (o OrderMasterService) FindMasterByIds(ids []uint, otherFilter ...string) (
 	return o.repo.FindMasterByIds(ids, otherFilter...)
 }
 
-
-
-
-func (o OrderMasterService) GetFormerData(id uint, formerType string, formerItemType string) (interface{}, error) {
+func (o OrderMasterService) GetFormerData(id uint, formerType string) (interface{}, error) {
 	var (
 		data        interface{}
 		err         error
 		orderMaster models.OrderMaster
 	)
-	if formerItemType != "former_sea_so_no" {
-		if orderMaster, err = o.repo.FirstMaster(id); err != nil {
-			return data, err
-		}
+	orderMaster, err = o.FirstMaster(id)
+	if err != nil {
+		return nil, err
 	}
 	switch formerType {
 	case "former_sea_instruction":
-		data, err = o.GetFormerInstruction(orderMaster, formerType, formerItemType)
+		data, err = o.GetSeaFormerInstruction(orderMaster, models.InstructionMaster)
 	case "former_sea_book":
 		data, err = o.getFormerBooking(orderMaster, formerType)
 	case "former_sea_so_no":
-		data, err = o.repo.GetFormerSoNo(orderMaster.ID, formerItemType)
+		data, err = o.repo.GetFormerSoNo(orderMaster.ID, formerType)
 	}
 	return data, err
 }
@@ -165,7 +160,7 @@ func (o OrderMasterService) CreateMaster(order models.OrderMaster, language stri
 }
 
 //获取委托单对应的数据
-func (o OrderMasterService) GetFormerInstruction(master models.OrderMaster, formerType string, formerItemType string) (interface{}, error) {
+func (o OrderMasterService) GetSeaFormerInstruction(master models.OrderMaster, formerItemType string) (interface{}, error) {
 	var (
 		data       interface{}
 		attr       map[string]interface{}
@@ -186,7 +181,7 @@ func (o OrderMasterService) GetFormerInstruction(master models.OrderMaster, form
 	return data, err
 }
 
-//得到订舱的数据
+//得到海运订舱的数据
 func (o OrderMasterService) getFormerBooking(order models.OrderMaster, formerType string) (interface{}, error) {
 	var (
 		data interface{}
@@ -197,7 +192,7 @@ func (o OrderMasterService) getFormerBooking(order models.OrderMaster, formerTyp
 		if err == nil {
 			return data, err
 		}
-		instruction, err := o.GetFormerInstruction(order, "former_sea_instruction", models.InstructionMaster)
+		instruction, err := o.GetSeaFormerInstruction(order, models.InstructionMaster)
 		if err != nil {
 			return data, err
 		}

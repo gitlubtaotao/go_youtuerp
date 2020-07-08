@@ -31,7 +31,7 @@ func (c *ColumnService) StructColumn(model interface{}, args ...interface{}) (da
 	v := reflect.ValueOf(model)
 	hiddenColumn := c.defaultHiddenColumn(v)
 	if t.Kind() != reflect.Struct {
-		err = errors.New("mode is not struct")
+		err = errors.New("model is not struct")
 		return
 	}
 	c.sy.Lock()

@@ -18,7 +18,6 @@ func (f *FormerServer) GetOtherServer(ctx iris.Context) {
 	var (
 		id            uint
 		err           error
-		transportType string
 		formerData    map[string]interface{}
 		selectOptions map[string]interface{}
 		crmOptions    map[string]interface{}
@@ -30,20 +29,19 @@ func (f *FormerServer) GetOtherServer(ctx iris.Context) {
 		f.Render400(ctx, err, "")
 		return
 	}
-	transportType = ctx.URLParamDefault("transport_type", "1")
 	sw.Add(3)
-	go func(id uint, transportType string) {
+	go func(id uint) {
 		sm.Lock()
 		defer sm.Unlock()
-		formerData, _ = f.service.GetOtherServer(id, transportType)
+		formerData, _ = f.service.GetOtherServer(id)
 		sw.Done()
-	}(id, transportType)
-	go func(id uint, transportType string) {
+	}(id)
+	go func() {
 		sm.Lock()
 		defer sm.Unlock()
-		selectOptions, _ = f.service.GetOtherServerOptions(id, transportType)
+		selectOptions, _ = f.service.GetOtherServerOptions()
 		sw.Done()
-	}(id, transportType)
+	}()
 	go func() {
 		sm.Lock()
 		defer sm.Unlock()

@@ -2,6 +2,7 @@
 package tools
 
 import (
+	"errors"
 	"net"
 	"net/http"
 	"reflect"
@@ -108,6 +109,39 @@ func StructToChange(src interface{}) map[string]interface{} {
 		}
 	}
 	return data
+}
+
+//通过struct中json tag 获取 all field
+func GetStructFieldByJson(model interface{}) (data []string, err error) {
+	t := reflect.TypeOf(model)
+	if t.Kind() != reflect.Struct {
+		err = errors.New("model is not struct")
+		return
+	}
+	for i := 0; i < t.NumField(); i++ {
+		f := t.Field(i)
+		switch f.Type.Kind() {
+		case reflect.Slice, reflect.Map, reflect.Array:
+			continue
+		case reflect.Struct:
+			if f.Type.Name() != "Time" {
+				continue
+			} else {
+				field := f.Tag.Get("json")
+				if field == "" {
+					continue
+				}
+				data = append(data, field)
+			}
+		default:
+			field := f.Tag.Get("json")
+			if field == "" {
+				continue
+			}
+			data = append(data, field)
+		}
+	}
+	return data, err
 }
 
 func (o OtherHelper) merge(dst, src map[string]interface{}, depth int) map[string]interface{} {

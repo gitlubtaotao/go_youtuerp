@@ -16,6 +16,7 @@ type IBasePort interface {
 	Create(code models.BaseDataPort, language string) (models.BaseDataPort, error)
 	Find(per, page uint, filter map[string]interface{}, selectKeys []string,
 		orders []string) (codes []models.BaseDataPort, total uint, err error)
+	
 }
 
 type BasePort struct {
