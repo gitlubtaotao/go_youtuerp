@@ -36,8 +36,11 @@ func (o *OrderMaster) GetColumn(ctx iris.Context) {
 }
 
 func (o *OrderMaster) Get(ctx iris.Context) {
-	o.handlerParams()
-	records, total, err := o.service.FindMaster(o.GetPer(ctx), o.GetPage(ctx), o.handlerParams(), []string{},
+	records, total, err := o.service.FindMaster(
+		o.GetPer(ctx),
+		o.GetPage(ctx),
+		o.handlerParams(),
+		[]string{},
 		[]string{})
 	if err != nil {
 		o.Render500(ctx, err, "")
@@ -254,9 +257,9 @@ func (o *OrderMaster) handlerData(order models.ResultOrderMaster) map[string]int
 	data["salesman_id"] = red.HGetRecord("users", data["salesman_id"], "")
 	data["operation_id_value"] = data["operation_id"]
 	data["operation_id"] = red.HGetRecord("users", data["operation_id"], "")
-	data["pol_id"] = o.showPort(data["transport_type"],data["pol_id"])
-	data["pod_id"] = o.showPort(data["transport_type"],data["pod_id"])
-	data["carrier_id"] = o.showCarrier(data["transport_type"],data["carrier_id"])
+	data["pol_id"] = o.showPort(data["transport_type"], data["pol_id"])
+	data["pod_id"] = o.showPort(data["transport_type"], data["pod_id"])
+	data["carrier_id"] = o.showCarrier(data["transport_type"], data["carrier_id"])
 	data["transport_type_value"] = data["transport_type"]
 	data["transport_type"] = o.service.ShowTransport(o.enum, order)
 	data["status_value"] = data["status"]
@@ -271,66 +274,33 @@ func (o *OrderMaster) handlerData(order models.ResultOrderMaster) map[string]int
 
 // 处理前端查询字段
 func (o *OrderMaster) handlerParams() map[string]interface{} {
-	filters := make(map[string]interface{}, 10)
-	params := o.ctx
-	var sy sync.WaitGroup
-	var mu sync.Mutex
-	sy.Add(4)
-	go func() {
-		intArray := []string{"transport_type", "instruction_id", "supply_agent_id",
-			"company_id", "salesman_id", "operation_id", "carrier_id", "pol_id",
-			"pod_id", "courier_code_id"}
-		mu.Lock()
-		defer mu.Unlock()
-		for i := 0; i < len(intArray); i++ {
-			filters[intArray[i]+"-eq"] = params.URLParamIntDefault(intArray[i], 0)
-		}
-		sy.Done()
-	}()
-	go func() {
-		stringArray := []string{"serial_number", "mbl_so", "so_no", "flight_no", "courier_no"}
-		mu.Lock()
-		defer mu.Unlock()
-		for i := 0; i < len(stringArray); i++ {
-			filters[stringArray[i]+"-rCount"] = params.URLParamDefault(stringArray[i], "")
-		}
-		sy.Done()
-	}()
-	//
-	go func() {
-		eqArray := []string{"paid_status", "payable_status",
-			"receivable_status", "received_status"}
-		mu.Lock()
-		defer mu.Unlock()
-		for i := 0; i < len(eqArray); i++ {
-			filters[eqArray[i]+"-eq"] = params.URLParamDefault(eqArray[i], "")
-		}
-		sy.Done()
-	}()
-	go func() {
-		mu.Lock()
-		defer mu.Unlock()
-		for _, item := range []string{"created_at", "cut_off_day", "departure", "arrival"} {
-			o.HandlerFilterDate(filters, item)
-		}
-		sy.Done()
-	}()
-	sy.Wait()
-	status := params.URLParamDefault("status", "")
-	if status != "" {
-		filters["status-eq"] = status
-	} else {
-		filters["status-in"] = []string{models.OrderStatusPro, models.OrderStatusLocked, models.OrderStatusFinished}
+	var readMap map[string]interface{}
+	err := o.ctx.ReadJSON(&readMap)
+	if err != nil {
+		return readMap
 	}
-	return filters
+	for _, item := range []string{"created_at", "cut_off_day", "departure", "arrival"} {
+		o.HandlerFilterDate(readMap, item)
+	}
+	if status := readMap["status-eq"]; status == "" {
+		readMap["status-notEq"] = models.OrderStatusCancel
+		delete(readMap,"status-eq")
+	}
+	golog.Infof("map is %v", readMap)
+	return readMap
 }
 
 // 处理查询时间问题
 func (o *OrderMaster) HandlerFilterDate(filters map[string]interface{}, field string) {
-	timeField := strings.Split(o.ctx.URLParamDefault(field, ""), ",")
-	if len(timeField) == 2 {
-		filters[field+"-gtEq"] = o.stringToDate(timeField[0])
-		filters[field+"-ltEq"] = o.stringToDate(timeField[1])
+	timeField, ok := filters[field]
+	if !ok {
+		return
+	}
+	stringTime := timeField.(string)
+	timeArray := strings.Split(stringTime, ",")
+	if len(timeArray) == 2 {
+		filters[field+"-gtEq"] = o.stringToDate(timeArray[0])
+		filters[field+"-ltEq"] = o.stringToDate(timeArray[1])
 	}
 }
 

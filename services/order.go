@@ -12,7 +12,6 @@ import (
 )
 
 type IOrderMasterService interface {
-	//显示订单的起运港
 	//通过订单Ids查询订单
 	FindMasterByIds(ids []uint, otherFilter ...string) ([]models.ResultOrderMaster, error)
 	//获取表单中对应的数据
