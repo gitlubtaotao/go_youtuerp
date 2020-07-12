@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 	"time"
 )
 
@@ -127,7 +127,7 @@ func (ResultEmployee) TableName() string {
 	return "users"
 }
 
-func (e *Employee) BeforeCreate(scope *gorm.Scope) (err error) {
+func (e *Employee) BeforeCreate(tx *gorm.DB) (err error) {
 	e.ResetPasswordSentAt = time.Now()
 	e.RememberCreatedAt = time.Now()
 	e.LastSignInAt = time.Now()

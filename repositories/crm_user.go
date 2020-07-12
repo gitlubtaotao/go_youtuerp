@@ -1,17 +1,18 @@
 package repositories
 
 import (
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 	"youtuerp/database"
 	"youtuerp/models"
+	"youtuerp/tools"
 )
 
 type ICrmUser interface {
 	Delete(id uint) error
 	Update(id uint, user models.CrmUser) error
 	Create(user models.CrmUser) (models.CrmUser, error)
-	Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-		order []string, isTotal bool) ([]models.CrmUser, uint, error)
+	Find(per, page int, filter map[string]interface{}, selectKeys []string,
+		order []string, isTotal bool) ([]models.CrmUser, int64, error)
 }
 type CrmUser struct {
 	BaseRepository
@@ -21,11 +22,11 @@ func (c CrmUser) Delete(id uint) error {
 	return c.crud.Delete(&models.CrmUser{}, id)
 }
 func (c CrmUser) Update(id uint, user models.CrmUser) error {
-	return database.GetDBCon().Model(&models.CrmUser{ID: id}).Update(user).Error
+	return database.GetDBCon().Model(&models.CrmUser{ID: id}).Updates(tools.StructToChange(user)).Error
 }
 
-func (c CrmUser) Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-	order []string, isTotal bool) (users []models.CrmUser, total uint, err error) {
+func (c CrmUser) Find(per, page int, filter map[string]interface{}, selectKeys []string,
+	order []string, isTotal bool) (users []models.CrmUser, total int64, err error) {
 	sqlConn := database.GetDBCon().Model(&models.CrmUser{}).Scopes(c.defaultScope)
 	if isTotal {
 		if total, err = c.Count(sqlConn, filter); err != nil {

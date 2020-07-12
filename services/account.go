@@ -11,10 +11,10 @@ type IAccountService interface {
 	UpdateById(id uint, updateContent models.Account, language string) (models.Account, error)
 	First(id uint) (models.Account, error)
 	Create(account models.Account, language string) (models.Account, error)
-	FindByOa(per, page uint, filter map[string]interface{}, selectKeys []string,
-		order []string) (accounts []models.Account, total uint, err error)
-	FindByCrm(per, page uint, filter map[string]interface{}, selectKeys []string,
-		orders []string) (accounts []models.Account, total uint, err error)
+	FindByOa(per, page int, filter map[string]interface{}, selectKeys []string,
+		order []string) (accounts []models.Account, total int64, err error)
+	FindByCrm(per, page int, filter map[string]interface{}, selectKeys []string,
+		orders []string) (accounts []models.Account, total int64, err error)
 }
 
 type AccountService struct {
@@ -38,12 +38,12 @@ func (a AccountService) First(id uint) (models.Account, error) {
 	return a.repo.First(id)
 }
 
-func (a AccountService) FindByOa(per, page uint, filter map[string]interface{}, selectKeys []string,
-	order []string) (accounts []models.Account, total uint, err error) {
+func (a AccountService) FindByOa(per, page int, filter map[string]interface{}, selectKeys []string,
+	order []string) (accounts []models.Account, total int64, err error) {
 	return a.repo.FindByOa(per, page, filter, selectKeys, order)
 }
-func (a AccountService) FindByCrm(per, page uint, filter map[string]interface{}, selectKeys []string,
-	orders []string) (accounts []models.Account, total uint, err error) {
+func (a AccountService) FindByCrm(per, page int, filter map[string]interface{}, selectKeys []string,
+	orders []string) (accounts []models.Account, total int64, err error) {
 	return a.repo.FindByCrm(per, page, filter, selectKeys, orders)
 }
 

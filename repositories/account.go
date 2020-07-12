@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 	"youtuerp/database"
 	"youtuerp/models"
 )
@@ -9,10 +9,10 @@ import (
 type IAccountRepository interface {
 	Delete(id uint) error
 	UpdateById(id uint, updateContent models.Account) (models.Account, error)
-	FindByOa(per, page uint, filter map[string]interface{}, selectKeys []string, order []string) (accounts []models.Account,
-		total uint, err error)
-	FindByCrm(per, page uint, filter map[string]interface{}, selectKeys []string, orders []string) (accounts []models.Account,
-		total uint, err error)
+	FindByOa(per, page int, filter map[string]interface{}, selectKeys []string, order []string) (accounts []models.Account,
+		total int64, err error)
+	FindByCrm(per, page int, filter map[string]interface{}, selectKeys []string, orders []string) (accounts []models.Account,
+		total int64, err error)
 	Create(account models.Account) (models.Account, error)
 	First(id uint) (models.Account, error)
 }
@@ -34,7 +34,7 @@ func (a AccountRepository) UpdateById(id uint, updateContent models.Account) (mo
 	if err != nil {
 		return account, err
 	}
-	err = database.GetDBCon().Model(&account).Update(updateContent).Error
+	err = database.GetDBCon().Model(&account).Updates(updateContent).Error
 	return account, err
 }
 
@@ -44,14 +44,14 @@ func (a AccountRepository) First(id uint) (models.Account, error) {
 	return data, err
 }
 
-func (a AccountRepository) FindByOa(per, page uint, filter map[string]interface{}, selectKeys []string,
-	order []string) (accounts []models.Account, total uint, err error) {
+func (a AccountRepository) FindByOa(per, page int, filter map[string]interface{}, selectKeys []string,
+	order []string) (accounts []models.Account, total int64, err error) {
 	sqlCon := database.GetDBCon().Model(&models.Account{})
 	sqlCon = sqlCon.Scopes(a.defaultOaScoped)
 	return a.Find(sqlCon, per, page, filter, selectKeys, order, true)
 }
-func (a AccountRepository) FindByCrm(per, page uint, filter map[string]interface{}, selectKeys []string,
-	orders []string) (accounts []models.Account, total uint, err error) {
+func (a AccountRepository) FindByCrm(per, page int, filter map[string]interface{}, selectKeys []string,
+	orders []string) (accounts []models.Account, total int64, err error) {
 	sqlCon := database.GetDBCon().Model(&models.Account{})
 	sqlCon = sqlCon.Scopes(a.defaultCrmScoped)
 	return a.Find(sqlCon, per, page, filter, selectKeys, orders, true)
@@ -66,9 +66,9 @@ func (a AccountRepository) Create(account models.Account) (models.Account, error
 	return account, err
 }
 
-func (a AccountRepository) Find(sqlCon *gorm.DB, per, page uint, filter map[string]interface{}, selectKeys []string,
+func (a AccountRepository) Find(sqlCon *gorm.DB, per, page int, filter map[string]interface{}, selectKeys []string,
 	order []string, isCount bool) (accounts []models.Account,
-	total uint, err error) {
+	total int64, err error) {
 	if len(filter) > 0 {
 		sqlCon = sqlCon.Scopes(a.Ransack(filter))
 	}

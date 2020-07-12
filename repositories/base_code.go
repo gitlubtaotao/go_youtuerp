@@ -9,8 +9,8 @@ type IBaseCode interface {
 	Update(id uint, code models.BaseDataCode) error
 	Delete(id uint) error
 	Create(code models.BaseDataCode) (models.BaseDataCode, error)
-	Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-		orders []string, isTotal bool) (codes []models.BaseDataCode, total uint, err error)
+	Find(per, page int, filter map[string]interface{}, selectKeys []string,
+		orders []string, isTotal bool) (codes []models.BaseDataCode, total int64, err error)
 	FindAllLevel() (levels []models.BaseDataLevel, err error)
 }
 type BaseCode struct {
@@ -18,7 +18,7 @@ type BaseCode struct {
 }
 
 func (b BaseCode) Update(id uint, code models.BaseDataCode) error {
-	return database.GetDBCon().Model(&models.BaseDataCode{ID: id}).Update(code).Error
+	return database.GetDBCon().Model(&models.BaseDataCode{ID: id}).Updates(code).Error
 }
 
 func (b BaseCode) Delete(id uint) error {
@@ -35,8 +35,8 @@ func (b BaseCode) FindAllLevel() (levels []models.BaseDataLevel, err error) {
 	return levels, err
 }
 
-func (b BaseCode) Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-	orders []string, isTotal bool) (codes []models.BaseDataCode, total uint, err error) {
+func (b BaseCode) Find(per, page int, filter map[string]interface{}, selectKeys []string,
+	orders []string, isTotal bool) (codes []models.BaseDataCode, total int64, err error) {
 	sqlConn := database.GetDBCon().Model(&models.BaseDataCode{})
 	if isTotal {
 		if total, err = b.Count(sqlConn, filter); err != nil {

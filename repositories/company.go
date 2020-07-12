@@ -2,9 +2,10 @@ package repositories
 
 import (
 	"database/sql"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 	"youtuerp/database"
 	"youtuerp/models"
+	"youtuerp/tools"
 )
 
 type ICompanyRepository interface {
@@ -13,10 +14,10 @@ type ICompanyRepository interface {
 	page: 当前页数
 	attr: 查询公司信息
 	*/
-	FindCompany(per, page uint, attr map[string]interface{}, selectKeys []string, order []string, isCount bool) (companies []*models.UserCompany,
-		total uint, err error)
+	FindCompany(per, page int, attr map[string]interface{}, selectKeys []string, order []string, isCount bool) (companies []*models.UserCompany,
+		total int64, err error)
 	FirstCompany(id uint) (*models.UserCompany, error)
-	FirstCompanyByRelated(id uint, related ...string)(models.UserCompany,error)
+	FirstCompanyByRelated(id uint, related ...string) (models.UserCompany, error)
 	CreateCompany(company models.UserCompany) (models.UserCompany, error)
 	UpdateCompany(company *models.UserCompany, readData models.UserCompany) error
 	DeleteCompany(id uint) error
@@ -36,14 +37,13 @@ func (c CompanyRepository) FirstCompanyByRelated(id uint, related ...string) (mo
 	return company, err
 }
 
-
 func (c CompanyRepository) DeleteCompany(id uint) error {
 	var readData models.UserCompany
 	return database.GetDBCon().Find(&readData).Delete(&readData).Error
 }
 
 func (c CompanyRepository) UpdateCompany(company *models.UserCompany, readData models.UserCompany) error {
-	return database.GetDBCon().Model(&company).Update(readData).Error
+	return database.GetDBCon().Model(&company).Updates(tools.StructToChange(readData)).Error
 }
 
 func (c CompanyRepository) FirstCompany(id uint) (company *models.UserCompany, err error) {
@@ -65,9 +65,9 @@ func (c CompanyRepository) DefaultScope(temp *gorm.DB) *gorm.DB {
 }
 
 //
-func (c *CompanyRepository) FindCompany(per, page uint, filters map[string]interface{},
+func (c *CompanyRepository) FindCompany(per, page int, filters map[string]interface{},
 	selectKeys []string, orders []string,
-	isCount bool) (companies []*models.UserCompany, total uint, err error) {
+	isCount bool) (companies []*models.UserCompany, total int64, err error) {
 	var rows *sql.Rows
 	sqlCon := database.GetDBCon()
 	temp := sqlCon.Scopes(c.DefaultScope)

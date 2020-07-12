@@ -11,10 +11,10 @@ type IAddressService interface {
 	UpdateById(id uint, updateContent models.Address, language string) (models.Address, error)
 	First(id uint) (models.Address, error)
 	Create(account models.Address, language string) (models.Address, error)
-	FindByOa(per, page uint, filter map[string]interface{}, selectKeys []string,
-		order []string) (accounts []models.Address, total uint, err error)
-	FindByCrm(per, page uint, filter map[string]interface{}, selectKeys []string,
-		orders []string) (accounts []models.Address, total uint, err error)
+	FindByOa(per, page int, filter map[string]interface{}, selectKeys []string,
+		order []string) (accounts []models.Address, total int64, err error)
+	FindByCrm(per, page int, filter map[string]interface{}, selectKeys []string,
+		orders []string) (accounts []models.Address, total int64, err error)
 }
 
 type AddressService struct {
@@ -38,12 +38,12 @@ func (a AddressService) First(id uint) (models.Address, error) {
 	return a.repo.First(id)
 }
 
-func (a AddressService) FindByOa(per, page uint, filter map[string]interface{}, selectKeys []string,
-	order []string) (accounts []models.Address, total uint, err error) {
+func (a AddressService) FindByOa(per, page int, filter map[string]interface{}, selectKeys []string,
+	order []string) (accounts []models.Address, total int64, err error) {
 	return a.repo.FindByOa(per, page, filter, selectKeys, order)
 }
-func (a AddressService) FindByCrm(per, page uint, filter map[string]interface{}, selectKeys []string,
-	orders []string) (accounts []models.Address, total uint, err error) {
+func (a AddressService) FindByCrm(per, page int, filter map[string]interface{}, selectKeys []string,
+	orders []string) (accounts []models.Address, total int64, err error) {
 	return a.repo.FindByCrm(per, page, filter, selectKeys, orders)
 }
 

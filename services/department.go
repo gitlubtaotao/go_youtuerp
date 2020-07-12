@@ -6,9 +6,9 @@ import (
 )
 
 type IDepartmentService interface {
-	Find(per, page uint, attr map[string]interface{}, selectKeys []string,
-		order []string, isCount bool) ([]interface{}, uint, error)
-	FindAll(filter map[string]interface{}, selectKeys []string, order []string, isCount bool) ([]interface{}, uint, error)
+	Find(per, page int, attr map[string]interface{}, selectKeys []string,
+		order []string, isCount bool) ([]interface{}, int64, error)
+	FindAll(filter map[string]interface{}, selectKeys []string, order []string, isCount bool) ([]interface{}, int64, error)
 	First(id uint) (*models.Department, error)
 	Update(department *models.Department, updateData models.Department) error
 	Create(department models.Department) (models.Department, error)
@@ -20,11 +20,11 @@ type DepartmentService struct {
 	BaseService
 }
 
-func (d *DepartmentService) Find(per, page uint, attr map[string]interface{}, selectKeys []string,
-	order []string, isCount bool) ([]interface{}, uint, error) {
+func (d *DepartmentService) Find(per, page int, attr map[string]interface{}, selectKeys []string,
+	order []string, isCount bool) ([]interface{}, int64, error) {
 	return d.repo.Find(per, page, attr, selectKeys, order, isCount)
 }
-func (d *DepartmentService) FindAll(filter map[string]interface{}, selectKeys []string, order []string, isCount bool) ([]interface{}, uint, error) {
+func (d *DepartmentService) FindAll(filter map[string]interface{}, selectKeys []string, order []string, isCount bool) ([]interface{}, int64, error) {
 	return d.repo.Find(0, 0, filter, selectKeys, order, isCount)
 }
 

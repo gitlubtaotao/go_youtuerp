@@ -8,8 +8,8 @@ import (
 
 type ICrmTrack interface {
 	Create(track models.CrmTrack) (models.CrmTrack, error)
-	Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-		orders []string, isCount bool) ([]models.CrmTrack, uint, error)
+	Find(per, page int, filter map[string]interface{}, selectKeys []string,
+		orders []string, isCount bool) ([]models.CrmTrack, int64, error)
 }
 type CrmTrack struct {
 	BaseRepository
@@ -20,8 +20,8 @@ func (c CrmTrack) Create(track models.CrmTrack) (models.CrmTrack, error) {
 	return track, err
 }
 
-func (c CrmTrack) Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-	orders []string, isCount bool) (tracks []models.CrmTrack, total uint, err error) {
+func (c CrmTrack) Find(per, page int, filter map[string]interface{}, selectKeys []string,
+	orders []string, isCount bool) (tracks []models.CrmTrack, total int64, err error) {
 	var rows *sql.Rows
 	sqlCon := database.GetDBCon().Model(&models.CrmTrack{})
 	if isCount {

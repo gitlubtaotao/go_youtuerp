@@ -15,8 +15,8 @@ type IBaseCode interface {
 	Update(id uint, code models.BaseDataCode, language string) error
 	Delete(id uint) error
 	Create(code models.BaseDataCode, language string) (models.BaseDataCode, error)
-	Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-		orders []string) (codes []models.BaseDataCode, total uint, err error)
+	Find(per, page int, filter map[string]interface{}, selectKeys []string,
+		orders []string) (codes []models.BaseDataCode, total int64, err error)
 	FindAllLevel() (levels []map[string]string, err error)
 	FindCollect(key string) []map[string]string
 }
@@ -79,8 +79,8 @@ func (b BaseCode) Create(code models.BaseDataCode, language string) (models.Base
 	return result, err
 }
 
-func (b BaseCode) Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-	orders []string) (codes []models.BaseDataCode, total uint, err error) {
+func (b BaseCode) Find(per, page int, filter map[string]interface{}, selectKeys []string,
+	orders []string) (codes []models.BaseDataCode, total int64, err error) {
 	return b.repo.Find(per, page, filter, selectKeys, orders, true)
 }
 

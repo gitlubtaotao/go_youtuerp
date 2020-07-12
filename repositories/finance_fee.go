@@ -1,8 +1,8 @@
 package repositories
 
 import (
-	"github.com/jinzhu/gorm"
 	"github.com/kataras/golog"
+	"gorm.io/gorm"
 	"youtuerp/database"
 	"youtuerp/models"
 	"youtuerp/tools"
@@ -10,14 +10,14 @@ import (
 
 type IFinanceFee interface {
 	//根据不同的查询条件查询费用
-	FindFinanceFees(per, page uint, filter map[string]interface{},
-		selectKeys []string, orders []string) ([]models.ResultFinanceFee, uint, error)
+	FindFinanceFees(per, page int, filter map[string]interface{},
+		selectKeys []string, orders []string) ([]models.ResultFinanceFee, int64, error)
 	//根据不同的结算查询历史费用
 	GetHistoryFee(filter map[string]interface{}, limit int, selectKeys []string) ([]models.FinanceFee, error)
 	//主要通过费用ID进行查询
 	FindFeesById(ids []uint, otherKeys ...string) ([]models.FinanceFee, error)
 	//查询费用信息
-	FindFees(per, page uint, filter map[string]interface{}, selectKeys []string,
+	FindFees(per, page int, filter map[string]interface{}, selectKeys []string,
 		orders []string)
 	//更改费用状态
 	ChangeStatusFees(ids []uint, status string) error
@@ -32,8 +32,8 @@ type FinanceFee struct {
 	BaseRepository
 }
 
-func (f FinanceFee) FindFinanceFees(per, page uint, filter map[string]interface{},
-	selectKeys []string, orders []string) (financeFees []models.ResultFinanceFee, total uint, err error) {
+func (f FinanceFee) FindFinanceFees(per, page int, filter map[string]interface{},
+	selectKeys []string, orders []string) (financeFees []models.ResultFinanceFee, total int64, err error) {
 	var keys []string
 	sqlCon := database.GetDBCon().Model(&models.FinanceFee{})
 	sqlCon = sqlCon.Joins("INNER JOIN order_masters ON order_masters.id = finance_fees.order_master_id")
@@ -103,7 +103,7 @@ func (f FinanceFee) FindFeesById(ids []uint, otherKeys ...string) ([]models.Fina
 	return financeFees, err
 }
 
-func (f FinanceFee) FindFees(per, page uint, filter map[string]interface{}, selectKeys []string,
+func (f FinanceFee) FindFees(per, page int, filter map[string]interface{}, selectKeys []string,
 	orders []string) {
 	
 }
@@ -126,7 +126,7 @@ func (f FinanceFee) BulkInsertOrUpdate(financeFees []models.FinanceFee) ([]model
 	err := sqlConn.Transaction(func(tx *gorm.DB) error {
 		for _, item := range financeFees {
 			if item.ID != 0 {
-				if err := tx.Model(&models.FinanceFee{ID: item.ID}).Update(tools.StructToChange(item)).Error; err != nil {
+				if err := tx.Model(&models.FinanceFee{ID: item.ID}).Updates(tools.StructToChange(item)).Error; err != nil {
 					return err
 				}
 			} else {

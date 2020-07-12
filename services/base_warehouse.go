@@ -15,7 +15,7 @@ type IBaseWarehouse interface {
 	//创建仓库地址信息
 	Create(code models.BaseWarehouse, language string) (models.BaseWarehouse, error)
 	//查询
-	Find(per, page uint, filter map[string]interface{}, selectKeys []string, Orders []string) ([]models.BaseWarehouse, uint, error)
+	Find(per, page int, filter map[string]interface{}, selectKeys []string, Orders []string) ([]models.BaseWarehouse, int64, error)
 }
 type BaseWarehouse struct {
 	BaseService
@@ -48,7 +48,7 @@ func (b BaseWarehouse) Create(code models.BaseWarehouse, language string) (model
 	return b.repo.Create(code)
 }
 
-func (b BaseWarehouse) Find(per, page uint, filter map[string]interface{}, selectKeys []string, Orders []string) ([]models.BaseWarehouse, uint, error) {
+func (b BaseWarehouse) Find(per, page int, filter map[string]interface{}, selectKeys []string, Orders []string) ([]models.BaseWarehouse, int64, error) {
 	return b.repo.Find(per, page, filter, selectKeys, Orders, true)
 }
 

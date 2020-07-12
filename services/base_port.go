@@ -14,8 +14,8 @@ type IBasePort interface {
 	Update(id uint, code models.BaseDataPort, language string) error
 	Delete(id uint) error
 	Create(code models.BaseDataPort, language string) (models.BaseDataPort, error)
-	Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-		orders []string) (codes []models.BaseDataPort, total uint, err error)
+	Find(per, page int, filter map[string]interface{}, selectKeys []string,
+		orders []string) (codes []models.BaseDataPort, total int64, err error)
 	
 }
 
@@ -72,8 +72,8 @@ func (b BasePort) Create(code models.BaseDataPort, language string) (models.Base
 	return result, err
 }
 
-func (b BasePort) Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-	orders []string) (codes []models.BaseDataPort, total uint, err error) {
+func (b BasePort) Find(per, page int, filter map[string]interface{}, selectKeys []string,
+	orders []string) (codes []models.BaseDataPort, total int64, err error) {
 	return b.repo.Find(per, page, filter, selectKeys, orders, true)
 }
 

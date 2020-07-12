@@ -2,14 +2,15 @@ package repositories
 
 import (
 	"fmt"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 	"youtuerp/database"
 	"youtuerp/models"
+	"youtuerp/tools"
 )
 
 type IDepartmentRepository interface {
-	Find(per, page uint, attr map[string]interface{}, selectKeys []string,
-		order []string, isCount bool) ([]interface{}, uint, error)
+	Find(per, page int, attr map[string]interface{}, selectKeys []string,
+		order []string, isCount bool) ([]interface{}, int64, error)
 	First(id uint) (*models.Department, error)
 	Update(department *models.Department, updateData models.Department) error
 	Create(department models.Department) (models.Department, error)
@@ -32,8 +33,8 @@ func (d DepartmentRepository) Create(department models.Department) (models.Depar
 	return department, err
 }
 
-func (d DepartmentRepository) Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-	order []string, isCount bool) (departments []interface{}, total uint, err error) {
+func (d DepartmentRepository) Find(per, page int, filter map[string]interface{}, selectKeys []string,
+	order []string, isCount bool) (departments []interface{}, total int64, err error) {
 	sqlCon := database.GetDBCon().Model(&models.Department{})
 	sqlCon = sqlCon.Scopes(d.defaultScope)
 	if len(filter) > 0 {
@@ -43,7 +44,7 @@ func (d DepartmentRepository) Find(per, page uint, filter map[string]interface{}
 		err = sqlCon.Count(&total).Error
 		fmt.Print(err)
 		if err != nil {
-			return departments, uint(total), err
+			return departments, total, err
 		}
 	}
 	sqlCon = sqlCon.Scopes(d.Paginate(per, page), d.OrderBy(order))
@@ -65,7 +66,7 @@ func (d DepartmentRepository) Find(per, page uint, filter map[string]interface{}
 		_ = sqlCon.ScanRows(rows, &department)
 		departments = append(departments, &department)
 	}
-	return departments, uint(total), err
+	return departments, total, err
 }
 
 func (d *DepartmentRepository) First(id uint) (department *models.Department, err error) {
@@ -75,7 +76,7 @@ func (d *DepartmentRepository) First(id uint) (department *models.Department, er
 }
 
 func (d *DepartmentRepository) Update(department *models.Department, updateData models.Department) error {
-	return database.GetDBCon().Model(&department).Update(updateData).Error
+	return database.GetDBCon().Model(&department).Updates(tools.StructToChange(updateData)).Error
 }
 
 func (d *DepartmentRepository) defaultScope(db *gorm.DB) *gorm.DB {

@@ -1,8 +1,7 @@
 package repositories
 
 import (
-	"fmt"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 	"reflect"
 	"strings"
 	"youtuerp/database"
@@ -15,7 +14,7 @@ type IBaseRepository interface {
 	//将map函数解析成对应的where查询条件
 	Ransack(selectColumn map[string]interface{}) func(db *gorm.DB) *gorm.DB
 	//分页方法
-	Paginate(per, page uint) func(db *gorm.DB) *gorm.DB
+	Paginate(per, page int) func(db *gorm.DB) *gorm.DB
 	//进行数据的排序
 	OrderBy(orders []string) func(db *gorm.DB) *gorm.DB
 }
@@ -32,7 +31,7 @@ func (b BaseRepository) Ransack(selectColumn map[string]interface{}) func(db *go
 //分页方法
 //page = 0 表示不进行分页
 //默认的分页方法
-func (b BaseRepository) Paginate(per, page uint) func(db *gorm.DB) *gorm.DB {
+func (b BaseRepository) Paginate(per, page int) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		if page == 0 && per > 0 {
 			return db.Limit(per)
@@ -84,7 +83,7 @@ func (c crud) Where(sqlCon *gorm.DB, filter map[string]interface{}, selectKeys [
 	return sqlCon
 }
 
-func (c crud) Count(sqlCon *gorm.DB, filter map[string]interface{}, funcs ...func(*gorm.DB) *gorm.DB) (count uint, err error) {
+func (c crud) Count(sqlCon *gorm.DB, filter map[string]interface{}, funcs ...func(*gorm.DB) *gorm.DB) (count int64, err error) {
 	if len(filter) > 0 {
 		sqlCon = sqlCon.Scopes(c.ransack(filter))
 	}
@@ -180,51 +179,4 @@ type BulkInsert struct {
 	db *gorm.DB
 }
 
-func (b *BulkInsert) BatchInsert(objAttr []interface{}) (total int64, err error) {
-	if len(objAttr) == 0 {
-		return
-	}
-	mainObj := objAttr[0]
-	mainScope := b.db.NewScope(mainObj)
-	mainFields := mainScope.Fields()
-	quoted := make([]string, 0, len(mainFields))
-	for i := range mainFields {
-		// If primary key has blank value (0 for int, "" for string, nil for interface ...), skip it.
-		// If field is ignore field, skip it.
-		if (mainFields[i].IsPrimaryKey && mainFields[i].IsBlank) || (mainFields[i].IsIgnored) {
-			continue
-		}
-		quoted = append(quoted, mainScope.Quote(mainFields[i].DBName))
-	}
-	placeholdersArr := make([]string, 0, len(objAttr))
-	for _, obj := range objAttr {
-		scope := b.db.NewScope(obj)
-		fields := scope.Fields()
-		placeholders := make([]string, 0, len(fields))
-		for i := range fields {
-			if (fields[i].IsPrimaryKey && fields[i].IsBlank) || (fields[i].IsIgnored) {
-				continue
-			}
-			var vars interface{}
-			if (fields[i].Name == "CreatedAt" || fields[i].Name == "UpdatedAt") && fields[i].IsBlank {
-				vars = gorm.NowFunc()
-			} else {
-				vars = fields[i].Field.Interface()
-			}
-			placeholders = append(placeholders, scope.AddToVars(vars))
-		}
-		placeholdersStr := "(" + strings.Join(placeholders, ", ") + ")"
-		placeholdersArr = append(placeholdersArr, placeholdersStr)
-		// add real variables for the replacement of placeholders' '?' letter later.
-		mainScope.SQLVars = append(mainScope.SQLVars, scope.SQLVars...)
-	}
-	mainScope.Raw(fmt.Sprintf("INSERT INTO %s (%s) VALUES %s",
-		mainScope.QuotedTableName(),
-		strings.Join(quoted, ", "),
-		strings.Join(placeholdersArr, ", "),
-	))
-	if err := mainScope.Exec().DB().Error; err != nil {
-		return 0, err
-	}
-	return mainScope.DB().RowsAffected, nil
-}
+

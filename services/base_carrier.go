@@ -14,8 +14,8 @@ type IBaseCarrier interface {
 	Update(id uint, code models.BaseDataCarrier, language string) error
 	Delete(id uint) error
 	Create(code models.BaseDataCarrier, language string) (models.BaseDataCarrier, error)
-	Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-		orders []string) (codes []models.BaseDataCarrier, total uint, err error)
+	Find(per, page int, filter map[string]interface{}, selectKeys []string,
+		orders []string) (codes []models.BaseDataCarrier, total int64, err error)
 }
 
 type BaseCarrier struct {
@@ -79,8 +79,8 @@ func (b BaseCarrier) SaveRedisData(result models.BaseDataCarrier) {
 	})
 }
 
-func (b BaseCarrier) Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-	orders []string) (codes []models.BaseDataCarrier, total uint, err error) {
+func (b BaseCarrier) Find(per, page int, filter map[string]interface{}, selectKeys []string,
+	orders []string) (codes []models.BaseDataCarrier, total int64, err error) {
 	return b.repo.Find(per, page, filter, selectKeys, orders, true)
 }
 

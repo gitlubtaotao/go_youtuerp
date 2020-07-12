@@ -39,7 +39,7 @@ type IOrderMasterService interface {
 	UpdateMaster(id uint, order models.OrderMaster, language string) error
 	//查询订单
 	FirstMaster(id uint, load ...string) (models.OrderMaster, error)
-	FindMaster(per, page uint, filter map[string]interface{}, selectKeys []string, orders []string) ([]models.ResultOrderMaster, uint, error)
+	FindMaster(per, page int, filter map[string]interface{}, selectKeys []string, orders []string) ([]models.ResultOrderMaster, int64, error)
 	//创建订单
 	CreateMaster(order models.OrderMaster, language string) (models.OrderMaster, error)
 }
@@ -193,7 +193,7 @@ func (o OrderMasterService) ShowTransport(enum conf.Enum, value interface{}) str
 	return temp
 }
 
-func (o OrderMasterService) FindMaster(per, page uint, filter map[string]interface{}, selectKeys []string, orders []string) ([]models.ResultOrderMaster, uint, error) {
+func (o OrderMasterService) FindMaster(per, page int, filter map[string]interface{}, selectKeys []string, orders []string) ([]models.ResultOrderMaster, int64, error) {
 	return o.repo.FindMaster(per, page, filter, selectKeys, orders, true)
 }
 

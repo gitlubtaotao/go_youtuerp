@@ -9,8 +9,8 @@ type IBaseCarrier interface {
 	Update(id uint, code models.BaseDataCarrier) error
 	Delete(id uint) error
 	Create(code models.BaseDataCarrier) (models.BaseDataCarrier, error)
-	Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-		orders []string, isTotal bool) (codes []models.BaseDataCarrier, total uint, err error)
+	Find(per, page int, filter map[string]interface{}, selectKeys []string,
+		orders []string, isTotal bool) (codes []models.BaseDataCarrier, total int64, err error)
 }
 
 type BaseCarrier struct {
@@ -18,7 +18,7 @@ type BaseCarrier struct {
 }
 
 func (b BaseCarrier) Update(id uint, carrier models.BaseDataCarrier) error {
-	return database.GetDBCon().Model(&models.BaseDataCarrier{ID: id}).Update(carrier).Error
+	return database.GetDBCon().Model(&models.BaseDataCarrier{ID: id}).Updates(carrier).Error
 }
 
 func (b BaseCarrier) Delete(id uint) error {
@@ -31,8 +31,8 @@ func (b BaseCarrier) Create(code models.BaseDataCarrier) (models.BaseDataCarrier
 
 
 
-func (b BaseCarrier) Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-	orders []string, isTotal bool) (codes []models.BaseDataCarrier, total uint, err error) {
+func (b BaseCarrier) Find(per, page int, filter map[string]interface{}, selectKeys []string,
+	orders []string, isTotal bool) (codes []models.BaseDataCarrier, total int64, err error) {
 	sqlConn := database.GetDBCon().Model(&models.BaseDataCarrier{})
 	if isTotal {
 		if total, err = b.Count(sqlConn, filter); err != nil {

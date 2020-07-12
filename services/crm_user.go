@@ -10,8 +10,8 @@ type ICrmUser interface {
 	Delete(id uint) error
 	Update(id uint, user models.CrmUser,language string) error
 	Create(user models.CrmUser, language string) (models.CrmUser, error)
-	Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-		order []string) ([]models.CrmUser, uint, error)
+	Find(per, page int, filter map[string]interface{}, selectKeys []string,
+		order []string) ([]models.CrmUser, int64, error)
 }
 type CrmUser struct {
 	BaseService
@@ -30,8 +30,8 @@ func (c CrmUser) Update(id uint, user models.CrmUser, language string) error {
 	return c.repo.Update(id, user)
 }
 
-func (c CrmUser) Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-	order []string) ([]models.CrmUser, uint, error) {
+func (c CrmUser) Find(per, page int, filter map[string]interface{}, selectKeys []string,
+	order []string) ([]models.CrmUser, int64, error) {
 	return c.repo.Find(per, page, filter, selectKeys, order, true)
 }
 

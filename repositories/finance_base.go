@@ -13,10 +13,10 @@ type IFinanceBase interface {
 	Update(id uint, record interface{}) error
 	Create(record interface{}) (interface{}, error)
 	Delete(id uint, model interface{}) error
-	FindRate(per, page uint, filter map[string]interface{},
-		selectKeys []string, orders []string) ([]models.FinanceRate, uint, error)
-	FindFeeType(per, page uint, filter map[string]interface{}, selectKeys []string,
-		orders []string) ([]models.FinanceFeeType, uint, error)
+	FindRate(per, page int, filter map[string]interface{},
+		selectKeys []string, orders []string) ([]models.FinanceRate, int64, error)
+	FindFeeType(per, page int, filter map[string]interface{}, selectKeys []string,
+		orders []string) ([]models.FinanceFeeType, int64, error)
 }
 type FinanceBase struct {
 	BaseRepository
@@ -45,9 +45,9 @@ func (f FinanceBase) GetAllFeeRate(filterOther ...map[string]interface{}) (feeRa
 func (f FinanceBase) Update(id uint, record interface{}) error {
 	name := reflect.TypeOf(record).Name()
 	if name == "FinanceRate" {
-		return database.GetDBCon().Model(&models.FinanceRate{ID: id}).Update(record).Error
+		return database.GetDBCon().Model(&models.FinanceRate{ID: id}).Updates(record).Error
 	} else if name == "FinanceFeeType" {
-		return database.GetDBCon().Model(&models.FinanceFeeType{ID: id}).Update(record).Error
+		return database.GetDBCon().Model(&models.FinanceFeeType{ID: id}).Updates(record).Error
 	}
 	return nil
 }
@@ -55,8 +55,8 @@ func (f FinanceBase) Delete(id uint, model interface{}) error {
 	return database.GetDBCon().Delete(model, "id = ?", id).Error
 }
 
-func (f FinanceBase) FindRate(per, page uint, filter map[string]interface{},
-	selectKeys []string, orders []string) (records []models.FinanceRate, total uint, err error) {
+func (f FinanceBase) FindRate(per, page int, filter map[string]interface{},
+	selectKeys []string, orders []string) (records []models.FinanceRate, total int64, err error) {
 	var rows *sql.Rows
 	sqlConn := database.GetDBCon().Model(&models.FinanceRate{})
 	if total, err = f.Count(sqlConn, filter); err != nil {
@@ -73,8 +73,8 @@ func (f FinanceBase) FindRate(per, page uint, filter map[string]interface{},
 	}
 	return records, total, err
 }
-func (f FinanceBase) FindFeeType(per, page uint, filter map[string]interface{},
-	selectKeys []string, orders []string) (records []models.FinanceFeeType, total uint, err error) {
+func (f FinanceBase) FindFeeType(per, page int, filter map[string]interface{},
+	selectKeys []string, orders []string) (records []models.FinanceFeeType, total int64, err error) {
 	sqlConn := database.GetDBCon().Model(&models.FinanceFeeType{})
 	if total, err = f.Count(sqlConn, filter); err != nil {
 		return

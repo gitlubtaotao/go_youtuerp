@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 	"time"
 )
 
@@ -135,17 +135,17 @@ func (CrmTrack) TableName() string {
 	return "crm_tracks"
 }
 
-func (c *CrmClue) BeforeCreate(scope *gorm.Scope) (err error) {
+func (c *CrmClue) BeforeCreate(tx *gorm.DB) (err error) {
 	c.Status = 0
 	return
 }
 
-func (c *CrmCompany) BeforeCreate(scope *gorm.Scope) (err error) {
+func (c *CrmCompany) BeforeCreate(tx *gorm.DB) (err error) {
 	c.Status = "approving"
 	return
 }
 
-func (c *CrmUser) BeforeCreate(scope *gorm.Scope) (err error) {
+func (c *CrmUser) BeforeCreate(tx *gorm.DB) (err error) {
 	c.CompanyType = CompanyTypeCS
 	return
 }

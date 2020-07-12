@@ -12,8 +12,8 @@ type ICrmCompanyService interface {
 	UpdateByMap(id uint, attr map[string]interface{}) error
 	Delete(id uint) error
 	Update(id uint, company models.CrmCompany, language string) (models.CrmCompany, error)
-	Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-		orders []string) ([]models.CrmCompany, uint, error)
+	Find(per, page int, filter map[string]interface{}, selectKeys []string,
+		orders []string) ([]models.CrmCompany, int64, error)
 	Create(company models.CrmCompany, language string) (models.CrmCompany, error)
 	First(id uint, preload ...string) (models.CrmCompany, error)
 }
@@ -71,8 +71,8 @@ func (c CrmCompanyService) First(id uint, preload ...string) (models.CrmCompany,
 	return c.repo.First(id, preload...)
 }
 
-func (c CrmCompanyService) Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-	orders []string) ([]models.CrmCompany, uint, error) {
+func (c CrmCompanyService) Find(per, page int, filter map[string]interface{}, selectKeys []string,
+	orders []string) ([]models.CrmCompany, int64, error) {
 	return c.repo.Find(per, page, filter, selectKeys, orders, true)
 }
 

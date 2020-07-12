@@ -2,9 +2,10 @@ package repositories
 
 import (
 	"fmt"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 	"youtuerp/database"
 	"youtuerp/models"
+	"youtuerp/tools"
 )
 
 type IEmployeeRepository interface {
@@ -15,8 +16,8 @@ type IEmployeeRepository interface {
 	UpdateColumnByID(employeeID uint, updateColumn map[string]interface{}) error
 	UpdateColumn(employee *models.Employee, updateColumn map[string]interface{}) error
 	UpdateRecordByModel(employee *models.Employee, updateModel models.Employee) error
-	Find(per, page uint, filter map[string]interface{}, selectKeys []string, order []string, isCount bool) (employees []models.Employee,
-		total uint, err error)
+	Find(per, page int, filter map[string]interface{}, selectKeys []string, order []string, isCount bool) (employees []models.Employee,
+		total int64, err error)
 	Create(employee models.Employee) (models.Employee, error)
 	Delete(id uint) error
 }
@@ -43,9 +44,9 @@ func (e EmployeeRepository) Create(employee models.Employee) (models.Employee, e
 	return employee, err
 }
 
-func (e EmployeeRepository) Find(per, page uint, filter map[string]interface{},
+func (e EmployeeRepository) Find(per, page int, filter map[string]interface{},
 	selectKeys []string, order []string, isCount bool) (
-	employees []models.Employee, total uint, err error) {
+	employees []models.Employee, total int64, err error) {
 	sqlCon := database.GetDBCon().Model(&models.Employee{})
 	sqlCon = sqlCon.Scopes(e.defaultScoped)
 	if len(filter) > 0 {
@@ -76,7 +77,7 @@ func (e EmployeeRepository) Find(per, page uint, filter map[string]interface{},
 }
 
 func (e EmployeeRepository) UpdateRecordByModel(employee *models.Employee, updateModel models.Employee) error {
-	return database.GetDBCon().Model(&employee).Update(updateModel).Error
+	return database.GetDBCon().Model(&employee).Updates(tools.StructToChange(updateModel)).Error
 }
 
 //通过手机号码和邮箱查询当前用户

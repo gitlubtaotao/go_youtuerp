@@ -13,8 +13,8 @@ import (
 type IFinanceBase interface {
 	Update(id uint, record interface{}, language string) error
 	Delete(id uint, model interface{}) error
-	FindRate(per, page uint, filter map[string]interface{}, selectKeys []string, orders []string) ([]models.FinanceRate, uint, error)
-	FindFeeType(per, page uint, filter map[string]interface{}, selectKeys []string, orders []string) ([]models.FinanceFeeType, uint, error)
+	FindRate(per, page int, filter map[string]interface{}, selectKeys []string, orders []string) ([]models.FinanceRate, int64, error)
+	FindFeeType(per, page int, filter map[string]interface{}, selectKeys []string, orders []string) ([]models.FinanceFeeType, int64, error)
 	Create(record interface{}, language string) (interface{}, error)
 	//获取费用种类的redis数据
 	FindFeeTypeRedis() []map[string]string
@@ -83,11 +83,11 @@ func (f FinanceBase) Delete(id uint, model interface{}) error {
 	return nil
 }
 
-func (f FinanceBase) FindFeeType(per, page uint, filter map[string]interface{}, selectKeys []string, orders []string) ([]models.FinanceFeeType, uint, error) {
+func (f FinanceBase) FindFeeType(per, page int, filter map[string]interface{}, selectKeys []string, orders []string) ([]models.FinanceFeeType, int64, error) {
 	return f.repo.FindFeeType(per, page, filter, selectKeys, orders)
 }
 
-func (f FinanceBase) FindRate(per, page uint, filter map[string]interface{}, selectKeys []string, orders []string) ([]models.FinanceRate, uint, error) {
+func (f FinanceBase) FindRate(per, page int, filter map[string]interface{}, selectKeys []string, orders []string) ([]models.FinanceRate, int64, error) {
 	return f.repo.FindRate(per, page, filter, selectKeys, orders)
 }
 

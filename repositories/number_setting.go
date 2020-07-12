@@ -16,8 +16,8 @@ type INumberSettingRepository interface {
 	//查询历史流水号规则
 	//订单可以进行补录,不同补录时间，对应的当前流水号存在不一致
 	Create(numberSetting models.NumberSetting) (models.NumberSetting, error)
-	Find(per, page uint, filter map[string]interface{}, selectKeys []string, order []string, isCount bool) (numberSettings []models.ResultNumberSetting,
-		total uint, err error)
+	Find(per, page int, filter map[string]interface{}, selectKeys []string, order []string, isCount bool) (numberSettings []models.ResultNumberSetting,
+		total int64, err error)
 	Delete(id uint) error
 	//生成订单号
 	GenerateOrderNo(create time.Time) (string, error)
@@ -34,7 +34,7 @@ func (n NumberSettingRepository) FindOrCreateHistory(attr models.NumberSettingHi
 }
 
 func (n NumberSettingRepository) UpdateNumberHistory(history models.NumberSettingHistory, attr map[string]interface{}) error {
-	return database.GetDBCon().Model(&history).Update(attr).Error
+	return database.GetDBCon().Model(&history).Updates(attr).Error
 }
 
 func (n NumberSettingRepository) Search(attr models.NumberSetting, order string) (result models.NumberSetting, err error) {
@@ -49,8 +49,8 @@ func (n NumberSettingRepository) Delete(id uint) error {
 	return n.crud.Delete(&models.NumberSetting{}, id)
 }
 
-func (n NumberSettingRepository) Find(per, page uint, filter map[string]interface{}, selectKeys []string, order []string, isCount bool) (numberSettings []models.ResultNumberSetting,
-	total uint, err error) {
+func (n NumberSettingRepository) Find(per, page int, filter map[string]interface{}, selectKeys []string, order []string, isCount bool) (numberSettings []models.ResultNumberSetting,
+	total int64, err error) {
 	var rows *sql.Rows
 	sqlCon := database.GetDBCon().Model(&models.NumberSetting{}).Unscoped()
 	sqlCon = sqlCon.Joins("inner join user_companies on user_companies.id = number_settings.user_company_id and user_companies.company_type = 4")
@@ -81,7 +81,7 @@ func (n NumberSettingRepository) Create(numberSetting models.NumberSetting) (mod
 
 //对当前current_number进行更新
 func (n NumberSettingRepository) UpdateNumber(setting models.NumberSetting, attr map[string]interface{}) error {
-	return database.GetDBCon().Model(&setting).Update(attr).Error
+	return database.GetDBCon().Model(&setting).Updates(attr).Error
 }
 
 type searchNumber func(numberSetting models.NumberSetting, create time.Time) (int, error)

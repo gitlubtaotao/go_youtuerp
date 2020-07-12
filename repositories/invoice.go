@@ -1,18 +1,19 @@
 package repositories
 
 import (
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 	"youtuerp/database"
 	"youtuerp/models"
+	"youtuerp/tools"
 )
 
 type IInvoiceRepository interface {
 	Delete(id uint) error
 	UpdateById(id uint, updateContent models.Invoice) (models.Invoice, error)
-	FindByOa(per, page uint, filter map[string]interface{}, selectKeys []string, order []string) (accounts []models.Invoice,
-		total uint, err error)
-	FindByCrm(per, page uint, filter map[string]interface{}, selectKeys []string, orders []string) (accounts []models.Invoice,
-		total uint, err error)
+	FindByOa(per, page int, filter map[string]interface{}, selectKeys []string, order []string) (accounts []models.Invoice,
+		total int64, err error)
+	FindByCrm(per, page int, filter map[string]interface{}, selectKeys []string, orders []string) (accounts []models.Invoice,
+		total int64, err error)
 	Create(account models.Invoice) (models.Invoice, error)
 	First(id uint) (models.Invoice, error)
 }
@@ -30,7 +31,7 @@ func (i InvoiceRepository) UpdateById(id uint, updateContent models.Invoice) (mo
 	if err != nil {
 		return invoice, err
 	}
-	err = database.GetDBCon().Model(&invoice).Update(updateContent).Error
+	err = database.GetDBCon().Model(&invoice).Updates(tools.StructToChange(updateContent)).Error
 	return invoice, err
 }
 
@@ -40,14 +41,14 @@ func (i InvoiceRepository) First(id uint) (models.Invoice, error) {
 	return data, err
 }
 
-func (i InvoiceRepository) FindByOa(per, page uint, filter map[string]interface{}, selectKeys []string,
-	order []string) (invoices []models.Invoice, total uint, err error) {
+func (i InvoiceRepository) FindByOa(per, page int, filter map[string]interface{}, selectKeys []string,
+	order []string) (invoices []models.Invoice, total int64, err error) {
 	sqlCon := database.GetDBCon().Model(&models.Invoice{})
 	sqlCon = sqlCon.Scopes(i.defaultOaScoped)
 	return i.Find(sqlCon, per, page, filter, selectKeys, order, true)
 }
-func (i InvoiceRepository) FindByCrm(per, page uint, filter map[string]interface{}, selectKeys []string,
-	orders []string) (accounts []models.Invoice, total uint, err error) {
+func (i InvoiceRepository) FindByCrm(per, page int, filter map[string]interface{}, selectKeys []string,
+	orders []string) (accounts []models.Invoice, total int64, err error) {
 	sqlCon := database.GetDBCon().Model(&models.Invoice{})
 	sqlCon = sqlCon.Scopes(i.defaultCrmScoped)
 	return i.Find(sqlCon, per, page, filter, selectKeys, orders, true)
@@ -62,9 +63,9 @@ func (i InvoiceRepository) Create(invoice models.Invoice) (models.Invoice, error
 	return invoice, err
 }
 
-func (i InvoiceRepository) Find(sqlCon *gorm.DB, per, page uint, filter map[string]interface{}, selectKeys []string,
+func (i InvoiceRepository) Find(sqlCon *gorm.DB, per, page int, filter map[string]interface{}, selectKeys []string,
 	order []string, isCount bool) (invoices []models.Invoice,
-	total uint, err error) {
+	total int64, err error) {
 	if len(filter) > 0 {
 		sqlCon = sqlCon.Scopes(i.Ransack(filter))
 	}
@@ -94,7 +95,7 @@ func (i InvoiceRepository) defaultOaScoped(db *gorm.DB) *gorm.DB {
 	return db
 }
 
-func (a InvoiceRepository) defaultCrmScoped(db *gorm.DB) *gorm.DB {
+func (i InvoiceRepository) defaultCrmScoped(db *gorm.DB) *gorm.DB {
 	db = db.Joins("inner join user_companies on user_companies.id = invoices.user_company_id and user_companies.company_type in (?) ", []int{1, 2, 3})
 	return db
 }

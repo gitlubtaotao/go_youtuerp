@@ -2,7 +2,7 @@ package repositories
 
 import (
 	"database/sql"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 	"sync"
 	"youtuerp/database"
 	"youtuerp/models"
@@ -23,8 +23,8 @@ type IOrderMaster interface {
 	//更新订单状态
 	ChangeStatus(id uint, status string) error
 	//查询订单信息
-	FindMaster(per, page uint, filter map[string]interface{}, selectKeys []string,
-		orders []string, isTotal bool) ([]models.ResultOrderMaster, uint, error)
+	FindMaster(per, page int, filter map[string]interface{}, selectKeys []string,
+		orders []string, isTotal bool) ([]models.ResultOrderMaster, int64, error)
 	//更新订单数据
 	UpdateMaster(id uint, order models.OrderMaster) error
 	//创建订单
@@ -86,7 +86,7 @@ func (o OrderMasterRepository) DeleteMaster(id uint) error {
 }
 
 func (o OrderMasterRepository) ChangeStatus(id uint, status string) error {
-	return database.GetDBCon().Model(&models.OrderMaster{ID: id}).Update(map[string]interface{}{"status": status}).Error
+	return database.GetDBCon().Model(&models.OrderMaster{ID: id}).Updates(map[string]interface{}{"status": status}).Error
 }
 
 func (o OrderMasterRepository) FirstMaster(id uint, load ...string) (models.OrderMaster, error) {
@@ -99,8 +99,8 @@ func (o OrderMasterRepository) FirstMaster(id uint, load ...string) (models.Orde
 	return order, err
 }
 
-func (o OrderMasterRepository) FindMaster(per, page uint, filter map[string]interface{}, selectKeys []string,
-	orders []string, isTotal bool) (masters []models.ResultOrderMaster, total uint, err error) {
+func (o OrderMasterRepository) FindMaster(per, page int, filter map[string]interface{}, selectKeys []string,
+	orders []string, isTotal bool) (masters []models.ResultOrderMaster, total int64, err error) {
 	var rows *sql.Rows
 	sqlConn := database.GetDBCon().Table(models.OrderMaster{}.TableName())
 	sqlConn = sqlConn.Joins("inner join order_extend_infos on order_extend_infos.order_master_id = order_masters.id")
@@ -137,10 +137,10 @@ func (o OrderMasterRepository) UpdateMaster(id uint, order models.OrderMaster) e
 	var record models.OrderMaster
 	sqlCon := database.GetDBCon().First(&record, "id = ? ", id)
 	return sqlCon.Transaction(func(tx *gorm.DB) error {
-		if err := sqlCon.Association("Roles").Replace(order.Roles).Error; err != nil {
+		if err := sqlCon.Association("Roles").Replace(order.Roles); err != nil {
 			return err
 		}
-		err := sqlCon.Set("gorm:association_autocreate", false).Update(order).Error
+		err := sqlCon.Set("gorm:association_autocreate", false).Updates(order).Error
 		return err
 	})
 }
@@ -206,10 +206,10 @@ func (o OrderMasterRepository) createSeaBooking(orderId uint, attr map[string]in
 		if err := tx.Where("order_master_id = ?", orderId).Attrs(attr).FirstOrCreate(&booking).Error; err != nil {
 			return err
 		}
-		if err := tx.Model(&booking).Association("SeaCapLists").Append(capList).Error; err != nil {
+		if err := tx.Model(&booking).Association("SeaCapLists").Append(capList); err != nil {
 			return err
 		}
-		if err := tx.Model(&booking).Association("SeaCargoInfos").Append(seasCargoInfo).Error; err != nil {
+		if err := tx.Model(&booking).Association("SeaCargoInfos").Append(seasCargoInfo); err != nil {
 			return err
 		}
 		return nil

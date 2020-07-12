@@ -14,8 +14,8 @@ type IBaseWarehouse interface {
 	Delete(id uint) error
 	//创建仓库地址信息
 	Create(code models.BaseWarehouse) (models.BaseWarehouse, error)
-	Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-		orders []string, isTotal bool) (codes []models.BaseWarehouse, total uint, err error)
+	Find(per, page int, filter map[string]interface{}, selectKeys []string,
+		orders []string, isTotal bool) (codes []models.BaseWarehouse, total int64, err error)
 }
 type BaseWarehouse struct {
 	BaseRepository
@@ -35,7 +35,7 @@ func (b BaseWarehouse) FindAll(selectKeys []string, orderBy string) ([]models.Ba
 }
 
 func (b BaseWarehouse) Update(id uint, code models.BaseWarehouse) error {
-	return database.GetDBCon().Model(&models.BaseWarehouse{ID: id}).Update(code).Error
+	return database.GetDBCon().Model(&models.BaseWarehouse{ID: id}).Updates(code).Error
 }
 
 func (b BaseWarehouse) Delete(id uint) error {
@@ -47,8 +47,8 @@ func (b BaseWarehouse) Create(code models.BaseWarehouse) (models.BaseWarehouse, 
 	return code, err
 }
 
-func (b BaseWarehouse) Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-	orders []string, isTotal bool) (codes []models.BaseWarehouse, total uint, err error) {
+func (b BaseWarehouse) Find(per, page int, filter map[string]interface{}, selectKeys []string,
+	orders []string, isTotal bool) (codes []models.BaseWarehouse, total int64, err error) {
 	sqlConn := database.GetDBCon().Model(&models.BaseWarehouse{})
 	if isTotal {
 		if total, err = b.Count(sqlConn, filter); err != nil {

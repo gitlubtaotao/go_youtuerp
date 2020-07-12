@@ -11,10 +11,10 @@ type IInvoiceService interface {
 	UpdateById(id uint, updateContent models.Invoice, language string) (models.Invoice, error)
 	First(id uint) (models.Invoice, error)
 	Create(account models.Invoice, language string) (models.Invoice, error)
-	FindByOa(per, page uint, filter map[string]interface{}, selectKeys []string,
-		order []string) (accounts []models.Invoice, total uint, err error)
-	FindByCrm(per, page uint, filter map[string]interface{}, selectKeys []string,
-		orders []string) (accounts []models.Invoice, total uint, err error)
+	FindByOa(per, page int, filter map[string]interface{}, selectKeys []string,
+		order []string) (accounts []models.Invoice, total int64, err error)
+	FindByCrm(per, page int, filter map[string]interface{}, selectKeys []string,
+		orders []string) (accounts []models.Invoice, total int64, err error)
 }
 
 type InvoiceService struct {
@@ -38,12 +38,12 @@ func (a InvoiceService) First(id uint) (models.Invoice, error) {
 	return a.repo.First(id)
 }
 
-func (a InvoiceService) FindByOa(per, page uint, filter map[string]interface{}, selectKeys []string,
-	order []string) (accounts []models.Invoice, total uint, err error) {
+func (a InvoiceService) FindByOa(per, page int, filter map[string]interface{}, selectKeys []string,
+	order []string) (accounts []models.Invoice, total int64, err error) {
 	return a.repo.FindByOa(per, page, filter, selectKeys, order)
 }
-func (a InvoiceService) FindByCrm(per, page uint, filter map[string]interface{}, selectKeys []string,
-	orders []string) (accounts []models.Invoice, total uint, err error) {
+func (a InvoiceService) FindByCrm(per, page int, filter map[string]interface{}, selectKeys []string,
+	orders []string) (accounts []models.Invoice, total int64, err error) {
 	return a.repo.FindByCrm(per, page, filter, selectKeys, orders)
 }
 

@@ -10,12 +10,12 @@ import (
 )
 
 type ICompanyService interface {
-	FindCompany(per, page uint, filters map[string]interface{}, selectKeys []string, orders []string, isCount bool) ([]*models.UserCompany, uint, error)
+	FindCompany(per, page int, filters map[string]interface{}, selectKeys []string, orders []string, isCount bool) ([]*models.UserCompany, int64, error)
 	FirstCompany(id uint) (*models.UserCompany, error)
 	FirstCompanyByRelated(id uint, related ...string) (models.UserCompany, error)
-	AllCompany(filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, uint, error)
+	AllCompany(filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, int64, error)
 	AllCompanyRedis() []map[string]string
-	LimitCompany(limit uint, filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, uint, error)
+	LimitCompany(limit int, filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, int64, error)
 	Create(company models.UserCompany) (models.UserCompany, error)
 	Update(company *models.UserCompany, readData models.UserCompany) error
 	Delete(id uint) error
@@ -109,15 +109,15 @@ func (c *CompanyService) TransportTypeArrays(loader context.Locale) []map[string
 	return data
 }
 
-func (c *CompanyService) FindCompany(per, page uint, filters map[string]interface{}, selectKeys []string, orders []string, isCount bool) ([]*models.UserCompany, uint, error) {
+func (c *CompanyService) FindCompany(per, page int, filters map[string]interface{}, selectKeys []string, orders []string, isCount bool) ([]*models.UserCompany, int64, error) {
 	return c.repo.FindCompany(per, page, filters, selectKeys, orders, isCount)
 }
 
-func (c *CompanyService) AllCompany(filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, uint, error) {
+func (c *CompanyService) AllCompany(filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, int64, error) {
 	return c.repo.FindCompany(0, 0, filters, selectKeys, orders, false)
 }
 
-func (c *CompanyService) LimitCompany(limit uint, filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, uint, error) {
+func (c *CompanyService) LimitCompany(limit int, filters map[string]interface{}, selectKeys []string, orders []string) ([]*models.UserCompany, int64, error) {
 	return c.repo.FindCompany(limit, 0, filters, selectKeys, orders, false)
 }
 

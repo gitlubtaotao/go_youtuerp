@@ -1,8 +1,8 @@
 package repositories
 
 import (
-	"github.com/jinzhu/gorm"
 	"github.com/kataras/golog"
+	"gorm.io/gorm"
 	"youtuerp/database"
 	"youtuerp/models"
 	"youtuerp/tools"
@@ -47,7 +47,6 @@ func (f FormerServer) DeleteOtherServer(id uint, formerType string) error {
 	}
 	return nil
 }
-
 
 func (f FormerServer) SaveOtherServer(formerType string, data models.RenderFormerData) (uint, error) {
 	var (
@@ -105,7 +104,7 @@ func (f FormerServer) UpdateSeaCargoInfo(infos []models.SeaCargoInfo) (interface
 	err := sqlConn.Transaction(func(tx *gorm.DB) error {
 		for _, item := range infos {
 			if item.ID != 0 {
-				if err := tx.Model(&models.SeaCargoInfo{ID: item.ID}).Update(tools.StructToChange(item)).Error; err != nil {
+				if err := tx.Model(&models.SeaCargoInfo{ID: item.ID}).Updates(tools.StructToChange(item)).Error; err != nil {
 					return err
 				}
 			} else {
@@ -149,13 +148,11 @@ func (f FormerServer) updateFormerSeaInstruction(data models.RenderFormerData) e
 		return err
 	}
 	return sqlConn.Transaction(func(tx *gorm.DB) error {
-		if err := sqlConn.Set("gorm:association_autoupdate", false).Set("gorm:association_autocreate", false).Model(&record).Update(tools.StructToChange(instruction)).Error; err != nil {
+		if err := sqlConn.Set("gorm:association_autoupdate", false).Set("gorm:association_autocreate", false).Model(&record).Updates(tools.StructToChange(instruction)).Error; err != nil {
 			return err
 		}
 		if len(instruction.SeaCapLists) >= 1 {
-			if err := tx.Model(&record).Association("SeaCapLists").Replace(instruction.SeaCapLists).Error; err != nil {
-				return err
-			}
+			return tx.Model(&record).Association("SeaCapLists").Replace(instruction.SeaCapLists)
 		}
 		return nil
 	})
@@ -166,13 +163,11 @@ func (f FormerServer) updateFormerSeaBooking(data models.RenderFormerData) error
 	book := data.FormerSeaBook
 	sqlConn = sqlConn.First(&record, "id = ? ", book.ID)
 	return sqlConn.Transaction(func(tx *gorm.DB) error {
-		if err := sqlConn.Set("gorm:association_autoupdate", false).Set("gorm:association_autocreate", false).Update(tools.StructToChange(book)).Error; err != nil {
+		if err := sqlConn.Set("gorm:association_autoupdate", false).Set("gorm:association_autocreate", false).Updates(tools.StructToChange(book)).Error; err != nil {
 			return err
 		}
 		if len(book.SeaCapLists) >= 1 {
-			if err := tx.Association("SeaCapLists").Replace(book.SeaCapLists).Error; err != nil {
-				return err
-			}
+			return tx.Association("SeaCapLists").Replace(book.SeaCapLists)
 		}
 		return nil
 	})
@@ -182,7 +177,7 @@ func (f FormerServer) updateFormerSoNo(formerType string, data models.RenderForm
 	if formerType == "former_sea_so_no" {
 		var soNo = data.FormerSeaSoNo
 		golog.Infof("current time is %v", soNo)
-		return database.GetDBCon().Model(&models.FormerSeaSoNo{ID: soNo.ID}).Update(tools.StructToChange(soNo)).Error
+		return database.GetDBCon().Model(&models.FormerSeaSoNo{ID: soNo.ID}).Updates(tools.StructToChange(soNo)).Error
 	}
 	return nil
 }
@@ -201,12 +196,12 @@ func (f FormerServer) saveFormerTrailerOrder(data models.FormerTrailerOrder) (ui
 			return err
 		}
 		if len(data.SeaCapLists) >= 1 {
-			if err := tx.Association("SeaCapLists").Replace(data.SeaCapLists).Error; err != nil {
+			if err := tx.Association("SeaCapLists").Replace(data.SeaCapLists); err != nil {
 				return err
 			}
 		}
 		if len(data.TrailerCabinetNumbers) >= 1 {
-			if err := tx.Association("TrailerCabinetNumbers").Replace(data.TrailerCabinetNumbers).Error; err != nil {
+			if err := tx.Association("TrailerCabinetNumbers").Replace(data.TrailerCabinetNumbers); err != nil {
 				return err
 			}
 		}

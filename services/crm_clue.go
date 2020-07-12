@@ -10,8 +10,8 @@ type ICrmClueService interface {
 	Delete(id uint) error
 	Update(id uint, clue models.CrmClue) error
 	First(id uint, isTacks bool) (models.CrmClue, error)
-	Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-		orders []string) (clues []models.CrmClue, total uint, err error)
+	Find(per, page int, filter map[string]interface{}, selectKeys []string,
+		orders []string) (clues []models.CrmClue, total int64, err error)
 	Create(clue models.CrmClue, language string) (models.CrmClue, error)
 }
 type CrmClueService struct {
@@ -57,8 +57,8 @@ func (c CrmClueService) Create(clue models.CrmClue, language string) (models.Crm
 	return c.repo.Create(clue)
 }
 
-func (c CrmClueService) Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-	orders []string) (clues []models.CrmClue, total uint, err error) {
+func (c CrmClueService) Find(per, page int, filter map[string]interface{}, selectKeys []string,
+	orders []string) (clues []models.CrmClue, total int64, err error) {
 	return c.repo.Find(per, page, filter, selectKeys, orders, true)
 }
 

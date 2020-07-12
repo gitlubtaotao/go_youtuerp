@@ -2,17 +2,18 @@ package repositories
 
 import (
 	"database/sql"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 	"youtuerp/database"
 	"youtuerp/models"
+	"youtuerp/tools"
 )
 
 type ICrmClue interface {
 	Delete(id uint) error
 	Update(id uint, clue models.CrmClue) error
 	First(id uint, isTacks bool) (models.CrmClue, error)
-	Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-		orders []string, isCount bool) ([]models.CrmClue, uint, error)
+	Find(per, page int, filter map[string]interface{}, selectKeys []string,
+		orders []string, isCount bool) ([]models.CrmClue, int64, error)
 	Create(clue models.CrmClue) (models.CrmClue, error)
 }
 type CrmClue struct {
@@ -25,7 +26,7 @@ func (c CrmClue) Delete(id uint) error {
 
 func (c CrmClue) Update(id uint, clue models.CrmClue) error {
 	var record models.CrmClue
-	err := database.GetDBCon().First(&record, "id = ? ", id).Update(clue).Error
+	err := database.GetDBCon().First(&record, "id = ? ", id).Updates(tools.StructToChange(clue)).Error
 	return err
 }
 
@@ -38,8 +39,8 @@ func (c CrmClue) First(id uint, isTacks bool) (models.CrmClue, error) {
 	err := sqlConn.First(&data, "crm_clues.id = ?", id).Error
 	return data, err
 }
-func (c CrmClue) Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-	orders []string, isCount bool) (clues []models.CrmClue, total uint, err error) {
+func (c CrmClue) Find(per, page int, filter map[string]interface{}, selectKeys []string,
+	orders []string, isCount bool) (clues []models.CrmClue, total int64, err error) {
 	var rows *sql.Rows
 	sqlCon := database.GetDBCon().Model(&models.CrmClue{})
 	if isCount {

@@ -14,8 +14,8 @@ import (
 type IFinanceFee interface {
 	//对返回前端的费用进行预处理
 	HandleFeesShow(fee interface{}, enum conf.Enum) map[string]interface{}
-	FindFinanceFees(per, page uint, filter map[string]interface{},
-		selectKeys []string, orders []string) ([]models.ResultFinanceFee, uint, error)
+	FindFinanceFees(per, page int, filter map[string]interface{},
+		selectKeys []string, orders []string) ([]models.ResultFinanceFee, int64, error)
 	/*将查询到的历史费用复制到对应的订单中
 	orderMasterId: 指定订单
 	feeIds: 对应费用ids
@@ -35,7 +35,7 @@ type IFinanceFee interface {
 	//通过ids 查询费用信息
 	FindFeesById(ids []uint, otherKeys ...string) ([]models.FinanceFee, error)
 	//根据前端查询条件查询费用信息
-	FindFees(per, page uint, filter map[string]interface{}, selectKeys []string,
+	FindFees(per, page int, filter map[string]interface{}, selectKeys []string,
 		orders []string) ([] models.FinanceFee, error)
 	//更改费用状态
 	ChangeStatusFees(ids []uint, status string) error
@@ -72,8 +72,8 @@ func (f FinanceFee) HandleFeesShow(fee interface{}, enum conf.Enum) map[string]i
 	return data
 }
 
-func (f FinanceFee) FindFinanceFees(per, page uint, filter map[string]interface{},
-	selectKeys []string, orders []string) ([]models.ResultFinanceFee, uint, error) {
+func (f FinanceFee) FindFinanceFees(per, page int, filter map[string]interface{},
+	selectKeys []string, orders []string) ([]models.ResultFinanceFee, int64, error) {
 	return f.repo.FindFinanceFees(per, page, filter, selectKeys, orders)
 }
 
@@ -108,7 +108,7 @@ func (f FinanceFee) FindFeesById(ids []uint, otherKeys ...string) ([]models.Fina
 	return f.repo.FindFeesById(ids, otherKeys...)
 }
 
-func (f FinanceFee) FindFees(per, page uint, filter map[string]interface{}, selectKeys []string,
+func (f FinanceFee) FindFees(per, page int, filter map[string]interface{}, selectKeys []string,
 	orders []string) ([] models.FinanceFee, error) {
 	return nil, nil
 }

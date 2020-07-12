@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 	"youtuerp/database"
 	"youtuerp/models"
 )
@@ -9,10 +9,10 @@ import (
 type IAddressRepository interface {
 	Delete(id uint) error
 	UpdateById(id uint, updateContent models.Address) (models.Address, error)
-	FindByOa(per, page uint, filter map[string]interface{}, selectKeys []string, order []string) (accounts []models.Address,
-		total uint, err error)
-	FindByCrm(per, page uint, filter map[string]interface{}, selectKeys []string, orders []string) (accounts []models.Address,
-		total uint, err error)
+	FindByOa(per, page int, filter map[string]interface{}, selectKeys []string, order []string) (accounts []models.Address,
+		total int64, err error)
+	FindByCrm(per, page int, filter map[string]interface{}, selectKeys []string, orders []string) (accounts []models.Address,
+		total int64, err error)
 	Create(account models.Address) (models.Address, error)
 	First(id uint) (models.Address, error)
 }
@@ -30,7 +30,7 @@ func (a AddressRepository) UpdateById(id uint, updateContent models.Address) (mo
 	if err != nil {
 		return address, err
 	}
-	err = database.GetDBCon().Model(&address).Update(updateContent).Error
+	err = database.GetDBCon().Model(&address).Updates(updateContent).Error
 	return address, err
 }
 
@@ -40,14 +40,14 @@ func (a AddressRepository) First(id uint) (models.Address, error) {
 	return data, err
 }
 
-func (a AddressRepository) FindByOa(per, page uint, filter map[string]interface{}, selectKeys []string,
-	order []string) (invoices []models.Address, total uint, err error) {
+func (a AddressRepository) FindByOa(per, page int, filter map[string]interface{}, selectKeys []string,
+	order []string) (invoices []models.Address, total int64, err error) {
 	sqlCon := database.GetDBCon().Model(&models.Address{})
 	sqlCon = sqlCon.Scopes(a.defaultOaScoped)
 	return a.Find(sqlCon, per, page, filter, selectKeys, order, true)
 }
-func (a AddressRepository) FindByCrm(per, page uint, filter map[string]interface{}, selectKeys []string,
-	orders []string) (accounts []models.Address, total uint, err error) {
+func (a AddressRepository) FindByCrm(per, page int, filter map[string]interface{}, selectKeys []string,
+	orders []string) (accounts []models.Address, total int64, err error) {
 	sqlCon := database.GetDBCon().Model(&models.Address{})
 	sqlCon = sqlCon.Scopes(a.defaultCrmScoped)
 	return a.Find(sqlCon, per, page, filter, selectKeys, orders, true)
@@ -62,9 +62,9 @@ func (a AddressRepository) Create(address models.Address) (models.Address, error
 	return address, err
 }
 
-func (a AddressRepository) Find(sqlCon *gorm.DB, per, page uint, filter map[string]interface{}, selectKeys []string,
+func (a AddressRepository) Find(sqlCon *gorm.DB, per, page int, filter map[string]interface{}, selectKeys []string,
 	order []string, isCount bool) (address []models.Address,
-	total uint, err error) {
+	total int64, err error) {
 	if len(filter) > 0 {
 		sqlCon = sqlCon.Scopes(a.Ransack(filter))
 	}

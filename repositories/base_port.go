@@ -9,8 +9,8 @@ type IBasePort interface {
 	Update(id uint, code models.BaseDataPort) error
 	Delete(id uint) error
 	Create(code models.BaseDataPort) (models.BaseDataPort, error)
-	Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-		orders []string, isTotal bool) (codes []models.BaseDataPort, total uint, err error)
+	Find(per, page int, filter map[string]interface{}, selectKeys []string,
+		orders []string, isTotal bool) (codes []models.BaseDataPort, total int64, err error)
 }
 
 
@@ -19,7 +19,7 @@ type BasePort struct {
 }
 
 func (b BasePort) Update(id uint, carrier models.BaseDataPort) error {
-	return database.GetDBCon().Model(&models.BaseDataPort{ID: id}).Update(carrier).Error
+	return database.GetDBCon().Model(&models.BaseDataPort{ID: id}).Updates(carrier).Error
 }
 
 func (b BasePort) Delete(id uint) error {
@@ -32,8 +32,8 @@ func (b BasePort) Create(code models.BaseDataPort) (models.BaseDataPort, error) 
 
 
 
-func (b BasePort) Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-	orders []string, isTotal bool) (codes []models.BaseDataPort, total uint, err error) {
+func (b BasePort) Find(per, page int, filter map[string]interface{}, selectKeys []string,
+	orders []string, isTotal bool) (codes []models.BaseDataPort, total int64, err error) {
 	sqlConn := database.GetDBCon().Model(&models.BaseDataPort{})
 	if isTotal {
 		if total, err = b.Count(sqlConn, filter); err != nil {

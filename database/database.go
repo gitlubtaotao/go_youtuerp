@@ -1,9 +1,10 @@
 package database
 
 import (
-	"github.com/jinzhu/gorm"
-	"log"
-	"os"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+	"time"
 	"youtuerp/conf"
 	"youtuerp/models"
 )
@@ -39,14 +40,22 @@ func (d *DataBase) DefaultInit() error {
 
 func (d *DataBase) InitDataBase() error {
 	var err error
-	dataEngine, err = gorm.Open("mysql", conf.Configuration.DSN)
+	dataEngine, err = gorm.Open(mysql.New(mysql.Config{
+		DSN:               conf.Configuration.DSN,
+		DefaultStringSize: 256,
+	}), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent),
+	})
 	if err != nil {
 		return err
 	}
-	dataEngine.DB().SetMaxOpenConns(1200)
-	dataEngine.DB().SetMaxIdleConns(100)
-	dataEngine.LogMode(true)
-	dataEngine.SetLogger(log.New(os.Stdout, "\r\n", 0))
+	sqlDB, err := dataEngine.DB()
+	if err != nil {
+		return err
+	}
+	sqlDB.SetMaxOpenConns(1200)
+	sqlDB.SetMaxIdleConns(100)
+	sqlDB.SetConnMaxLifetime(time.Hour)
 	if err = d.Migration(); err != nil {
 		return err
 	}

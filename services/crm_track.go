@@ -7,8 +7,8 @@ import (
 )
 
 type ICrmTrack interface {
-	Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-		orders []string) ([]models.CrmTrack, uint, error)
+	Find(per, page int, filter map[string]interface{}, selectKeys []string,
+		orders []string) ([]models.CrmTrack, int64, error)
 	Create(track models.CrmTrack, language string) (models.CrmTrack, error)
 }
 
@@ -25,8 +25,8 @@ func (c CrmTrack) Create(track models.CrmTrack, language string) (models.CrmTrac
 }
 
 
-func (c CrmTrack) Find(per, page uint, filter map[string]interface{}, selectKeys []string,
-	orders []string) ([]models.CrmTrack, uint, error) {
+func (c CrmTrack) Find(per, page int, filter map[string]interface{}, selectKeys []string,
+	orders []string) ([]models.CrmTrack, int64, error) {
 	return c.repo.Find(per, page, filter, selectKeys, orders, true)
 }
 
