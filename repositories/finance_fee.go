@@ -2,12 +2,16 @@ package repositories
 
 import (
 	"github.com/jinzhu/gorm"
+	"github.com/kataras/golog"
 	"youtuerp/database"
 	"youtuerp/models"
 	"youtuerp/tools"
 )
 
 type IFinanceFee interface {
+	//根据不同的查询条件查询费用
+	FindFinanceFees(per, page uint, filter map[string]interface{},
+		selectKeys []string, orders []string) ([]models.ResultFinanceFee, uint, error)
 	//根据不同的结算查询历史费用
 	GetHistoryFee(filter map[string]interface{}, limit int, selectKeys []string) ([]models.FinanceFee, error)
 	//主要通过费用ID进行查询
@@ -26,6 +30,42 @@ type IFinanceFee interface {
 
 type FinanceFee struct {
 	BaseRepository
+}
+
+func (f FinanceFee) FindFinanceFees(per, page uint, filter map[string]interface{},
+	selectKeys []string, orders []string) (financeFees []models.ResultFinanceFee, total uint, err error) {
+	var keys []string
+	sqlCon := database.GetDBCon().Model(&models.FinanceFee{})
+	sqlCon = sqlCon.Joins("INNER JOIN order_masters ON order_masters.id = finance_fees.order_master_id")
+	sqlCon = sqlCon.Joins("INNER JOIN order_extend_infos ON order_extend_infos.order_master_id = order_masters.id ")
+	if len(filter) > 0 {
+		sqlCon = sqlCon.Scopes(f.Ransack(filter))
+	}
+	if err = sqlCon.Count(&total).Error; err != nil {
+		return
+	}
+	if len(selectKeys) == 0 {
+		keys, err = tools.GetStructFieldByJson(models.FinanceFee{})
+		if err != nil {
+			return
+		}
+		for i := 0; i < len(keys); i++ {
+			keys[i] = "finance_fees." + keys[i]
+		}
+		keys = append(keys,"order_masters.serial_number")
+		golog.Infof("select keys is %v", keys)
+		selectKeys = keys
+	}
+	rows, err := sqlCon.Scopes(f.Paginate(per, page), f.OrderBy(orders)).Select(selectKeys).Rows()
+	if err != nil {
+		return
+	}
+	for rows.Next() {
+		var data models.ResultFinanceFee
+		_ = sqlCon.ScanRows(rows, &data)
+		financeFees = append(financeFees, data)
+	}
+	return
 }
 
 //获取历史费用
@@ -52,7 +92,6 @@ func (f FinanceFee) GetHistoryFee(filter map[string]interface{}, limit int, sele
 	}
 	return financeFees, nil
 }
-
 
 func (f FinanceFee) FindFeesById(ids []uint, otherKeys ...string) ([]models.FinanceFee, error) {
 	var financeFees []models.FinanceFee

@@ -28,6 +28,8 @@ func (f *Finance) fee() {
 		c.Post("/CopyFee", j.Serve, record.CopyFee)
 		c.Get("/GetHistoryFee", j.Serve, record.GetHistoryFee)
 		c.Post("/{orderMasterId:uint}/BulkHistoryFee", j.Serve, record.BulkHistoryFee)
+		c.Get("/column", j.Serve, record.GetColumn)
+		c.Post("/GetConfirmBillList", j.Serve, record.GetConfirmBillList)
 	})
 }
 

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/kataras/golog"
 	"time"
+	"youtuerp/conf"
 	"youtuerp/models"
 	"youtuerp/redis"
 	"youtuerp/repositories"
@@ -11,6 +12,10 @@ import (
 )
 
 type IFinanceFee interface {
+	//对返回前端的费用进行预处理
+	HandleFeesShow(fee interface{}, enum conf.Enum) map[string]interface{}
+	FindFinanceFees(per, page uint, filter map[string]interface{},
+		selectKeys []string, orders []string) ([]models.ResultFinanceFee, uint, error)
 	/*将查询到的历史费用复制到对应的订单中
 	orderMasterId: 指定订单
 	feeIds: 对应费用ids
@@ -45,7 +50,31 @@ type IFinanceFee interface {
 }
 
 type FinanceFee struct {
+	BaseService
 	repo repositories.IFinanceFee
+}
+
+func (f FinanceFee) HandleFeesShow(fee interface{}, enum conf.Enum) map[string]interface{} {
+	data := toolOther.StructToMap(fee)
+	golog.Infof("data is %v",data)
+	data["pay_or_receive"] = enum.DefaultText("finance_fees_pay_or_receive.", data["pay_or_receive"].(string))
+	data["pay_type_id"] = f.baseDataFindFast(models.CIQType, data["pay_type_id"])
+	data["status_value"] = data["status"]
+	data["invoice_status_value"] = data["invoice_status"]
+	data["invoice_status"] = enum.DefaultText("finance_fees_invoice_status.", data["invoice_status"])
+	data["type_id"] = f.baseDataFindFast(models.FinanceTag, data["type_id"])
+	data["finance_currency_id"] = f.baseDataFindFast(models.CodeFinanceCurrency, data["finance_currency_id"])
+	data["closing_unit_id_value"] = data["closing_unit_id"]
+	data["closing_unit_id"] = red.HGetCrm(data["closing_unit_id"], "")
+	data["order_master_id_value"] = data["order_master_id"]
+	data["order_master_id"] = data["serial_number"]
+	data["status"] = enum.DefaultText("finance_fees_status.", data["status"])
+	return data
+}
+
+func (f FinanceFee) FindFinanceFees(per, page uint, filter map[string]interface{},
+	selectKeys []string, orders []string) ([]models.ResultFinanceFee, uint, error) {
+	return f.repo.FindFinanceFees(per, page, filter, selectKeys, orders)
 }
 
 func (f FinanceFee) GetHistoryFee(filter map[string]interface{}) ([]map[string]interface{}, error) {
@@ -106,8 +135,6 @@ func (f FinanceFee) OrderFeesOptions(companyId uint) map[string]interface{} {
 	data["finance_currency"] = codeService.FindCollect(models.CodeFinanceCurrency)
 	data["pay_type_options"] = codeService.FindCollect(models.CIQType)
 	data["finance_tag_options"] = codeService.FindCollect(models.FinanceTag)
-	data["system_finance_approve"] = redis.SystemFinanceApprove()
-	data["system_finance_audit"] = redis.SystemFinanceAudit()
 	return data
 }
 
@@ -263,6 +290,10 @@ func (f FinanceFee) commonHandlerByCopyFee(rates []models.FinanceRate, financeFe
 		financeFee.ClosingUnitId = order.InstructionId
 	}
 	return financeFee
+}
+
+func (f FinanceFee) baseDataFindFast(key string, value interface{}) string {
+	return red.HGetValue(models.BaseDataCode{}.TableName()+key, value, "name")
 }
 
 func NewFinanceFee() IFinanceFee {

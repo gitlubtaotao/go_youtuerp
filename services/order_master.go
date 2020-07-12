@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"reflect"
+	"strconv"
 	"time"
 	"youtuerp/conf"
 	"youtuerp/models"
@@ -12,6 +13,12 @@ import (
 )
 
 type IOrderMasterService interface {
+	//前端显示订单信息预处理
+	HandlerOrderMasterShow(order interface{}, enum conf.Enum) map[string]interface{}
+	//处理港口显示
+	ShowPort(transportType interface{}, portId interface{}) string
+	//处理承运方显示
+	ShowCarrier(transportType interface{}, carrierId interface{}) string
 	//通过订单Ids查询订单
 	FindMasterByIds(ids []uint, otherFilter ...string) ([]models.ResultOrderMaster, error)
 	//获取表单中对应的数据
@@ -49,6 +56,59 @@ var orderStatusArray = []interface{}{
 type OrderMasterService struct {
 	repo repositories.IOrderMaster
 	BaseService
+}
+
+func (o OrderMasterService) ShowPort(transportType interface{}, portId interface{}) string {
+	tableName := models.BaseDataPort{}.TableName()
+	uTransportType := transportType.(uint)
+	var key string
+	switch uTransportType {
+	case 1, 4:
+		key = strconv.Itoa(models.BaseTypeSea)
+	case 2:
+		key = strconv.Itoa(models.BaseTypeAir)
+	}
+	return red.HGetValue(tableName+key, portId, "name")
+}
+
+func (o OrderMasterService) ShowCarrier(transportType interface{}, carrierId interface{}) string {
+	tableName := models.BaseDataCarrier{}.TableName()
+	uTransportType := transportType.(uint)
+	var key string
+	switch uTransportType {
+	case 1, 4:
+		key = strconv.Itoa(models.BaseTypeSea)
+	case 2:
+		key = strconv.Itoa(models.BaseTypeAir)
+	}
+	return red.HGetValue(tableName+key, carrierId, "name")
+}
+
+func (o OrderMasterService) HandlerOrderMasterShow(order interface{}, enum conf.Enum) map[string]interface{} {
+	data := toolOther.StructToMap(order)
+	data["cut_off_day"] = toolTime.InterfaceFormat(data["cut_off_day"], "zh-CN")
+	data["departure"] = toolTime.InterfaceFormat(data["departure"], "zh-CN")
+	data["arrival"] = toolTime.InterfaceFormat(data["arrival"], "zh-CN")
+	data["instruction_id_value"] = data["instruction_id"]
+	data["instruction_id"] = red.HGetCrm(data["instruction_id"], "")
+	data["supply_agent_id"] = red.HGetCrm(data["supply_agent_id"], "")
+	data["salesman_id_value"] = data["salesman_id"]
+	data["salesman_id"] = red.HGetRecord("users", data["salesman_id"], "")
+	data["operation_id_value"] = data["operation_id"]
+	data["operation_id"] = red.HGetRecord("users", data["operation_id"], "")
+	data["pol_id"] = o.ShowPort(data["transport_type"], data["pol_id"])
+	data["pod_id"] = o.ShowPort(data["transport_type"], data["pod_id"])
+	data["carrier_id"] = o.ShowCarrier(data["transport_type"], data["carrier_id"])
+	data["transport_type_value"] = data["transport_type"]
+	data["transport_type"] = o.ShowTransport(enum, order)
+	data["status_value"] = data["status"]
+	data["status"] = o.ShowStatus(enum, data["status"])
+	data["company_id"] = red.HGetCompany(data["company_id"], "")
+	for _, v := range []string{"paid_status", "received_status", "payable_status", "receivable_status"} {
+		data[v+"_value"] = data[v]
+		data[v] = o.ShowFinanceStatus(enum, v, data[v])
+	}
+	return data
 }
 
 func (o OrderMasterService) FindMasterByIds(ids []uint, otherFilter ...string) ([]models.ResultOrderMaster, error) {

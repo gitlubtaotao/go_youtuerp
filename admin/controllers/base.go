@@ -5,13 +5,21 @@ import (
 	"github.com/kataras/golog"
 	"github.com/kataras/iris/v12"
 	"net/http"
+	"strings"
+	"time"
 	"youtuerp/models"
+	"youtuerp/redis"
 	"youtuerp/services"
+	"youtuerp/tools"
 )
 
 type BaseController struct {
 	renderError
 }
+
+var (
+	red       = redis.Redis{}
+)
 
 func (b BaseController) RenderSuccessJson(ctx iris.Context, data interface{}) {
 	m := iris.Map{
@@ -61,6 +69,28 @@ func (b *BaseController) GetPer(ctx iris.Context) uint {
 	return uint(ctx.URLParamIntDefault("limit", 20))
 }
 
+func (b *BaseController) HandlerFilterDate(filters map[string]interface{}, field string) {
+	timeField, ok := filters[field]
+	if !ok {
+		return
+	}
+	stringTime := timeField.(string)
+	timeArray := strings.Split(stringTime, ",")
+	if len(timeArray) == 2 {
+		filters[field+"-gtEq"] = b.stringToDate(timeArray[0])
+		filters[field+"-ltEq"] = b.stringToDate(timeArray[1])
+	}
+}
+
+// 将string转化成日期格式
+func (b *BaseController) stringToDate(strTime string) time.Time {
+	result, err := tools.TimeHelper{}.StringToTime(strTime)
+	if err != nil {
+		golog.Errorf("string to date is error %v", err)
+	}
+	return result
+}
+
 //错误消息处理
 type renderError struct {
 }
@@ -99,4 +129,3 @@ func (r renderError) Render401(ctx iris.Context, err error, message string) {
 	//ctx.StatusCode(http.StatusBadRequest)
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusUnauthorized, "message": message})
 }
-

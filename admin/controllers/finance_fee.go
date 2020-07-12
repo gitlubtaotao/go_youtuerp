@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"sync"
 	"time"
+	"youtuerp/conf"
 	"youtuerp/models"
 	"youtuerp/services"
 )
@@ -14,6 +15,8 @@ import (
 type FinanceFee struct {
 	BaseController
 	service services.IFinanceFee
+	ctx     iris.Context
+	enum    conf.Enum
 }
 
 //复制费用
@@ -217,7 +220,43 @@ func (f *FinanceFee) BulkHistoryFee(ctx iris.Context) {
 	}
 }
 
-//处理日期显示
+//获取费用对应的列设置
+func (f *FinanceFee) GetColumn(ctx iris.Context) {
+	f.RenderModuleColumn(ctx, models.FinanceFee{})
+}
+
+//获取对账列表对应的费用信息
+func (f *FinanceFee) GetConfirmBillList(ctx iris.Context) {
+	var (
+		readMap     map[string]interface{}
+		err         error
+		total       uint
+		financeFees []models.ResultFinanceFee
+	)
+	if err = ctx.ReadJSON(&readMap); err != nil {
+		f.Render400(ctx, err, "")
+		return
+	}
+	for _, item := range []string{
+		"finance_fees.created_at",
+		"order_extend_infos.departure",
+		"order_extend_infos.arrival",
+		"order_masters.created_at",} {
+		f.HandlerFilterDate(readMap, item)
+	}
+	financeFees, total, err = f.service.FindFinanceFees(f.GetPer(ctx), f.GetPage(ctx), readMap, []string{}, []string{"finance_fees.id asc"})
+	if err != nil {
+		f.Render400(ctx, err, "")
+		return
+	}
+	dataArray := make([]map[string]interface{}, 0)
+	for _, v := range financeFees {
+		dataArray = append(dataArray, f.service.HandleFeesShow(v, f.enum))
+	}
+	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": dataArray, "total": total})
+}
+
+//处理历史费用订单创建时间
 func (f *FinanceFee) handlerCreatedAt(dateRange int, searchParams map[string]interface{}) map[string]interface{} {
 	beg := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.Now().Location())
 	searchParams["created_at-ltEq"] = beg
@@ -226,5 +265,7 @@ func (f *FinanceFee) handlerCreatedAt(dateRange int, searchParams map[string]int
 }
 func (f *FinanceFee) Before(ctx iris.Context) {
 	f.service = services.NewFinanceFee()
+	f.enum = conf.Enum{Locale: ctx.GetLocale()}
+	f.ctx = ctx
 	ctx.Next()
 }

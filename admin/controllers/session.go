@@ -159,6 +159,8 @@ func (s *SessionController) getSystemSetting() map[string]interface{} {
 	setting := make(map[string]interface{})
 	setting["system_standard_currency"] = redis.SystemFinanceCurrency()
 	setting["order_audit_mechanism"] = redis.OrderAuditMechanism()
+	setting["system_finance_approve"] = redis.SystemFinanceApprove()
+	setting["system_finance_audit"] = redis.SystemFinanceAudit()
 	return setting
 }
 
