@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/kataras/golog"
+	"gorm.io/gorm"
 	"strconv"
 	"strings"
 	"time"
@@ -52,18 +53,18 @@ func (n NumberSettingRepository) Delete(id uint) error {
 func (n NumberSettingRepository) Find(per, page int, filter map[string]interface{}, selectKeys []string, order []string, isCount bool) (numberSettings []models.ResultNumberSetting,
 	total int64, err error) {
 	var rows *sql.Rows
-	sqlCon := database.GetDBCon().Model(&models.NumberSetting{}).Unscoped()
-	sqlCon = sqlCon.Joins("inner join user_companies on user_companies.id = number_settings.user_company_id and user_companies.company_type = 4")
+	sqlCon := database.GetDBCon().Model(&models.NumberSetting{}).Scopes(n.defaultJoin)
 	if isCount {
-		if total, err = n.Count(sqlCon, filter); err != nil {
+		totalCon := database.GetDBCon().Model(&models.NumberSetting{}).Scopes(n.defaultJoin)
+		if total, err = n.Count(totalCon, filter); err != nil {
 			return
 		}
 	}
 	if len(selectKeys) == 0 {
 		selectKeys = []string{"number_settings.*", "user_companies.name_nick as user_companies_name_nick",}
 	}
-	sqlCon = n.crud.Where(sqlCon, filter, selectKeys, n.Paginate(per, page), n.OrderBy(order))
-	if rows, err = sqlCon.Rows(); err != nil {
+	rows, err = sqlCon.Scopes(n.CustomerWhere(filter, selectKeys, n.Paginate(per, page), n.OrderBy(order))).Rows()
+	if err != nil {
 		return
 	}
 	for rows.Next() {
@@ -72,6 +73,10 @@ func (n NumberSettingRepository) Find(per, page int, filter map[string]interface
 		numberSettings = append(numberSettings, data)
 	}
 	return
+}
+
+func (n NumberSettingRepository) defaultJoin(db *gorm.DB) *gorm.DB {
+	return db.Joins("inner join user_companies on user_companies.id = number_settings.user_company_id and user_companies.company_type = 4")
 }
 
 func (n NumberSettingRepository) Create(numberSetting models.NumberSetting) (models.NumberSetting, error) {

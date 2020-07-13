@@ -195,7 +195,7 @@ func (o OrderMasterRepository) createSeaBooking(orderId uint, attr map[string]in
 		if seaCargoInfo, ok := value.([]models.SeaCargoInfo); ok {
 			for i := 0; i < len(seaCargoInfo); i++ {
 				seaCargoInfo[i].ID = 0
-				seaCargoInfo[i].SourceId = booking.ID
+				seaCargoInfo[i].SourceID = booking.ID
 				seaCargoInfo[i].SourceType = "former_sea_books"
 			}
 			seasCargoInfo = seaCargoInfo

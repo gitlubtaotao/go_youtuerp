@@ -4,24 +4,18 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"log"
+	"os"
 	"time"
 	"youtuerp/conf"
-	"youtuerp/models"
 )
 
 var dataEngine *gorm.DB
-
 func GetDBCon() *gorm.DB {
 	return dataEngine
 }
-
-type IDataBase interface {
-	DefaultInit()
-	Migration()
-	InitDataBase()
-}
-
 type DataBase struct {
+
 }
 
 /*
@@ -39,12 +33,21 @@ func (d *DataBase) DefaultInit() error {
 }
 
 func (d *DataBase) InitDataBase() error {
+	newLogger := logger.New(
+		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+		logger.Config{
+			SlowThreshold: time.Second,   // Slow SQL threshold
+			LogLevel:      logger.Info, // Log level
+			Colorful:      false,         // Disable color
+		},
+	)
 	var err error
 	dataEngine, err = gorm.Open(mysql.New(mysql.Config{
 		DSN:               conf.Configuration.DSN,
 		DefaultStringSize: 256,
 	}), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Silent),
+		Logger: newLogger,
+		PrepareStmt: true,
 	})
 	if err != nil {
 		return err
@@ -66,26 +69,7 @@ func (d *DataBase) InitDataBase() error {
  * 注册迁移文件
  */
 
+
 func (d *DataBase) Migration() error {
-	db := GetDBCon()
-	db.AutoMigrate(&models.Company{}, &models.User{},
-		&models.Account{}, &models.Role{}, &models.Invoice{}, &models.Address{})
-	db.AutoMigrate(&models.Department{})
-	db.AutoMigrate(&models.CrmClue{}, &models.CrmTrack{})
-	db.AutoMigrate(&models.Setting{}, &models.NumberSetting{},
-		&models.NumberSettingHistory{})
-	db.AutoMigrate(&models.FinanceFeeType{}, &models.FinanceRate{})
-	db.AutoMigrate(&models.BaseDataLevel{}, &models.BaseDataCode{},
-		&models.BaseDataPort{}, &models.BaseDataCarrier{}, &models.BaseWarehouse{})
-	db.AutoMigrate(
-		&models.OrderMaster{},
-		&models.OrderExtendInfo{},
-		&models.FormerSeaInstruction{}, &models.FormerSeaBook{},
-		&models.FormerSeaSoNo{}, &models.SeaCargoInfo{}, &models.SeaCapList{},
-		&models.FormerOtherService{}, &models.FormerTrailerOrder{}, &models.TrailerCabinetNumber{},
-		&models.FormerWarehouseService{}, &models.FormerCustomClearance{},
-	)
-	db.AutoMigrate(&models.FinanceFee{})
-	db.AutoMigrate(&models.Attachment{})
 	return nil
 }

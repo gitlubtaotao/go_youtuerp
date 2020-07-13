@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"sync"
 	"youtuerp/models"
-	"youtuerp/redis"
 	"youtuerp/services"
 )
 
@@ -23,7 +22,7 @@ func (a *AccountController) GetColumn(ctx iris.Context) {
 func (a *AccountController) Get(ctx iris.Context) {
 	var (
 		accounts []models.Account
-		total    uint
+		total    int64
 		err      error
 	)
 	ty := ctx.URLParamDefault("type", "oa")
@@ -37,11 +36,10 @@ func (a *AccountController) Get(ctx iris.Context) {
 		return
 	}
 	dataArray := make([]map[string]interface{}, 0)
-	red := redis.Redis{}
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	for _, v := range accounts {
-		dataArray = append(dataArray, a.handlerData(red, v, ty))
+		dataArray = append(dataArray, a.handlerData(v, ty))
 	}
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": dataArray, "total": total,})
 }
@@ -118,7 +116,7 @@ func (a *AccountController) handlerGetParams() map[string]interface{} {
 	searchColumn["user_company_id-eq"] = a.ctx.URLParamDefault("user_company_id", "")
 	return searchColumn
 }
-func (a *AccountController) handlerData(red redis.Redis, account models.Account, ty string) map[string]interface{} {
+func (a *AccountController) handlerData(account models.Account, ty string) map[string]interface{} {
 	data, _ := a.StructToMap(account, a.ctx)
 	data["user_company_id_value"] = data["user_company_id"]
 	if ty == "oa" {

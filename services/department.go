@@ -10,7 +10,7 @@ type IDepartmentService interface {
 		order []string, isCount bool) ([]interface{}, int64, error)
 	FindAll(filter map[string]interface{}, selectKeys []string, order []string, isCount bool) ([]interface{}, int64, error)
 	First(id uint) (*models.Department, error)
-	Update(department *models.Department, updateData models.Department) error
+	Update(id uint, updateData models.Department) error
 	Create(department models.Department) (models.Department, error)
 	Delete(id uint) error
 }
@@ -32,8 +32,8 @@ func (d *DepartmentService) Delete(id uint) error {
 	return d.repo.Delete(id)
 }
 
-func (d *DepartmentService) Update(department *models.Department, updateData models.Department) error {
-	return d.repo.Update(department, updateData)
+func (d *DepartmentService) Update(id uint, updateData models.Department) error {
+	return d.repo.Update(id, updateData)
 }
 
 func (d *DepartmentService) First(id uint) (*models.Department, error) {

@@ -6,43 +6,43 @@ import (
 )
 
 type UserCompany struct {
-	ID               uint         `gorm:"primary_key"json:"id"`
-	CreatedAt        time.Time    `json:"created_at"`
-	UpdatedAt        time.Time    `json:"updated_at"`
-	DeletedAt        *time.Time   `sql:"index"`
-	CompanyType      int          `form:"company_type" json:"company_type"`
-	ParentId         int          `gorm:"-"`
-	UserSalesmanId   int          `gorm:"-"`                                   // 所属的业务人员
-	IsHeadOffice     bool         `gorm:"default:false" form:"is_head_office"` // 是否为总部
-	AccountPeriod    string       `gorm:"-"`                                   // 公司结算类型
-	Age              int          `gorm:"-"`                                   // 公司账龄
-	Amount           float64      `gorm:"-"`                                   // 月结金额
-	NameNick         string       `gorm:"unique;not null" form:"name_nick" json:"name_nick" validate:"required"`
-	NameCn           string       `gorm:"unique;not null" form:"name_cn" json:"name_cn" validate:"required"`
-	NameEn           string       `gorm:"unique;not null" form:"name_en" json:"name_en" validate:"required"`
-	BusinessTypeName string       `gorm:"-"`
-	Status           string       `grom:"-"`
-	Telephone        string       `form:"telephone" json:"telephone" validate:"required"` // 座机
-	Email            string       `json:"email" validate:"required"`
-	Fax              string       `json:"fax"`
-	ZhAddress        string       `gorm:"column:address;" form:"zh_address" json:"zh_address"`
-	EnAddress        string       `gorm:"column:address2;" form:"en_address" json:"en_address"`
-	Remark           string       `form:"remark" json:"remark"` // 公司备注
-	Website          string       `form:"website" json:"website"`
-	Employees        []Employee   `gorm:"foreignkey:user_company_id"`
-	Departments      []Department `gorm:"foreignkey:user_company_id"`
-	Accounts         []Account    `gorm:"foreignkey:user_company_id"`
+	ID               uint           `gorm:"primary_key"json:"id"`
+	CreatedAt        time.Time      `json:"created_at"`
+	UpdatedAt        time.Time      `json:"updated_at"`
+	DeletedAt        gorm.DeletedAt `sql:"index"`
+	CompanyType      int            `form:"company_type" json:"company_type"`
+	ParentId         int            `gorm:"-"`
+	UserSalesmanId   int            `gorm:"-"`                                   // 所属的业务人员
+	IsHeadOffice     bool           `gorm:"default:false" form:"is_head_office"` // 是否为总部
+	AccountPeriod    string         `gorm:"-"`                                   // 公司结算类型
+	Age              int            `gorm:"-"`                                   // 公司账龄
+	Amount           float64        `gorm:"-"`                                   // 月结金额
+	NameNick         string         `gorm:"unique;not null" form:"name_nick" json:"name_nick" validate:"required"`
+	NameCn           string         `gorm:"unique;not null" form:"name_cn" json:"name_cn" validate:"required"`
+	NameEn           string         `gorm:"unique;not null" form:"name_en" json:"name_en" validate:"required"`
+	BusinessTypeName string         `gorm:"-"`
+	Status           string         `grom:"-"`
+	Telephone        string         `form:"telephone" json:"telephone" validate:"required"` // 座机
+	Email            string         `json:"email" validate:"required"`
+	Fax              string         `json:"fax"`
+	ZhAddress        string         `gorm:"column:address;" form:"zh_address" json:"zh_address"`
+	EnAddress        string         `gorm:"column:address2;" form:"en_address" json:"en_address"`
+	Remark           string         `form:"remark" json:"remark"` // 公司备注
+	Website          string         `form:"website" json:"website"`
+	Employees        []Employee     `gorm:"foreignkey:user_company_id"`
+	Departments      []Department   `gorm:"foreignkey:user_company_id"`
+	Accounts         []Account      `gorm:"foreignkey:user_company_id"`
 }
 
 type Department struct {
-	ID            uint        `gorm:"primary_key"json:"id"`
-	CreatedAt     time.Time   `json:"created_at"`
-	UpdatedAt     time.Time   `json:"updated_at"`
-	DeletedAt     *time.Time  `sql:"index"`
-	NameCn        string      `form:"name_cn" json:"name_cn"` // 部门中文名
-	NameEn        string      `form:"name_en" json:"name_en"` // 部门英文名
-	UserCompanyId int         `form:"user_company_id" json:"user_company_id"`
-	UserCompany   UserCompany `gorm:"foreignkey:user_company_id;auto_preload" table_name:"user_companies" json:"user_companies" validate:"-"`
+	ID            uint           `gorm:"primary_key"json:"id"`
+	CreatedAt     time.Time      `json:"created_at"`
+	UpdatedAt     time.Time      `json:"updated_at"`
+	DeletedAt     gorm.DeletedAt `sql:"index"`
+	NameCn        string         `form:"name_cn" json:"name_cn"` // 部门中文名
+	NameEn        string         `form:"name_en" json:"name_en"` // 部门英文名
+	UserCompanyId int            `form:"user_company_id" json:"user_company_id"`
+	UserCompany   UserCompany    `gorm:"foreignkey:user_company_id" json:"user_company" validate:"-"`
 }
 
 //go index 查询结构
@@ -60,7 +60,7 @@ type Employee struct {
 	ID                  uint      `json:"id"`
 	CreatedAt           time.Time `json:"created_at"`
 	UpdatedAt           time.Time `json:"updated_at"`
-	DeletedAt           *time.Time
+	DeletedAt           gorm.DeletedAt
 	Email               string `json:"email" validate:"required,email"` // email
 	EncryptedPassword   string
 	ResetPasswordToken  string
@@ -101,6 +101,9 @@ type ResultEmployee struct {
 	Name                  string    `json:"name"`
 	UserNo                string    `json:"user_no"`
 	Phone                 string    `json:"phone"`
+	Remarks               string    `json:"remarks"`
+	Sex                   uint      `json:"sex"`
+	Address               string    `json:"address"`
 }
 
 func (UserCompany) TableName() string {
@@ -134,4 +137,10 @@ func (e *Employee) BeforeCreate(tx *gorm.DB) (err error) {
 	e.CurrentSignInAt = time.Now()
 	e.CompanyType = CompanyTypeB
 	return
+}
+func (u *UserCompany) BeforeCreate(tx *gorm.DB) error {
+	u.Status = "approved"
+	u.IsHeadOffice = false
+	u.CompanyType = CompanyTypeB
+	return nil
 }

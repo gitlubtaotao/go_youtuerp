@@ -1,12 +1,15 @@
 package models
 
-import "time"
+import (
+	"gorm.io/gorm"
+	"time"
+)
 
 type Account struct {
 	ID                uint        `gorm:"primary_key" json:"id"`
 	CreatedAt         time.Time   `json:"created_at"`
 	UpdatedAt         time.Time   `json:"updated_at"`
-	DeletedAt         *time.Time  `sql:"index"`
+	DeletedAt         gorm.DeletedAt  `sql:"index"`
 	BankName          string      `gorm:"varchar(256);index:bank_name" json:"bank_name"`
 	Name              string      `gorm:"size:64;index:name" json:"name" validate:"required"`
 	BankNumber        string      `gorm:"type:varchar(256);index:bank_number" json:"bank_number" validate:"required"`
@@ -25,7 +28,7 @@ type Invoice struct {
 	ID            uint       `gorm:"primary_key" json:"id"`
 	CreatedAt     time.Time  `json:"created_at"`
 	UpdatedAt     time.Time  `json:"updated_at"`
-	DeletedAt     *time.Time `sql:"index"`
+	DeletedAt     gorm.DeletedAt `sql:"index"`
 	Name          string     `gorm:"size:256;index:name" json:"name" validate:"required"`
 	TaxNumber     string     `gorm:"size:64" json:"tax_number" validate:"required"`
 	BankNumber    string     `gorm:"size:64" json:"bank_number" validate:"required"`
@@ -40,7 +43,7 @@ type Address struct {
 	ID            uint       `gorm:"primary_key" json:"id"`
 	CreatedAt     time.Time  `json:"created_at"`
 	UpdatedAt     time.Time  `json:"updated_at"`
-	DeletedAt     *time.Time `sql:"index"`
+	DeletedAt     gorm.DeletedAt `sql:"index"`
 	UserName      string     `gorm:"size:64;index:user_name" comment:"收件人姓名" json:"user_name" validate:"required"`
 	UserTel       string     `gorm:"size:16" comment:"收件人电话" json:"user_tel"`
 	UserAddress   string     `gorm:"size:522" comment:"邮件地址"  json:"user_address"`

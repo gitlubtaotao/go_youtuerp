@@ -77,10 +77,9 @@ func (s *SessionController) Show(ctx iris.Context) {
 		s.Render500(ctx, err, "")
 	}
 	_, _ = ctx.JSON(iris.Map{
-		"code": http.StatusOK,
-		"data": s.handleUserInfo(currentUser, userMap),
+		"code":    http.StatusOK,
+		"data":    s.handleUserInfo(currentUser, userMap),
 		"setting": s.getSystemSetting(),
-		
 	})
 	return
 }
@@ -109,7 +108,11 @@ func (s *SessionController) Update(ctx iris.Context) {
 		s.Render400(ctx, err, err.Error())
 		return
 	}
-	updateModel := models.Employee{Email: userInfo.Email, Name: userInfo.Name, Phone: userInfo.Phone, Address: userInfo.Address}
+	updateModel := models.Employee{
+		Email: userInfo.Email,
+		Name:  userInfo.Name, Phone: userInfo.Phone,
+		Address: userInfo.Address,
+	}
 	//验证密码是否为空
 	if passwordInfo.Password != "" {
 		if passwordInfo.Password != passwordInfo.ConfirmPassword {
@@ -120,7 +123,7 @@ func (s *SessionController) Update(ctx iris.Context) {
 	}
 	//保存客户信息
 	currentUser, _ := s.CurrentUser(ctx)
-	err = s.EService.UpdateRecord(currentUser, updateModel)
+	err = s.EService.UpdateRecord(currentUser.ID, updateModel)
 	if err != nil {
 		s.Render400(ctx, err, err.Error())
 		return

@@ -171,7 +171,7 @@ type SeaCapList struct {
 	ID            uint      `gorm:"primary_key"json:"id"`
 	CreatedAt     time.Time ``
 	OrderMasterId uint      `sql:"index" json:"order_master_id"`
-	SourceId      uint      `gorm:"index:source_id_and_source_type" json:"source_id"`
+	SourceID      uint      `gorm:"index:source_id_and_source_type" json:"source_id"`
 	SourceType    string    `gorm:"size:32; index:source_id_and_source_type" json:"source_type"`
 	Number        int       `json:"number"`
 	CapType       string    `gorm:"size:32" json:"cap_type"`
@@ -181,7 +181,7 @@ type SeaCapList struct {
 type SeaCargoInfo struct {
 	ID                uint      `gorm:"primary_key"json:"id"`
 	CreatedAt         time.Time ``
-	SourceId          uint      `gorm:"index:source_id_and_source_type" json:"source_id"`
+	SourceID          uint      `gorm:"index:source_id_and_source_type" json:"source_id"`
 	SourceType        string    ` gorm:"size:32;index:source_id_and_source_type" json:"source_type"`
 	OrderMasterId     uint      `sql:"index" json:"order_master_id"`
 	SoNo              string    `gorm:"size:64" json:"so_no"`

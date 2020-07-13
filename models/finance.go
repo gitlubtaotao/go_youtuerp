@@ -1,13 +1,16 @@
 package models
 
-import "time"
+import (
+	"gorm.io/gorm"
+	"time"
+)
 
 //订单费用信息
 type FinanceFee struct {
 	ID                  uint       `gorm:"primary_key"json:"id"`
 	CreatedAt           time.Time  `json:"created_at"`
 	UpdatedAt           time.Time  `json:"updated_at"`
-	DeletedAt           *time.Time `sql:"index"`
+	DeletedAt           gorm.DeletedAt `sql:"index"`
 	Name                string     `gorm:"size:64;index:name" json:"name" validate:"required"`
 	NameCn              string     `json:"name_cn"`
 	NameEn              string     `json:"name_en"`
@@ -52,7 +55,7 @@ type FinanceFeeType struct {
 	ID                uint       `gorm:"primary_key"json:"id"`
 	CreatedAt         time.Time  `json:"created_at"`
 	UpdatedAt         time.Time  `json:"updated_at"`
-	DeletedAt         *time.Time `sql:"index"`
+	DeletedAt         gorm.DeletedAt `sql:"index"`
 	Name              string     `gorm:"size:64;index:name" json:"name"`
 	NameCn            string     `gorm:"index:name_cn" json:"name_cn"`
 	NameEn            string     `json:"name_en"`

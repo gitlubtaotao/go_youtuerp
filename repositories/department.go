@@ -1,18 +1,16 @@
 package repositories
 
 import (
-	"fmt"
 	"gorm.io/gorm"
 	"youtuerp/database"
 	"youtuerp/models"
-	"youtuerp/tools"
 )
 
 type IDepartmentRepository interface {
 	Find(per, page int, attr map[string]interface{}, selectKeys []string,
 		order []string, isCount bool) ([]interface{}, int64, error)
 	First(id uint) (*models.Department, error)
-	Update(department *models.Department, updateData models.Department) error
+	Update(id uint, updateData models.Department) error
 	Create(department models.Department) (models.Department, error)
 	Delete(id uint) error
 }
@@ -35,29 +33,23 @@ func (d DepartmentRepository) Create(department models.Department) (models.Depar
 
 func (d DepartmentRepository) Find(per, page int, filter map[string]interface{}, selectKeys []string,
 	order []string, isCount bool) (departments []interface{}, total int64, err error) {
-	sqlCon := database.GetDBCon().Model(&models.Department{})
-	sqlCon = sqlCon.Scopes(d.defaultScope)
-	if len(filter) > 0 {
-		sqlCon = sqlCon.Scopes(d.Ransack(filter))
+	sqlCon := database.GetDBCon().Model(&models.Department{}).Scopes(d.defaultScope)
+	selectKeys = []string{
+		"departments.id",
+		"departments.created_at",
+		"departments.updated_at",
+		"departments.name_en",
+		"departments.name_cn",
+		"user_companies.name_nick as user_companies_name_nick",
+		"departments.user_company_id",
 	}
 	if isCount {
-		err = sqlCon.Count(&total).Error
-		fmt.Print(err)
-		if err != nil {
-			return departments, total, err
+		countCon := database.GetDBCon().Model(&models.Department{}).Scopes(d.defaultScope).Scopes(d.Ransack(filter))
+		if err = countCon.Count(&total).Error; err != nil {
+			return
 		}
 	}
-	sqlCon = sqlCon.Scopes(d.Paginate(per, page), d.OrderBy(order))
-	if len(selectKeys) == 0 {
-		selectKeys = []string{"departments.id", "departments.created_at",
-			"departments.updated_at",
-			"departments.name_en",
-			"departments.name_cn",
-			"user_companies.name_nick as user_companies_name_nick",
-			"departments.user_company_id",
-		}
-	}
-	rows, err := sqlCon.Select(selectKeys).Rows()
+	rows, err  := sqlCon.Scopes(d.CustomerWhere(filter,selectKeys,d.Paginate(per, page), d.OrderBy(order))).Where("departments.deleted_at is NULL").Rows()
 	if err != nil {
 		return
 	}
@@ -69,20 +61,18 @@ func (d DepartmentRepository) Find(per, page int, filter map[string]interface{},
 	return departments, total, err
 }
 
-func (d *DepartmentRepository) First(id uint) (department *models.Department, err error) {
+func (d DepartmentRepository) First(id uint) (department *models.Department, err error) {
 	var data models.Department
 	err = database.GetDBCon().First(&data, "id = ?", id).Error
 	return &data, err
 }
 
-func (d *DepartmentRepository) Update(department *models.Department, updateData models.Department) error {
-	return database.GetDBCon().Model(&department).Updates(tools.StructToChange(updateData)).Error
+func (d DepartmentRepository) Update(id uint, updateData models.Department) error {
+	return database.GetDBCon().Model(&models.Department{ID: id}).Updates(updateData).Error
 }
 
-func (d *DepartmentRepository) defaultScope(db *gorm.DB) *gorm.DB {
-	return db.Joins("INNER JOIN user_companies " +
-		"on departments.user_company_id = user_companies.id")
-	
+func (d DepartmentRepository) defaultScope(db *gorm.DB) *gorm.DB {
+	return db.Joins("INNER JOIN user_companies on departments.user_company_id = user_companies.id")
 }
 
 func NewDepartmentRepository() IDepartmentRepository {

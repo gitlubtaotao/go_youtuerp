@@ -22,7 +22,7 @@ func (a *Invoice) GetColumn(ctx iris.Context) {
 func (a *Invoice) Get(ctx iris.Context) {
 	var (
 		invoices []models.Invoice
-		total    uint
+		total    int64
 		err      error
 	)
 	ty := ctx.URLParamDefault("type", "oa")

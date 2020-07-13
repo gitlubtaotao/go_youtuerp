@@ -1,11 +1,9 @@
 package repositories
 
 import (
-	"fmt"
 	"gorm.io/gorm"
 	"youtuerp/database"
 	"youtuerp/models"
-	"youtuerp/tools"
 )
 
 type IEmployeeRepository interface {
@@ -15,8 +13,9 @@ type IEmployeeRepository interface {
 	FirstByPhoneOrEmail(account string) (employee *models.Employee, err error)
 	UpdateColumnByID(employeeID uint, updateColumn map[string]interface{}) error
 	UpdateColumn(employee *models.Employee, updateColumn map[string]interface{}) error
-	UpdateRecordByModel(employee *models.Employee, updateModel models.Employee) error
-	Find(per, page int, filter map[string]interface{}, selectKeys []string, order []string, isCount bool) (employees []models.Employee,
+	UpdateRecordByModel(userId uint, updateModel models.Employee) error
+	Find(per, page int, filter map[string]interface{}, selectKeys []string, order []string, isCount bool) (
+		employees []models.ResultEmployee,
 		total int64, err error)
 	Create(employee models.Employee) (models.Employee, error)
 	Delete(id uint) error
@@ -46,38 +45,36 @@ func (e EmployeeRepository) Create(employee models.Employee) (models.Employee, e
 
 func (e EmployeeRepository) Find(per, page int, filter map[string]interface{},
 	selectKeys []string, order []string, isCount bool) (
-	employees []models.Employee, total int64, err error) {
-	sqlCon := database.GetDBCon().Model(&models.Employee{})
-	sqlCon = sqlCon.Scopes(e.defaultScoped)
-	if len(filter) > 0 {
-		sqlCon = sqlCon.Scopes(e.Ransack(filter))
-	}
+	employees []models.ResultEmployee, total int64, err error) {
+	sqlCon := database.GetDBCon().Model(&models.Employee{}).Scopes(e.defaultScoped)
 	if isCount {
-		err = sqlCon.Count(&total).Error
+		countCon := database.GetDBCon().Model(&models.Employee{}).Scopes(e.defaultScoped)
+		total, err = e.Count(countCon, filter)
 		if err != nil {
 			return
 		}
 	}
 	if len(selectKeys) == 0 {
-		selectKeys = []string{"users.*", "user_companies.name_nick as user_companies_name_nick",
+		selectKeys = []string{"users.*",
+			"user_companies.name_nick as user_companies_name_nick",
 			"departments.name_cn as departments_name_cn",
 		}
 	}
-	rows, err := sqlCon.Scopes(e.Paginate(per, page), e.OrderBy(order)).Select(selectKeys).Rows()
+	rows, err := sqlCon.Scopes(e.CustomerWhere(filter, selectKeys, e.Paginate(per, page), e.OrderBy(order))).Where("users.deleted_at is NULL").Rows()
 	if err != nil {
-		fmt.Printf("%v", err)
+		return
 	}
-	
 	for rows.Next() {
-		var data models.Employee
+		var data models.ResultEmployee
 		_ = sqlCon.ScanRows(rows, &data)
 		employees = append(employees, data)
 	}
 	return
 }
 
-func (e EmployeeRepository) UpdateRecordByModel(employee *models.Employee, updateModel models.Employee) error {
-	return database.GetDBCon().Model(&employee).Updates(tools.StructToChange(updateModel)).Error
+func (e EmployeeRepository) UpdateRecordByModel(userId uint, updateModel models.Employee) error {
+	sqlCon := database.GetDBCon().Model(&models.Employee{ID: userId})
+	return sqlCon.Omit("last_sign_in_ip", "last_sign_in_at", "sign_in_count", "created_at", "current_sign_in_at").Updates(updateModel).Error
 }
 
 //通过手机号码和邮箱查询当前用户

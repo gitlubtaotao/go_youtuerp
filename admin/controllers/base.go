@@ -18,7 +18,7 @@ type BaseController struct {
 }
 
 var (
-	red       = redis.Redis{}
+	red = redis.Redis{}
 )
 
 func (b BaseController) RenderSuccessJson(ctx iris.Context, data interface{}) {
@@ -61,12 +61,12 @@ func (b *BaseController) StructToMap(currentObject interface{}, ctx iris.Context
 	return service.StructToMap(currentObject)
 }
 
-func (b *BaseController) GetPage(ctx iris.Context) uint {
-	return uint(ctx.URLParamIntDefault("page", 1))
+func (b *BaseController) GetPage(ctx iris.Context) int {
+	return ctx.URLParamIntDefault("page", 1)
 }
 
-func (b *BaseController) GetPer(ctx iris.Context) uint {
-	return uint(ctx.URLParamIntDefault("limit", 20))
+func (b *BaseController) GetPer(ctx iris.Context) int {
+	return ctx.URLParamIntDefault("limit", 20)
 }
 
 func (b *BaseController) HandlerFilterDate(filters map[string]interface{}, field string) {
@@ -93,6 +93,7 @@ func (b *BaseController) stringToDate(strTime string) time.Time {
 
 //错误消息处理
 type renderError struct {
+
 }
 
 //render 500 error

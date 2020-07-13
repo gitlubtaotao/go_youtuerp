@@ -48,13 +48,26 @@ func (a AccountRepository) FindByOa(per, page int, filter map[string]interface{}
 	order []string) (accounts []models.Account, total int64, err error) {
 	sqlCon := database.GetDBCon().Model(&models.Account{})
 	sqlCon = sqlCon.Scopes(a.defaultOaScoped)
-	return a.Find(sqlCon, per, page, filter, selectKeys, order, true)
+	accounts, err = a.FindRecord(sqlCon, per, page, filter, selectKeys, order)
+	if err != nil {
+		return
+	}
+	countCon := database.GetDBCon().Model(&models.Account{}).Scopes(a.defaultOaScoped)
+	total, err = a.Count(countCon, filter)
+	return
 }
+
 func (a AccountRepository) FindByCrm(per, page int, filter map[string]interface{}, selectKeys []string,
 	orders []string) (accounts []models.Account, total int64, err error) {
 	sqlCon := database.GetDBCon().Model(&models.Account{})
 	sqlCon = sqlCon.Scopes(a.defaultCrmScoped)
-	return a.Find(sqlCon, per, page, filter, selectKeys, orders, true)
+	accounts, err = a.FindRecord(sqlCon, per, page, filter, selectKeys, orders)
+	if err != nil {
+		return
+	}
+	countCon := database.GetDBCon().Model(&models.Account{}).Scopes(a.defaultCrmScoped)
+	total, err = a.Count(countCon, filter)
+	return
 }
 
 //创建银行账户信息
@@ -66,22 +79,12 @@ func (a AccountRepository) Create(account models.Account) (models.Account, error
 	return account, err
 }
 
-func (a AccountRepository) Find(sqlCon *gorm.DB, per, page int, filter map[string]interface{}, selectKeys []string,
-	order []string, isCount bool) (accounts []models.Account,
-	total int64, err error) {
-	if len(filter) > 0 {
-		sqlCon = sqlCon.Scopes(a.Ransack(filter))
-	}
-	if isCount {
-		err = sqlCon.Count(&total).Error
-		if err != nil {
-			return
-		}
-	}
+func (a AccountRepository) FindRecord(sqlCon *gorm.DB, per, page int, filter map[string]interface{}, selectKeys []string,
+	order []string) (accounts []models.Account, err error) {
 	if len(selectKeys) == 0 {
 		selectKeys = a.selectKeys()
 	}
-	rows, err := sqlCon.Scopes(a.Paginate(per, page), a.OrderBy(order)).Select(selectKeys).Rows()
+	rows, err := sqlCon.Scopes(a.CustomerWhere(filter, selectKeys, a.Paginate(per, page), a.OrderBy(order))).Where("accounts.deleted_at IS NULL").Rows()
 	if err != nil {
 		return
 	}

@@ -70,7 +70,6 @@ func (a *Attachment) GetOrderFile(ctx iris.Context) {
 		return
 	}
 	_, _ = ctx.JSON(iris.Map{"code": 200, "internal": internalFiles, "external": externalFiles})
-	
 }
 
 func (a *Attachment) Delete(ctx iris.Context) {

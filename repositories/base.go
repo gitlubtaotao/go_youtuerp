@@ -83,6 +83,21 @@ func (c crud) Where(sqlCon *gorm.DB, filter map[string]interface{}, selectKeys [
 	return sqlCon
 }
 
+func (c crud) CustomerWhere(filter map[string]interface{},selectKeys []string,funcs ...func(*gorm.DB) *gorm.DB) func (db *gorm.DB) *gorm.DB  {
+	return func (db *gorm.DB) *gorm.DB {
+		if len(filter) > 0 {
+			db.Scopes(c.ransack(filter))
+		}
+		db.Scopes(funcs...)
+		if len(selectKeys) > 0 {
+			db.Select(selectKeys)
+		}
+		return db
+	}
+}
+
+
+
 func (c crud) Count(sqlCon *gorm.DB, filter map[string]interface{}, funcs ...func(*gorm.DB) *gorm.DB) (count int64, err error) {
 	if len(filter) > 0 {
 		sqlCon = sqlCon.Scopes(c.ransack(filter))

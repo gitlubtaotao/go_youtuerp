@@ -8,9 +8,9 @@ import (
 )
 
 type DepartmentController struct {
-	Ctx iris.Context
+	ctx iris.Context
 	BaseController
-	Service services.IDepartmentService
+	service services.IDepartmentService
 }
 
 func (d *DepartmentController) GetColumn(ctx iris.Context) {
@@ -18,7 +18,7 @@ func (d *DepartmentController) GetColumn(ctx iris.Context) {
 }
 
 func (d *DepartmentController) Get(ctx iris.Context) () {
-	departments, total, err := d.Service.Find(d.GetPer(ctx), d.GetPage(ctx), d.handlerGetParams(), []string{}, []string{}, true)
+	departments, total, err := d.service.Find(d.GetPer(ctx), d.GetPage(ctx), d.handlerGetParams(), []string{}, []string{}, true)
 	if err != nil {
 		d.Render500(ctx, err, "")
 		return
@@ -38,7 +38,7 @@ func (d *DepartmentController) Create(ctx iris.Context) {
 	)
 	err = ctx.ReadJSON(&department)
 	if err != nil {
-		d.Render400(ctx, err, ctx.GetLocale().GetMessage("error.params_error"))
+		d.Render400(ctx, err, "")
 		return
 	}
 	valid := services.NewValidatorService(department)
@@ -47,22 +47,21 @@ func (d *DepartmentController) Create(ctx iris.Context) {
 		d.Render400(ctx, nil, errString)
 		return
 	}
-	department, err = d.Service.Create(department)
+	department, err = d.service.Create(department)
 	if err != nil {
 		d.Render500(ctx, err, err.Error())
 		return
 	}
-	data, _ := d.StructToMap(department, ctx)
-	d.RenderSuccessJson(ctx, data)
+	d.RenderSuccessJson(ctx, d.handlerDataShow(department))
 }
 
 func (d *DepartmentController) Update(ctx iris.Context) {
 	var (
-		id       int
+		id       uint
 		err      error
 		readData models.Department
 	)
-	id, err = ctx.Params().GetInt("id")
+	id, err = ctx.Params().GetUint("id")
 	if err != nil {
 		d.Render400(ctx, err, "")
 		return
@@ -72,24 +71,18 @@ func (d *DepartmentController) Update(ctx iris.Context) {
 		d.Render400(ctx, err, err.Error())
 		return
 	}
-	department, err := d.Service.First(uint(id))
-	if err != nil {
-		d.Render400(ctx, err, "")
-		return
-	}
 	valid := services.NewValidatorService(readData)
 	errString := valid.ResultError(ctx.GetLocale().Language())
 	if errString != "" {
 		d.Render400(ctx, nil, errString)
 		return
 	}
-	err = d.Service.Update(department, readData)
+	err = d.service.Update(id, readData)
 	if err != nil {
 		d.Render500(ctx, err, "")
 		return
 	}
-	returnData, _ := d.StructToMap(department, ctx)
-	d.RenderSuccessJson(ctx, returnData)
+	d.RenderSuccessJson(ctx, d.handlerDataShow(readData))
 	return
 }
 
@@ -99,7 +92,7 @@ func (d *DepartmentController) Delete(ctx iris.Context) {
 		d.Render400(ctx, err, err.Error())
 		return
 	}
-	err = d.Service.Delete(id)
+	err = d.service.Delete(id)
 	if err != nil {
 		d.Render500(ctx, err, "")
 	} else {
@@ -107,16 +100,21 @@ func (d *DepartmentController) Delete(ctx iris.Context) {
 	}
 }
 
+func (d *DepartmentController) handlerDataShow(department interface{}) map[string]interface{}  {
+	data,_:= d.StructToMap(department,d.ctx)
+	data["user_companies_name_nick"] = red.HGetCompany(data["user_company_id"],"name_nick")
+	return data
+}
 func (d *DepartmentController) handlerGetParams() map[string]interface{} {
 	searchColumn := make(map[string]interface{})
-	searchColumn["name_cn-rCount"] = d.Ctx.URLParamDefault("name_cn", "")
-	searchColumn["name_en-rCount"] = d.Ctx.URLParamDefault("name_en", "")
-	searchColumn["user_company_id-eq"] = d.Ctx.URLParamDefault("user_company_id", "")
+	searchColumn["departments.name_cn-rCount"] = d.ctx.URLParamDefault("name_cn", "")
+	searchColumn["departments.name_en-rCount"] = d.ctx.URLParamDefault("name_en", "")
+	searchColumn["user_company_id-eq"] = d.ctx.URLParamDefault("user_company_id", "")
 	return searchColumn
 }
 
 func (d *DepartmentController) Before(ctx iris.Context) {
-	d.Service = services.NewDepartmentService()
-	d.Ctx = ctx
+	d.service = services.NewDepartmentService()
+	d.ctx = ctx
 	ctx.Next()
 }

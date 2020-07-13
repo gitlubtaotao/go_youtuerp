@@ -51,7 +51,6 @@ func NewAppInfo() *iris.Application {
 	}
 	conf.ReisCon = redis.Connect()
 	iris.RegisterOnInterrupt(func() {
-		database.GetDBCon().Close()
 		conf.ReisCon.Close()
 	})
 	//国际化翻译

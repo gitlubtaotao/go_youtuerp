@@ -1,12 +1,15 @@
 package models
 
-import "time"
+import (
+	"gorm.io/gorm"
+	"time"
+)
 
 type Company struct {
 	ID                uint       `gorm:"primary_key"json:"id"`
 	CreatedAt         time.Time  `json:"created_at"`
 	UpdatedAt         time.Time  `json:"updated_at"`
-	DeletedAt         *time.Time `sql:"index"`
+	DeletedAt         gorm.DeletedAt `sql:"index"`
 	CompanyType       int        `form:"company_type" json:"company_type"`
 	ParentId          int        `gorm:"index:parent_id"`
 	UserSalesmanId    int        `gorm:"index:user_salesman_id"`              // 所属的业务人员

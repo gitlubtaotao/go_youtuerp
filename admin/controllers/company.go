@@ -3,32 +3,28 @@ package controllers
 import (
 	"github.com/kataras/iris/v12"
 	"net/http"
+	"youtuerp/conf"
 	"youtuerp/models"
 	"youtuerp/services"
 )
 
 type CompanyController struct {
-	Ctx     iris.Context
-	Service services.ICompanyService
+	ctx     iris.Context
+	service services.ICompanyService
+	enum    conf.Enum
 	BaseController
 }
 
 //
 func (c *CompanyController) Get(ctx iris.Context) {
-	currentUser, _ := c.CurrentUser(ctx)
-	selectColumn := c.GetCustomerColumn(currentUser, models.UserCompany{})
-	limit := ctx.URLParamIntDefault("limit", 20)
-	page := ctx.URLParamIntDefault("page", 1)
-	companies, total, err := c.Service.FindCompany(uint(limit), uint(page), c.handlerGetParams(), selectColumn, []string{}, true)
+	companies, total, err := c.service.FindCompany(c.GetPer(ctx), c.GetPage(ctx), c.handlerGetParams(), []string{}, []string{}, true)
 	if err != nil {
 		c.Render500(ctx, err, err.Error())
 		return
 	}
-	
 	dataArray := make([]map[string]interface{}, 0)
-	transportArray := c.Service.TransportTypeArrays(ctx.GetLocale())
 	for _, v := range companies {
-		dataArray = append(dataArray, c.itemChange(v, transportArray))
+		dataArray = append(dataArray, c.itemChange(v))
 	}
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": dataArray, "total": total,})
 }
@@ -41,16 +37,13 @@ func (c *CompanyController) Create(ctx iris.Context) {
 		c.Render400(ctx, err, err.Error())
 		return
 	}
-	company.CompanyType = 4
-	company.Status = "approved"
-	company.IsHeadOffice = false
 	validator := services.NewValidatorService(&company)
-	errM:= validator.ResultError(ctx.GetLocale().Language())
+	errM := validator.ResultError(ctx.GetLocale().Language())
 	if errM != "" {
-		c.Render400(ctx,nil,errM)
+		c.Render400(ctx, nil, errM)
 		return
 	}
-	company, err = c.Service.Create(company)
+	company, err = c.service.Create(company)
 	if err != nil {
 		c.Render500(ctx, err, "")
 		return
@@ -62,12 +55,12 @@ func (c *CompanyController) Create(ctx iris.Context) {
 func (c *CompanyController) Edit(ctx iris.Context) {
 	id, err := ctx.Params().GetUint("id")
 	if err != nil {
-		c.Render400(ctx,err,err.Error())
+		c.Render400(ctx, err, err.Error())
 		return
 	}
-	company, err := c.Service.FirstCompany(id)
+	company, err := c.service.FirstCompany(id)
 	if err != nil {
-		c.Render500(ctx,err,err.Error())
+		c.Render500(ctx, err, err.Error())
 		return
 	}
 	c.RenderSuccessJson(ctx, company)
@@ -78,21 +71,20 @@ func (c *CompanyController) Update(ctx iris.Context) {
 	var readData models.UserCompany
 	err := ctx.ReadJSON(&readData)
 	if err != nil {
-		c.Render400(ctx,err,err.Error())
+		c.Render400(ctx, err, "")
 		return
 	}
 	id, err := ctx.Params().GetUint("id")
 	if err != nil {
-		c.Render400(ctx, err, ctx.GetLocale().GetMessage("error.error"))
+		c.Render400(ctx, err, "")
 		return
 	}
-	company, _ := c.Service.FirstCompany(id)
-	err = c.Service.Update(company, readData)
+	err = c.service.Update(id, readData)
 	if err != nil {
-		c.Render500(ctx,err ,"")
+		c.Render500(ctx, err, "")
 		return
 	}
-	c.RenderSuccessJson(ctx, c.itemChange(company, c.Service.TransportTypeArrays(ctx.GetLocale())))
+	c.RenderSuccessJson(ctx, c.itemChange(readData))
 }
 
 func (c *CompanyController) GetColumn(ctx iris.Context) {
@@ -102,11 +94,11 @@ func (c *CompanyController) GetColumn(ctx iris.Context) {
 func (c *CompanyController) Delete(ctx iris.Context) {
 	id, err := ctx.Params().GetUint("id")
 	if err != nil {
-		c.Render400(ctx, err, ctx.GetLocale().GetMessage("error.error"))
+		c.Render400(ctx, err, "")
 		return
 	}
-	if err = c.Service.Delete(id); err != nil {
-		c.Render500(ctx, err, ctx.GetLocale().GetMessage("error.error"))
+	if err = c.service.Delete(id); err != nil {
+		c.Render500(ctx, err, "")
 	} else {
 		c.RenderSuccessJson(ctx, iris.Map{})
 	}
@@ -123,7 +115,7 @@ func (c *CompanyController) Show(ctx iris.Context) {
 		c.Render400(ctx, err, "")
 		return
 	}
-	company, err = c.Service.FirstCompanyByRelated(uint(id), "Employees", "Accounts", "Departments")
+	company, err = c.service.FirstCompanyByRelated(uint(id), "Employees", "Accounts", "Departments")
 	if err != nil {
 		c.Render500(ctx, err, "")
 		return
@@ -133,24 +125,25 @@ func (c *CompanyController) Show(ctx iris.Context) {
 }
 
 func (c *CompanyController) Before(ctx iris.Context) {
-	c.Service = services.NewCompanyService()
-	c.Ctx = ctx
+	c.service = services.NewCompanyService()
+	c.enum = conf.NewEnum(ctx.GetLocale())
+	c.ctx = ctx
 	ctx.Next()
 }
 
 func (c *CompanyController) handlerGetParams() map[string]interface{} {
 	searchColumn := make(map[string]interface{})
-	if c.Ctx.URLParamExists("name_nick") && c.Ctx.URLParam("name_nick") != "" {
-		searchColumn["name_nick-cont"] = c.Ctx.URLParam("name_nick")
+	if c.ctx.URLParamExists("name_nick") && c.ctx.URLParam("name_nick") != "" {
+		searchColumn["name_nick-rCount"] = c.ctx.URLParam("name_nick")
 	}
-	if c.Ctx.URLParamExists("email") && c.Ctx.URLParam("email") != "" {
-		searchColumn["email-cont"] = c.Ctx.URLParam("email")
+	if c.ctx.URLParamExists("email") && c.ctx.URLParam("email") != "" {
+		searchColumn["email-rCount"] = c.ctx.URLParam("email")
 	}
 	return searchColumn
 }
 
-func (c *CompanyController) itemChange(v *models.UserCompany, transportArray []map[string]interface{}) map[string]interface{} {
-	temp, _ := c.StructToMap(v, c.Ctx)
-	temp["company_type"] = c.Service.ShowTransportType(c.Ctx.GetLocale(), temp["company_type"], transportArray)
+func (c *CompanyController) itemChange(v models.UserCompany) map[string]interface{} {
+	temp, _ := c.StructToMap(v, c.ctx)
+	temp["company_type"] = c.service.ShowTransportType(c.enum, temp["company_type"])
 	return temp
 }

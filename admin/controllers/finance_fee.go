@@ -230,7 +230,7 @@ func (f *FinanceFee) GetConfirmBillList(ctx iris.Context) {
 	var (
 		readMap     map[string]interface{}
 		err         error
-		total       uint
+		total       int64
 		financeFees []models.ResultFinanceFee
 	)
 	if err = ctx.ReadJSON(&readMap); err != nil {

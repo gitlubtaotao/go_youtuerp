@@ -4,26 +4,27 @@ import "time"
 
 //订单
 type OrderMaster struct {
-	ID               uint            `gorm:"primary_key"json:"id"`
-	CreatedAt        *time.Time      `sql:"index" json:"created_at"`
-	UpdatedAt        time.Time       `json:"updated_at"`
-	SerialNumber     string          `gorm:"size:16;unique;not null;index:serial_number" comment:"订单号"  json:"serial_number"`
-	InstructionId    uint            `gorm:"index:company_instruction_id" json:"instruction_id" validate:"required"`
-	SalesmanId       uint            `gorm:"index:salesman_id" json:"salesman_id" validate:"required" `
-	OperationId      uint            `gorm:"index:operation_id" json:"operation_id" validate:"required"`
-	TransportType    uint            `sql:"index" json:"transport_type" validate:"required" `
-	Status           string          `gorm:"size:16;index:status;default:processing" json:"status" validate:"required"`
-	CompanyId        uint            `sql:"index" json:"company_id" validate:"required"`
-	ContactId        uint            `json:"contact_id"`
-	MainTransport    uint            `json:"main_transport"`
-	PayableStatus    string          `gorm:"size:16;index:payable_paid_status;default:unfinished" json:"payable_status"`
-	PaidStatus       string          `gorm:"size:16;index:payable_paid_status;default:unfinished" json:"paid_status"`
-	ReceivableStatus string          `gorm:"size:16;index:receive_received_status;default:unfinished" sql:"index" json:"receivable_status"`
-	ReceivedStatus   string          `gorm:"size:16;index:receive_received_status;default:unfinished" json:"received_status"`
-	Remarks          string          `gorm:"size:522" json:"remarks"`
-	Roles            []Role          `gorm:"polymorphic:Source;" json:"roles"`
-	SeaCargoInfos    []SeaCargoInfo  `gorm:"polymorphic:Source;association_autocreate:false;association_autoupdate:false" json:"sea_cargo_infos"`
-	OrderExtendInfo  OrderExtendInfo `gorm:"foreignkey:order_master_id;association_foreignkey:id" json:"order_extend_info"`
+	ID               uint           `gorm:"primary_key"json:"id"`
+	CreatedAt        *time.Time     `sql:"index" json:"created_at"`
+	UpdatedAt        time.Time      `json:"updated_at"`
+	SerialNumber     string         `gorm:"size:16;unique;not null;index:serial_number" comment:"订单号"  json:"serial_number"`
+	InstructionId    uint           `gorm:"index:company_instruction_id" json:"instruction_id" validate:"required"`
+	SalesmanId       uint           `gorm:"index:salesman_id" json:"salesman_id" validate:"required" `
+	OperationId      uint           `gorm:"index:operation_id" json:"operation_id" validate:"required"`
+	TransportType    uint           `sql:"index" json:"transport_type" validate:"required" `
+	Status           string         `gorm:"size:16;index:status;default:processing" json:"status" validate:"required"`
+	CompanyId        uint           `sql:"index" json:"company_id" validate:"required"`
+	ContactId        uint           `json:"contact_id"`
+	MainTransport    uint           `json:"main_transport"`
+	PayableStatus    string         `gorm:"size:16;index:payable_paid_status;default:unfinished" json:"payable_status"`
+	PaidStatus       string         `gorm:"size:16;index:payable_paid_status;default:unfinished" json:"paid_status"`
+	ReceivableStatus string         `gorm:"size:16;index:receive_received_status;default:unfinished" sql:"index" json:"receivable_status"`
+	ReceivedStatus   string         `gorm:"size:16;index:receive_received_status;default:unfinished" json:"received_status"`
+	Remarks          string         `gorm:"size:522" json:"remarks"`
+	Roles            []Role         `gorm:"polymorphic:Source;" json:"roles"`
+	SeaCargoInfos    []SeaCargoInfo `gorm:"polymorphic:Source;association_autocreate:false;association_autoupdate:false" json:"sea_cargo_infos"`
+	//OrderExtendInfo  OrderExtendInfo `gorm:"foreignkey:order_master_id;association_foreignkey:id" json:"order_extend_info"`
+	OrderExtendInfo OrderExtendInfo `gorm:"embedded" json:"order_extend_info"`
 }
 
 type OrderExtendInfo struct {

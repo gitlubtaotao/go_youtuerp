@@ -23,7 +23,7 @@ func (a *Address) GetColumn(ctx iris.Context) {
 func (a *Address) Get(ctx iris.Context) {
 	var (
 		accounts []models.Address
-		total    uint
+		total    int64
 		err      error
 	)
 	ty := ctx.URLParamDefault("type", "oa")
