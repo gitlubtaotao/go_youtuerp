@@ -102,10 +102,9 @@ func (o OrderMasterRepository) FirstMaster(id uint, load ...string) (models.Orde
 func (o OrderMasterRepository) FindMaster(per, page int, filter map[string]interface{}, selectKeys []string,
 	orders []string, isTotal bool) (masters []models.ResultOrderMaster, total int64, err error) {
 	var rows *sql.Rows
-	sqlConn := database.GetDBCon().Table(models.OrderMaster{}.TableName())
-	sqlConn = sqlConn.Joins("inner join order_extend_infos on order_extend_infos.order_master_id = order_masters.id")
+	sqlConn := database.GetDBCon().Model(&models.OrderMaster{}).Scopes(o.joinExtendInfo)
 	if isTotal {
-		if total, err = o.Count(sqlConn, filter); err != nil {
+		if total, err = o.Count(database.GetDBCon().Model(&models.OrderMaster{}).Scopes(o.joinExtendInfo), filter); err != nil {
 			return
 		}
 	}
@@ -115,8 +114,7 @@ func (o OrderMasterRepository) FindMaster(per, page int, filter map[string]inter
 	if len(orders) == 0 {
 		orders = []string{"order_masters.id desc"}
 	}
-	sqlConn = o.crud.Where(sqlConn, filter, selectKeys, o.Paginate(per, page), o.OrderBy(orders))
-	rows, err = sqlConn.Rows()
+	rows, err = sqlConn.Scopes(o.CustomerWhere(filter,selectKeys,o.Paginate(per, page), o.OrderBy(orders))).Rows()
 	if err != nil {
 		return
 	}

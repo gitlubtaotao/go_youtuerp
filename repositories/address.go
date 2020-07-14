@@ -41,16 +41,20 @@ func (a AddressRepository) First(id uint) (models.Address, error) {
 }
 
 func (a AddressRepository) FindByOa(per, page int, filter map[string]interface{}, selectKeys []string,
-	order []string) (invoices []models.Address, total int64, err error) {
-	sqlCon := database.GetDBCon().Model(&models.Address{})
-	sqlCon = sqlCon.Scopes(a.defaultOaScoped)
-	return a.Find(sqlCon, per, page, filter, selectKeys, order, true)
+	order []string) (address []models.Address, total int64, err error) {
+	sqlCon := database.GetDBCon().Model(&models.Address{}).Scopes(a.defaultOaScoped)
+	address, err = a.Find(sqlCon, per, page, filter, selectKeys, order)
+	total, err = a.Count(database.GetDBCon().Model(&models.Address{}).Scopes(a.defaultOaScoped), filter)
+	return
 }
+
+
 func (a AddressRepository) FindByCrm(per, page int, filter map[string]interface{}, selectKeys []string,
-	orders []string) (accounts []models.Address, total int64, err error) {
-	sqlCon := database.GetDBCon().Model(&models.Address{})
-	sqlCon = sqlCon.Scopes(a.defaultCrmScoped)
-	return a.Find(sqlCon, per, page, filter, selectKeys, orders, true)
+	orders []string) (address []models.Address, total int64, err error) {
+	sqlCon := database.GetDBCon().Model(&models.Address{}).Scopes(a.defaultCrmScoped)
+	address, err = a.Find(sqlCon, per, page, filter, selectKeys, orders)
+	total, err = a.Count(database.GetDBCon().Model(&models.Address{}).Scopes(a.defaultCrmScoped), filter)
+	return
 }
 
 //创建银行账户信息
@@ -63,21 +67,11 @@ func (a AddressRepository) Create(address models.Address) (models.Address, error
 }
 
 func (a AddressRepository) Find(sqlCon *gorm.DB, per, page int, filter map[string]interface{}, selectKeys []string,
-	order []string, isCount bool) (address []models.Address,
-	total int64, err error) {
-	if len(filter) > 0 {
-		sqlCon = sqlCon.Scopes(a.Ransack(filter))
-	}
-	if isCount {
-		err = sqlCon.Count(&total).Error
-		if err != nil {
-			return
-		}
-	}
+	order []string) (address []models.Address, err error) {
 	if len(selectKeys) == 0 {
 		selectKeys = []string{"address.*"}
 	}
-	rows, err := sqlCon.Scopes(a.Paginate(per, page), a.OrderBy(order)).Select(selectKeys).Rows()
+	rows, err := sqlCon.Scopes(a.CustomerWhere(filter, selectKeys, a.Paginate(per, page), a.OrderBy(order))).Rows()
 	if err != nil {
 		return
 	}

@@ -27,7 +27,6 @@ type CrmClue struct {
 	QQId          string         `gorm:"size:16" json:"qq_id"`
 	UserRemarks   string         `gorm:"size:1024" json:"user_remarks"`
 	CreateId      uint           `gorm:"index:create_id" json:"create_id"`
-	CreateName    string         `gorm:"-" json:"create_name"`
 	UserCompanyId uint           `gorm:"index:user_company_id"`
 	City          string         `gorm:"size:64" json:"city"`
 	Province      string         `gorm:"size:64" json:"province"`
@@ -69,19 +68,19 @@ type CrmCompany struct {
 	Code              string         `json:"code"`
 	FrequentlyUseInfo string         `gorm:"size:1024;column:frequently_use_info"`
 	Roles             []Role         `gorm:"polymorphic:Source;" json:"roles"`
-	CrmUsers          []CrmUser      `gorm:"foreignkey:UserCompanyId;association_foreignkey:Id;association_autoupdate:false" json:"crm_users"`
+	CrmContacts       []CrmContact   `gorm:"foreignkey:UserCompanyId;association_foreignkey:Id;association_autoupdate:false" json:"crm_contacts"`
 	Accounts          []Account      `gorm:"foreignkey:UserCompanyId;association_autoupdate:false" json:"accounts"`
 	Invoices          []Invoice      `gorm:"foreignkey:UserCompanyId;association_autoupdate:false" json:"invoices"`
 	Address           []Address      `gorm:"foreignkey:UserCompanyId" json:"address"`
 	CrmTracks         []CrmTrack     `gorm:"polymorphic:Source;" json:"crm_tracks"`
 }
 
-type CrmUser struct {
+type CrmContact struct {
 	ID            uint           `gorm:"primary_key"json:"id"`
 	CreatedAt     time.Time      `json:"created_at"`
 	UpdatedAt     time.Time      `json:"updated_at"`
 	DeletedAt     gorm.DeletedAt `sql:"index"`
-	Email         string         `grom:"type:varchar(100);email;unique;not_null;" json:"email" validate:"required,email"` // email
+	Email         string         `gorm:"type:varchar(100);email;unique;not_null;" form:"email" json:"email" validate:"required,email"` // email
 	UserCompanyId int            `form:"user_company_id" json:"user_company_id" validate:"required"`
 	Name          string         `form:"name" json:"name" validate:"required"` // 姓名
 	Phone         string         `gorm:"UNIQUE_INDEX;size:64" form:"phone" json:"phone" validate:"required"`
@@ -89,7 +88,6 @@ type CrmUser struct {
 	Remarks       string         `gorm:"size:65535" json:"remarks" form:"remarks"`
 	Sex           uint           `gorm:"default:0" json:"sex" form:"sex"`
 	UserCompany   UserCompany    `gorm:"foreignkey:user_company_id" validate:"structonly"`
-	Avatar        string         `gorm:"size:255" json:"avatar" yaml:"avatar"`
 	IsKeyContact  bool           `gorm:"default: false" json:"is_key_contact"`
 	CompanyType   uint           `json:"company_type"`
 }
@@ -127,7 +125,7 @@ func (CrmCompany) RedisKey() string {
 	return "crm_companies"
 }
 
-func (CrmUser) TableName() string {
+func (CrmContact) TableName() string {
 	return "users"
 }
 
@@ -145,7 +143,7 @@ func (c *CrmCompany) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
 
-func (c *CrmUser) BeforeCreate(tx *gorm.DB) (err error) {
+func (c *CrmContact) BeforeCreate(tx *gorm.DB) (err error) {
 	c.CompanyType = CompanyTypeCS
 	return
 }

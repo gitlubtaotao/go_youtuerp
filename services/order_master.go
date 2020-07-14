@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"github.com/kataras/golog"
 	"reflect"
 	"strconv"
 	"time"
@@ -194,6 +195,7 @@ func (o OrderMasterService) ShowTransport(enum conf.Enum, value interface{}) str
 }
 
 func (o OrderMasterService) FindMaster(per, page int, filter map[string]interface{}, selectKeys []string, orders []string) ([]models.ResultOrderMaster, int64, error) {
+	golog.Infof("find master is %v",per)
 	return o.repo.FindMaster(per, page, filter, selectKeys, orders, true)
 }
 

@@ -6,7 +6,6 @@ import (
 	"strings"
 	"youtuerp/conf"
 	"youtuerp/models"
-	"youtuerp/redis"
 	"youtuerp/services"
 )
 
@@ -34,9 +33,8 @@ func (c *CrmCompany) Get(ctx iris.Context) {
 		return
 	}
 	dataArray := make([]map[string]interface{}, 0)
-	red := redis.NewRedis()
 	for _, v := range companies {
-		result, _ := c.handleCompany(red, v)
+		result, _ := c.handleCompany(v)
 		dataArray = append(dataArray, result)
 	}
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": dataArray, "total": total,})
@@ -60,8 +58,7 @@ func (c *CrmCompany) Create(ctx iris.Context) {
 		c.Render400(ctx, err, err.Error())
 		return
 	}
-	red := redis.NewRedis()
-	data, _ := c.handleCompany(red, company)
+	data, _ := c.handleCompany(company)
 	c.RenderSuccessJson(ctx, data)
 }
 
@@ -105,8 +102,7 @@ func (c *CrmCompany) Update(ctx iris.Context) {
 		c.Render400(ctx, err, err.Error())
 		return
 	}
-	red := redis.NewRedis()
-	data, _ := c.handleCompany(red, company)
+	data, _ := c.handleCompany(company)
 	c.RenderSuccessJson(ctx, data)
 }
 
@@ -171,12 +167,12 @@ func (c *CrmCompany) Show(ctx iris.Context) {
 		c.Render400(ctx, err, err.Error())
 		return
 	}
-	company, err = c.service.First(id, "Roles", "CrmUsers", "Accounts", "Invoices", "Address", "CrmTracks")
+	company, err = c.service.First(id, "Roles", "CrmContacts", "Accounts", "Invoices", "Address", "CrmTracks")
 	if err != nil {
 		c.Render500(ctx, err, "")
 		return
 	}
-	data, _ := c.handleCompany(redis.NewRedis(), company)
+	data, _ := c.handleCompany(company)
 	c.RenderSuccessJson(ctx, data)
 }
 
@@ -200,7 +196,7 @@ func (c *CrmCompany) Before(ctx iris.Context) {
 	ctx.Next()
 }
 
-func (c *CrmCompany) handleCompany(redis redis.Redis, company models.CrmCompany) (data map[string]interface{}, err error) {
+func (c *CrmCompany) handleCompany(company models.CrmCompany) (data map[string]interface{}, err error) {
 	enum := conf.Enum{Locale: c.ctx.GetLocale()}
 	data, err = c.StructToMap(company, c.ctx)
 	if err != nil {
@@ -214,11 +210,11 @@ func (c *CrmCompany) handleCompany(redis redis.Redis, company models.CrmCompany)
 	accountPeriod := data["account_period"]
 	roles := data["roles"].([]models.Role)
 	for i, v := range roles {
-		roles[i].UserName = redis.HGetRecord("users", v.UserId, "name")
+		roles[i].UserName = red.HGetRecord("users", v.UserId, "name")
 		roles[i].Name = enum.DefaultText("roles_name.", v.Name)
 	}
 	data["roles"] = roles
-	data["parent_id"] = redis.HGetCompany(data["parent_id"], "name_nick")
+	data["parent_id"] = red.HGetCompany(data["parent_id"], "name_nick")
 	data["account_period"] = enum.DefaultText("user_companies_account_period.", accountPeriod)
 	data["account_period_value"] = accountPeriod
 	return data, err

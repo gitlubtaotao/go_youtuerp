@@ -42,17 +42,16 @@ func (c CrmClue) First(id uint, isTacks bool) (models.CrmClue, error) {
 func (c CrmClue) Find(per, page int, filter map[string]interface{}, selectKeys []string,
 	orders []string, isCount bool) (clues []models.CrmClue, total int64, err error) {
 	var rows *sql.Rows
-	sqlCon := database.GetDBCon().Model(&models.CrmClue{})
+	sqlCon := database.GetDBCon().Model(&models.CrmClue{}).Scopes(c.defaultScope())
 	if isCount {
-		if total, err = c.Count(sqlCon, filter); err != nil {
+		if total, err = c.Count(database.GetDBCon().Model(&models.CrmClue{}).Scopes(c.defaultScope()), filter); err != nil {
 			return
 		}
 	}
 	if len(selectKeys) == 0 {
 		selectKeys = c.defaultSelectKeys()
 	}
-	sqlCon = c.crud.Where(sqlCon, filter, selectKeys, c.defaultScope(), c.Paginate(per, page), c.OrderBy(orders))
-	rows, err = sqlCon.Rows()
+	rows, err = sqlCon.Scopes(c.CustomerWhere(filter, selectKeys, c.Paginate(per, page), c.OrderBy(orders))).Rows()
 	if err != nil {
 		return
 	}

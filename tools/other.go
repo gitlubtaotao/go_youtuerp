@@ -144,6 +144,19 @@ func GetStructFieldByJson(model interface{}) (data []string, err error) {
 	return data, err
 }
 
+//获取strcut
+func StructTableName(v reflect.Value) string {
+	var data string
+	methodName := v.MethodByName("TableName")
+	if methodName.IsValid() {
+		value := methodName.Call([]reflect.Value{})
+		data = value[0].String()
+	} else {
+		data = OtherHelper{}.ToSnakeCase(v.Kind().String())
+	}
+	return data
+}
+
 func (o OtherHelper) merge(dst, src map[string]interface{}, depth int) map[string]interface{} {
 	if depth > MaxDepth {
 		panic("too deep!")

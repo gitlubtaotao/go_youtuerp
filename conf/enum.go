@@ -37,5 +37,5 @@ func (e Enum) ClearRuleText(src interface{}) string {
 }
 
 func (e Enum) CompanyTypeText(src interface{}) string {
-	return e.DefaultText("company_type.", src)
+	return e.DefaultText("user_companies_company_type.", src)
 }

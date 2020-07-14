@@ -8,10 +8,10 @@ import (
 
 type ICrmUser interface {
 	Delete(id uint) error
-	Update(id uint, user models.CrmUser,language string) error
-	Create(user models.CrmUser, language string) (models.CrmUser, error)
+	Update(id uint, user models.CrmContact,language string) error
+	Create(user models.CrmContact, language string) (models.CrmContact, error)
 	Find(per, page int, filter map[string]interface{}, selectKeys []string,
-		order []string) ([]models.CrmUser, int64, error)
+		order []string) ([]models.CrmContact, int64, error)
 }
 type CrmUser struct {
 	BaseService
@@ -22,7 +22,7 @@ func (c CrmUser) Delete(id uint) error {
 	return c.repo.Delete(id)
 }
 
-func (c CrmUser) Update(id uint, user models.CrmUser, language string) error {
+func (c CrmUser) Update(id uint, user models.CrmContact, language string) error {
 	valid := NewValidatorService(user)
 	if message := valid.ResultError(language); message != "" {
 		return errors.New(message)
@@ -31,19 +31,19 @@ func (c CrmUser) Update(id uint, user models.CrmUser, language string) error {
 }
 
 func (c CrmUser) Find(per, page int, filter map[string]interface{}, selectKeys []string,
-	order []string) ([]models.CrmUser, int64, error) {
+	order []string) ([]models.CrmContact, int64, error) {
 	return c.repo.Find(per, page, filter, selectKeys, order, true)
 }
 
-func (c CrmUser) Create(user models.CrmUser, language string) (models.CrmUser, error) {
+func (c CrmUser) Create(user models.CrmContact, language string) (models.CrmContact, error) {
 	var err error
 	valid := NewValidatorService(user)
-	user.CompanyType = 1
+	//user.CompanyType = 1
 	if message := valid.ResultError(language); message != "" {
-		return models.CrmUser{}, errors.New(message)
+		return models.CrmContact{}, errors.New(message)
 	}
 	if user, err = c.repo.Create(user); err != nil {
-		return models.CrmUser{}, err
+		return models.CrmContact{}, err
 	}
 	//	进行redis 缓存
 	return user, err

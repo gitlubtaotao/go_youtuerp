@@ -23,8 +23,8 @@ type OrderMaster struct {
 	Remarks          string         `gorm:"size:522" json:"remarks"`
 	Roles            []Role         `gorm:"polymorphic:Source;" json:"roles"`
 	SeaCargoInfos    []SeaCargoInfo `gorm:"polymorphic:Source;association_autocreate:false;association_autoupdate:false" json:"sea_cargo_infos"`
-	//OrderExtendInfo  OrderExtendInfo `gorm:"foreignkey:order_master_id;association_foreignkey:id" json:"order_extend_info"`
-	OrderExtendInfo OrderExtendInfo `gorm:"embedded" json:"order_extend_info"`
+	OrderExtendInfo  OrderExtendInfo `gorm:"foreignkey:order_master_id;association_foreignkey:id" json:"order_extend_info"`
+	//OrderExtendInfo OrderExtendInfo `gorm:"embedded" json:"order_extend_info"`
 }
 
 type OrderExtendInfo struct {
@@ -95,7 +95,7 @@ type ResultOrderMaster struct {
 	CourierNo        string     `gorm:"size:16;index:courier_no" json:"courier_no"`
 	ShipperId        uint       `json:"shipper_id"`
 	SupplyAgentId    uint       `sql:"index" json:"supply_agent_id"`
-	Roles            []Role     `json:"roles"`
+	//Roles            []Role     `json:"roles"`
 }
 
 const (

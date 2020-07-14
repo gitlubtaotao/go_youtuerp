@@ -43,15 +43,17 @@ func (i InvoiceRepository) First(id uint) (models.Invoice, error) {
 
 func (i InvoiceRepository) FindByOa(per, page int, filter map[string]interface{}, selectKeys []string,
 	order []string) (invoices []models.Invoice, total int64, err error) {
-	sqlCon := database.GetDBCon().Model(&models.Invoice{})
-	sqlCon = sqlCon.Scopes(i.defaultOaScoped)
-	return i.Find(sqlCon, per, page, filter, selectKeys, order, true)
+	sqlCon := database.GetDBCon().Model(&models.Invoice{}).Scopes(i.defaultOaScoped)
+	invoices, err = i.Find(sqlCon, per, page, filter, selectKeys, order)
+	total, err = i.Count(database.GetDBCon().Model(&models.Invoice{}).Scopes(i.defaultOaScoped), filter)
+	return
 }
 func (i InvoiceRepository) FindByCrm(per, page int, filter map[string]interface{}, selectKeys []string,
-	orders []string) (accounts []models.Invoice, total int64, err error) {
-	sqlCon := database.GetDBCon().Model(&models.Invoice{})
-	sqlCon = sqlCon.Scopes(i.defaultCrmScoped)
-	return i.Find(sqlCon, per, page, filter, selectKeys, orders, true)
+	orders []string) (invoices []models.Invoice, total int64, err error) {
+	sqlCon := database.GetDBCon().Model(&models.Invoice{}).Scopes(i.defaultCrmScoped)
+	invoices, err = i.Find(sqlCon, per, page, filter, selectKeys, orders)
+	total, err = i.Count(database.GetDBCon().Model(&models.Invoice{}).Scopes(i.defaultCrmScoped), filter)
+	return
 }
 
 //创建银行账户信息
@@ -64,21 +66,11 @@ func (i InvoiceRepository) Create(invoice models.Invoice) (models.Invoice, error
 }
 
 func (i InvoiceRepository) Find(sqlCon *gorm.DB, per, page int, filter map[string]interface{}, selectKeys []string,
-	order []string, isCount bool) (invoices []models.Invoice,
-	total int64, err error) {
-	if len(filter) > 0 {
-		sqlCon = sqlCon.Scopes(i.Ransack(filter))
-	}
-	if isCount {
-		err = sqlCon.Count(&total).Error
-		if err != nil {
-			return
-		}
-	}
+	order []string) (invoices []models.Invoice, err error) {
 	if len(selectKeys) == 0 {
 		selectKeys = []string{"invoices.*"}
 	}
-	rows, err := sqlCon.Scopes(i.Paginate(per, page), i.OrderBy(order)).Select(selectKeys).Rows()
+	rows, err := sqlCon.Scopes(i.CustomerWhere(filter, selectKeys, i.Paginate(per, page), i.OrderBy(order))).Rows()
 	if err != nil {
 		return
 	}

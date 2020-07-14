@@ -59,15 +59,15 @@ func (c *CrmClue) Create(ctx iris.Context) {
 
 func (c *CrmClue) Edit(ctx iris.Context) {
 	var (
-		id   int
+		id   uint
 		err  error
 		clue models.CrmClue
 	)
-	if id, err = ctx.Params().GetInt("id"); err != nil {
+	if id, err = ctx.Params().GetUint("id"); err != nil {
 		c.Render400(ctx, err, err.Error())
 		return
 	}
-	if clue, err = c.service.First(uint(id), false); err != nil {
+	if clue, err = c.service.First(id, false); err != nil {
 		c.Render500(ctx, err, "")
 		return
 	}

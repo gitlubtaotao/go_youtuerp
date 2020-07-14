@@ -1,9 +1,9 @@
 package repositories
 
 import (
+	"github.com/kataras/golog"
 	"youtuerp/database"
 	"youtuerp/models"
-	"youtuerp/tools"
 )
 
 type ICrmCompany interface {
@@ -50,17 +50,20 @@ func (c CrmCompany) Delete(id uint) error {
 }
 func (c CrmCompany) Update(id uint, company models.CrmCompany) (models.CrmCompany, error) {
 	var record models.CrmCompany
-	sqlCon := database.GetDBCon().First(&record, "id = ? ", id)
-	_ = sqlCon.Association("Roles").Replace(company.Roles)
-	err := sqlCon.Set("gorm:association_autocreate", false).Updates(tools.StructToChange(company)).Error
-	return record, err
+	//sqlCon := database.GetDBCon().First(&record, "id = ? ", id)
+	golog.Infof("roles is %v", company.Roles)
+	if err := database.GetDBCon().Model(&models.CrmCompany{ID: id}).Association("Roles").Replace(company.Roles);err != nil{
+		return record,err
+	}
+	err := database.GetDBCon().Model(&models.CrmCompany{ID: id}).Set("gorm:association_autocreate", false).Updates(company).Error
+	return company, err
 }
 
 func (c CrmCompany) Find(per, page int, filter map[string]interface{}, selectKeys []string,
 	orders []string, isTotal bool) (companies []models.CrmCompany, total int64, err error) {
 	sqlCon := database.GetDBCon().Model(&models.CrmCompany{})
 	if isTotal {
-		if total, err = c.Count(sqlCon, filter); err != nil {
+		if total, err = c.Count(database.GetDBCon().Model(&models.CrmCompany{}), filter); err != nil {
 			return
 		}
 	}
@@ -68,8 +71,7 @@ func (c CrmCompany) Find(per, page int, filter map[string]interface{}, selectKey
 		selectKeys = []string{"user_companies.*"}
 	}
 	sqlCon = sqlCon.Preload("Roles")
-	sqlCon = c.crud.Where(sqlCon, filter, selectKeys, c.Paginate(per, page), c.OrderBy(orders))
-	err = sqlCon.Find(&companies).Error
+	err = sqlCon.Scopes(c.CustomerWhere(filter, selectKeys, c.Paginate(per, page), c.OrderBy(orders))).Find(&companies).Error
 	return
 }
 

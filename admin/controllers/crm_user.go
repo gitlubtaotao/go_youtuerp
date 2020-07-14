@@ -19,7 +19,7 @@ type CrmUser struct {
 }
 
 func (c *CrmUser) GetColumn(ctx iris.Context) {
-	c.RenderModuleColumn(ctx, models.CrmUser{})
+	c.RenderModuleColumn(ctx, models.CrmContact{})
 }
 
 func (c *CrmUser) Get(ctx iris.Context) {
@@ -42,7 +42,7 @@ func (c *CrmUser) Get(ctx iris.Context) {
 
 func (c *CrmUser) Create(ctx iris.Context) {
 	var (
-		user models.CrmUser
+		user models.CrmContact
 		err  error
 	)
 	if err = ctx.ReadJSON(&user); err != nil {
@@ -60,7 +60,7 @@ func (c *CrmUser) Create(ctx iris.Context) {
 func (c *CrmUser) Update(ctx iris.Context) {
 	var (
 		id   uint
-		user models.CrmUser
+		user models.CrmContact
 		err  error
 	)
 	if id, err = ctx.Params().GetUint("id"); err != nil {
@@ -103,7 +103,7 @@ func (c *CrmUser) Before(ctx iris.Context) {
 	ctx.Next()
 }
 
-func (c *CrmUser) handleData(red redis.Redis, user models.CrmUser) map[string]interface{} {
+func (c *CrmUser) handleData(red redis.Redis, user models.CrmContact) map[string]interface{} {
 	data, _ := c.StructToMap(user, c.ctx)
 	data["user_company_id_value"] = data["user_company_id"]
 	data["is_key_contact_value"] = data["is_key_contact"]

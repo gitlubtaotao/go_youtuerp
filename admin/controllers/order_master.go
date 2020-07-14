@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"github.com/kataras/golog"
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"strings"
@@ -248,7 +247,6 @@ func (o *OrderMaster) handlerParams() map[string]interface{} {
 		readMap["status-notEq"] = models.OrderStatusCancel
 		delete(readMap, "status-eq")
 	}
-	golog.Infof("map is %v", readMap)
 	return readMap
 }
 
