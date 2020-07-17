@@ -11,11 +11,12 @@ import (
 )
 
 var dataEngine *gorm.DB
+
 func GetDBCon() *gorm.DB {
 	return dataEngine
 }
-type DataBase struct {
 
+type DataBase struct {
 }
 
 /*
@@ -36,9 +37,9 @@ func (d *DataBase) InitDataBase() error {
 	newLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
 		logger.Config{
-			SlowThreshold: time.Second,   // Slow SQL threshold
+			SlowThreshold: time.Second, // Slow SQL threshold
 			LogLevel:      logger.Info, // Log level
-			Colorful:      false,         // Disable color
+			Colorful:      false,       // Disable color
 		},
 	)
 	var err error
@@ -46,7 +47,7 @@ func (d *DataBase) InitDataBase() error {
 		DSN:               conf.Configuration.DSN,
 		DefaultStringSize: 256,
 	}), &gorm.Config{
-		Logger: newLogger,
+		Logger:      newLogger,
 		PrepareStmt: true,
 	})
 	if err != nil {
@@ -68,7 +69,6 @@ func (d *DataBase) InitDataBase() error {
 /*
  * 注册迁移文件
  */
-
 
 func (d *DataBase) Migration() error {
 	return nil

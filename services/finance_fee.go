@@ -173,6 +173,7 @@ func (f FinanceFee) BulkHistoryFee(orderMasterId uint, feeIds []uint, companyId 
 		err          error
 	)
 	financeFees, err = f.FindFeesById(feeIds)
+	golog.Infof("fee ids %v",feeIds)
 	if err != nil {
 		return nil, err
 	}
@@ -200,8 +201,10 @@ func (f FinanceFee) BulkHistoryFee(orderMasterId uint, feeIds []uint, companyId 
 		if payOrReceive == "pay" {
 			financeFees[i].Payable = financeFees[i].TaxAmount
 			financeFees[i].Receivable = 0
+			financeFees[i].UnPaid = financeFees[i].Payable
 		} else {
 			financeFees[i].Receivable = financeFees[i].TaxAmount
+			financeFees[i].UnReceivable = financeFees[i].Receivable
 			financeFees[i].Payable = 0
 		}
 	}
@@ -308,6 +311,11 @@ func (f FinanceFee) commonHandlerByCopyFee(rates []models.FinanceRate, financeFe
 		financeFee.ClosingUnitId = order.SupplyAgentId
 	} else if financeFee.PayOrReceive == "receive" && order.InstructionId != 0 {
 		financeFee.ClosingUnitId = order.InstructionId
+	}
+	if financeFee.PayOrReceive == "pay" {
+		financeFee.UnPaid = financeFee.Payable
+	} else {
+		financeFee.UnReceivable = financeFee.Receivable
 	}
 	return financeFee
 }

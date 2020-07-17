@@ -27,6 +27,8 @@ type FinanceFee struct {
 	Receivable          float64        `gorm:"PRECISION:4" json:"receivable"`
 	PayAmount           float64        `gorm:"PRECISION:4" json:"pay_amount"`
 	Payable             float64        `gorm:"PRECISION:4" json:"payable"`
+	UnPaid              float64        `gorm:"PRECISION:4" json:"un_paid"`
+	UnReceivable        float64        `gorm:"PRECISION:4" json:"un_receivable"`
 	ClosingUnitId       uint           `gorm:"index:closing_unit_id" json:"closing_unit_id"`
 	OrderMasterId       uint           `gorm:"index:order_master_id" json:"order_master_id"`
 	FinanceStatementId  uint           `json:"finance_statement_id"`
@@ -63,8 +65,6 @@ type FinanceFeeType struct {
 	FinanceCurrencyId uint           `gorm:"index:finance_currency_id" json:"finance_currency_id"`
 	Remarks           string         `gorm:"size:256" json:"remarks"`
 }
-
-
 
 func (FinanceRate) TableName() string {
 	return "finance_rates"

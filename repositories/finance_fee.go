@@ -58,7 +58,7 @@ func (f FinanceFee) GetHistoryFee(filter map[string]interface{}, limit int, sele
 	if limit == 0 {
 		limit = 50
 	}
-	sqlCon := database.GetDBCon().Model(&models.FinanceFee{})
+	sqlCon := database.GetDBCon().Model(&models.FinanceFee{}).Where("finance_fees.deleted_at is NULL")
 	if len(filter) > 0 {
 		sqlCon = sqlCon.Scopes(f.Ransack(filter))
 	}
