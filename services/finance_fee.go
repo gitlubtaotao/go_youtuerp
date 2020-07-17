@@ -104,7 +104,7 @@ func (f FinanceFee) CopyFee(orderMasterId []uint, financeFeeIds []uint, companyI
 }
 
 func (f FinanceFee) FindFeesById(ids []uint, otherKeys ...string) ([]models.FinanceFee, error) {
-	return f.repo.FindFeesById(ids, otherKeys...)
+	return f.repo.FindFeesById(ids, map[string]interface{}{}, otherKeys...)
 }
 
 func (f FinanceFee) FindFees(per, page int, filter map[string]interface{}, selectKeys []string,
@@ -113,7 +113,28 @@ func (f FinanceFee) FindFees(per, page int, filter map[string]interface{}, selec
 }
 
 func (f FinanceFee) ChangeStatusFees(ids []uint, status string) error {
-	return f.repo.ChangeStatusFees(ids, status)
+	otherFilter := map[string]interface{}{
+		"status-in": []string{models.FinanceFeeStatusDismiss, models.FinanceFeeInvoiceInit},
+	}
+	result, err := f.repo.FindFeesById(ids, otherFilter, "closing_unit_id", "pay_or_receive", "status")
+	if err != nil {
+		return err
+	}
+	closingUnitId := make([]uint, 0)
+	payOrReceive := make([]string, 0)
+	for _, item := range result {
+		closingUnitId = append(closingUnitId, item.ClosingUnitId)
+		payOrReceive = append(payOrReceive, item.PayOrReceive)
+	}
+	closingUnitId = tools.UniqueUintSlice(closingUnitId)
+	if len(closingUnitId) > 1 {
+		return errors.New("只能对同一个结算单位进行操作")
+	}
+	payOrReceive = tools.UniqueStringSlice(payOrReceive)
+	if len(payOrReceive) > 1 {
+		return errors.New("只能对同一个收支类型进行操作")
+	}
+	return f.repo.ChangeStatusFees(ids, otherFilter, status)
 }
 
 func (f FinanceFee) DeleteFees(ids []uint) error {

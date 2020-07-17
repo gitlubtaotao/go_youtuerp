@@ -3,6 +3,7 @@ package tools
 
 import (
 	"errors"
+	"github.com/kataras/golog"
 	"net"
 	"net/http"
 	"reflect"
@@ -98,6 +99,42 @@ func ContainsSlice(src []interface{}, val string) (int, bool) {
 	return -1, false
 }
 
+//对slice 进行unique
+func UniqueUintSlice(src []uint) []uint {
+	keys := make(map[uint]bool)
+	var list []uint
+	for _, entry := range src {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
+}
+func UniqueStringSlice(src []string) []string {
+	keys := make(map[string]bool)
+	var list []string
+	for _, entry := range src {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
+}
+
+func UniqueIntSlice(src []int) []int {
+	keys := make(map[int]bool)
+	var list []int
+	for _, entry := range src {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
+}
+
 func StructToChange(src interface{}) map[string]interface{} {
 	t := reflect.TypeOf(src)
 	v := reflect.ValueOf(src)
@@ -144,7 +181,7 @@ func GetStructFieldByJson(model interface{}) (data []string, err error) {
 	return data, err
 }
 
-//获取strcut
+//获取struct 对应的table name
 func StructTableName(v reflect.Value) string {
 	var data string
 	methodName := v.MethodByName("TableName")
@@ -155,6 +192,12 @@ func StructTableName(v reflect.Value) string {
 		data = OtherHelper{}.ToSnakeCase(v.Kind().String())
 	}
 	return data
+}
+
+//结构体中某个字段对应的数据去重复
+func StructFieldCount(src interface{}, field interface{}) {
+	v := reflect.TypeOf(src)
+	golog.Infof("kind is %v,string is %v,name is %v", v.Kind(), v.String(), v.Name())
 }
 
 func (o OtherHelper) merge(dst, src map[string]interface{}, depth int) map[string]interface{} {

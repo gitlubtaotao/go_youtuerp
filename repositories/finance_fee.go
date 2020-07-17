@@ -14,12 +14,12 @@ type IFinanceFee interface {
 	//根据不同的结算查询历史费用
 	GetHistoryFee(filter map[string]interface{}, limit int, selectKeys []string) ([]models.FinanceFee, error)
 	//主要通过费用ID进行查询
-	FindFeesById(ids []uint, otherKeys ...string) ([]models.FinanceFee, error)
+	FindFeesById(ids []uint, otherFilter map[string]interface{}, otherKeys ...string) ([]models.FinanceFee, error)
 	//查询费用信息
 	FindFees(per, page int, filter map[string]interface{}, selectKeys []string,
 		orders []string)
 	//更改费用状态
-	ChangeStatusFees(ids []uint, status string) error
+	ChangeStatusFees(ids []uint, otherFilter map[string]interface{}, status string, ) error
 	//删除订单费用信息
 	DeleteFees([]uint) error
 	//批量插入订单费用信息或者更新费用信息
@@ -77,9 +77,12 @@ func (f FinanceFee) GetHistoryFee(filter map[string]interface{}, limit int, sele
 	return financeFees, nil
 }
 
-func (f FinanceFee) FindFeesById(ids []uint, otherKeys ...string) ([]models.FinanceFee, error) {
+func (f FinanceFee) FindFeesById(ids []uint, otherFilter map[string]interface{}, otherKeys ...string) ([]models.FinanceFee, error) {
 	var financeFees []models.FinanceFee
 	sqlConn := database.GetDBCon().Where("id IN (?)", ids)
+	if len(otherFilter) > 0 {
+		sqlConn.Scopes(f.crud.ransack(otherFilter))
+	}
 	if len(otherKeys) >= 1 {
 		sqlConn = sqlConn.Select(otherKeys)
 	}
@@ -92,8 +95,12 @@ func (f FinanceFee) FindFees(per, page int, filter map[string]interface{}, selec
 	
 }
 
-func (f FinanceFee) ChangeStatusFees(ids []uint, status string) error {
-	return database.GetDBCon().Where("id IN (?)", ids).Model(&models.FinanceFee{}).Updates(map[string]interface{}{"status": status}).Error
+func (f FinanceFee) ChangeStatusFees(ids []uint, otherFilter map[string]interface{}, status string) error {
+	sqlCon := database.GetDBCon().Model(&models.FinanceFee{})
+	if len(otherFilter) > 0 {
+		sqlCon.Scopes(f.crud.ransack(otherFilter))
+	}
+	return sqlCon.Where("id IN (?)", ids).Updates(map[string]interface{}{"status": status}).Error
 }
 
 func (f FinanceFee) DeleteFees(ids []uint) error {
