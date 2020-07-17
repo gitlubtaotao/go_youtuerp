@@ -8,7 +8,7 @@ import (
 
 type ISettingRepository interface {
 	Find(key string) ([]models.Setting, error)
-	UpdateSystemSetting(key string, setting []models.ResultSetting) error
+	UpdateSystemSetting(key string, setting []models.ResponseSetting) error
 }
 
 type SettingRepository struct {
@@ -26,7 +26,7 @@ func (s SettingRepository) Find(key string) ([]models.Setting, error) {
 
 type Value []interface{}
 
-func (s SettingRepository) UpdateSystemSetting(key string, setting []models.ResultSetting) error {
+func (s SettingRepository) UpdateSystemSetting(key string, setting []models.ResponseSetting) error {
 	return database.GetDBCon().Transaction(func(tx *gorm.DB) error {
 		for _, record := range setting {
 			err := database.GetDBCon().Where(models.Setting{Field: record.Field, Key: key}).Assign(models.Setting{Value: record.Value}).FirstOrCreate(&models.Setting{}).Error

@@ -27,7 +27,7 @@ func (s *SettingController) Get(ctx iris.Context) {
 }
 func (s *SettingController) UpdateSystem(ctx iris.Context) {
 	var (
-		systemSetting []models.ResultSetting
+		systemSetting []models.ResponseSetting
 		err           error
 	)
 	if err = ctx.ReadJSON(&systemSetting); err != nil {

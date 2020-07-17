@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"github.com/kataras/golog"
 	"gorm.io/gorm"
 	"youtuerp/database"
 	"youtuerp/models"
@@ -11,7 +10,7 @@ import (
 type IFinanceFee interface {
 	//根据不同的查询条件查询费用
 	FindFinanceFees(per, page int, filter map[string]interface{},
-		selectKeys []string, orders []string) ([]models.ResultFinanceFee, int64, error)
+		selectKeys []string, orders []string) ([]models.ResponseFinanceFee, int64, error)
 	//根据不同的结算查询历史费用
 	GetHistoryFee(filter map[string]interface{}, limit int, selectKeys []string) ([]models.FinanceFee, error)
 	//主要通过费用ID进行查询
@@ -33,35 +32,20 @@ type FinanceFee struct {
 }
 
 func (f FinanceFee) FindFinanceFees(per, page int, filter map[string]interface{},
-	selectKeys []string, orders []string) (financeFees []models.ResultFinanceFee, total int64, err error) {
-	var keys []string
-	sqlCon := database.GetDBCon().Model(&models.FinanceFee{})
-	sqlCon = sqlCon.Joins("INNER JOIN order_masters ON order_masters.id = finance_fees.order_master_id")
-	sqlCon = sqlCon.Joins("INNER JOIN order_extend_infos ON order_extend_infos.order_master_id = order_masters.id ")
-	if len(filter) > 0 {
-		sqlCon = sqlCon.Scopes(f.Ransack(filter))
-	}
-	if err = sqlCon.Count(&total).Error; err != nil {
+	selectKeys []string, orders []string) (financeFees []models.ResponseFinanceFee, total int64, err error) {
+	sqlCon := database.GetDBCon().Model(&models.FinanceFee{}).Scopes(f.defaultJoinTables).Where("finance_fees.deleted_at IS NULL")
+	if total, err = f.Count(database.GetDBCon().Model(&models.FinanceFee{}).Scopes(f.defaultJoinTables), filter); err != nil {
 		return
 	}
 	if len(selectKeys) == 0 {
-		keys, err = tools.GetStructFieldByJson(models.FinanceFee{})
-		if err != nil {
-			return
-		}
-		for i := 0; i < len(keys); i++ {
-			keys[i] = "finance_fees." + keys[i]
-		}
-		keys = append(keys,"order_masters.serial_number")
-		golog.Infof("select keys is %v", keys)
-		selectKeys = keys
+		selectKeys = append(selectKeys, "finance_fees.*", "order_masters.serial_number as serial_number")
 	}
-	rows, err := sqlCon.Scopes(f.Paginate(per, page), f.OrderBy(orders)).Select(selectKeys).Rows()
+	rows, err := sqlCon.Scopes(f.CustomerWhere(filter, selectKeys, f.Paginate(per, page), f.OrderBy(orders))).Rows()
 	if err != nil {
 		return
 	}
 	for rows.Next() {
-		var data models.ResultFinanceFee
+		var data models.ResponseFinanceFee
 		_ = sqlCon.ScanRows(rows, &data)
 		financeFees = append(financeFees, data)
 	}
@@ -122,24 +106,28 @@ func (f FinanceFee) DeleteFees(ids []uint) error {
 
 func (f FinanceFee) BulkInsertOrUpdate(financeFees []models.FinanceFee) ([]models.FinanceFee, error) {
 	sqlConn := database.GetDBCon()
-	var data []models.FinanceFee
+	var updateFinance []models.FinanceFee
+	var createFinance []models.FinanceFee
+	for _, item := range financeFees {
+		if item.ID != 0 {
+			updateFinance = append(updateFinance, item)
+		} else {
+			createFinance = append(createFinance, item)
+		}
+	}
 	err := sqlConn.Transaction(func(tx *gorm.DB) error {
-		for _, item := range financeFees {
-			if item.ID != 0 {
-				if err := tx.Model(&models.FinanceFee{ID: item.ID}).Updates(tools.StructToChange(item)).Error; err != nil {
-					return err
-				}
-			} else {
-				if err := tx.Create(&item).Error; err != nil {
-					return err
-				}
-				data = append(data, item)
+		for _, item := range updateFinance {
+			if err := tx.Model(&models.FinanceFee{ID: item.ID}).Updates(tools.StructToChange(item)).Error; err != nil {
+				return err
 			}
+		}
+		if err := tx.Create(&createFinance).Error; err != nil {
+			return err
 		}
 		// 在事务中做一些数据库操作 (这里应该使用 'tx' ，而不是 'db')
 		return nil
 	})
-	return data, err
+	return createFinance, err
 }
 
 func (f FinanceFee) OrderFees(attr map[string]interface{}, payOrReceive ...string) (map[string][]models.FinanceFee, error) {
@@ -150,14 +138,19 @@ func (f FinanceFee) OrderFees(attr map[string]interface{}, payOrReceive ...strin
 	if len(payOrReceive) == 0 {
 		return financeFees, nil
 	}
-	sqlConn := database.GetDBCon().Where(attr)
 	for _, item := range payOrReceive {
-		if err := sqlConn.Where("pay_or_receive = ?", item).Find(&temp).Error; err != nil {
+		if err := database.GetDBCon().Where(attr).Where("pay_or_receive = ?", item).Find(&temp).Error; err != nil {
 			return financeFees, err
 		}
 		financeFees[item] = temp
 	}
 	return financeFees, nil
+}
+
+func (f FinanceFee) defaultJoinTables(db *gorm.DB) *gorm.DB {
+	db.Joins("INNER JOIN order_masters ON order_masters.id = finance_fees.order_master_id")
+	db = db.Joins("INNER JOIN order_extend_infos ON order_extend_infos.order_master_id = finance_fees.order_master_id")
+	return db
 }
 
 func NewFinanceFee() IFinanceFee {

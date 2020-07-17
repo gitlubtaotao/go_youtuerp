@@ -17,7 +17,7 @@ type IEmployeeService interface {
 	UpdatePassword(user *models.Employee, password string) error
 	UpdateColumn(user *models.Employee, updateColumn map[string]interface{}) error
 	UpdateRecord(userId uint, employee models.Employee) error
-	Find(per, page int, filter map[string]interface{}, selectKeys []string, order []string, isCount bool) ([]models.ResultEmployee, int64, error)
+	Find(per, page int, filter map[string]interface{}, selectKeys []string, order []string, isCount bool) ([]models.ResponseEmployee, int64, error)
 	Create(employee models.Employee) (models.Employee, error)
 	Delete(id uint) error
 }
@@ -80,7 +80,7 @@ func (e EmployeeService) Create(employee models.Employee) (models.Employee, erro
 	return data, nil
 }
 
-func (e EmployeeService) Find(per, page int, filter map[string]interface{}, selectKeys []string, order []string, isCount bool) ([]models.ResultEmployee, int64, error) {
+func (e EmployeeService) Find(per, page int, filter map[string]interface{}, selectKeys []string, order []string, isCount bool) ([]models.ResponseEmployee, int64, error) {
 	return e.repo.Find(per, page, filter, selectKeys, order, isCount)
 }
 

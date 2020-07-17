@@ -6,12 +6,13 @@ import (
 	"sync"
 	"youtuerp/database"
 	"youtuerp/models"
-	"youtuerp/tools"
 )
 
 type IOrderMaster interface {
+	//将查询到的订单数据存储到对应的切片中
+	
 	//通过ids查询订单
-	FindMasterByIds(ids []uint, otherFilter ...string) ([]models.ResultOrderMaster, error)
+	FindMasterByIds(ids []uint, otherFilter ...string) ([]models.ResponseOrderMaster, error)
 	//获取表单so的信息
 	GetFormerSoNo(orderId uint, formerType string, attr ...map[string]interface{}) (interface{}, error)
 	//获取订舱单的信息
@@ -24,7 +25,7 @@ type IOrderMaster interface {
 	ChangeStatus(id uint, status string) error
 	//查询订单信息
 	FindMaster(per, page int, filter map[string]interface{}, selectKeys []string,
-		orders []string, isTotal bool) ([]models.ResultOrderMaster, int64, error)
+		orders []string, isTotal bool) ([]models.ResponseOrderMaster, int64, error)
 	//更新订单数据
 	UpdateMaster(id uint, order models.OrderMaster) error
 	//创建订单
@@ -37,8 +38,8 @@ type OrderMasterRepository struct {
 	mu sync.Mutex
 }
 
-func (o OrderMasterRepository) FindMasterByIds(ids []uint, otherKeys ...string) ([]models.ResultOrderMaster, error) {
-	var orderMasters []models.ResultOrderMaster
+func (o OrderMasterRepository) FindMasterByIds(ids []uint, otherKeys ...string) ([]models.ResponseOrderMaster, error) {
+	var orderMasters []models.ResponseOrderMaster
 	sqlConn := database.GetDBCon().Model(&models.OrderMaster{}).Where("order_masters.id IN (?)", ids).Scopes(o.joinExtendInfo)
 	if len(otherKeys) >= 0 {
 		sqlConn = sqlConn.Select(otherKeys)
@@ -48,7 +49,7 @@ func (o OrderMasterRepository) FindMasterByIds(ids []uint, otherKeys ...string) 
 		return nil, err
 	}
 	for rows.Next() {
-		var data models.ResultOrderMaster
+		var data models.ResponseOrderMaster
 		_ = sqlConn.ScanRows(rows, &data)
 		orderMasters = append(orderMasters, data)
 	}
@@ -100,7 +101,7 @@ func (o OrderMasterRepository) FirstMaster(id uint, load ...string) (models.Orde
 }
 
 func (o OrderMasterRepository) FindMaster(per, page int, filter map[string]interface{}, selectKeys []string,
-	orders []string, isTotal bool) (masters []models.ResultOrderMaster, total int64, err error) {
+	orders []string, isTotal bool) (masters []models.ResponseOrderMaster, total int64, err error) {
 	var rows *sql.Rows
 	sqlConn := database.GetDBCon().Model(&models.OrderMaster{}).Scopes(o.joinExtendInfo)
 	if isTotal {
@@ -109,22 +110,23 @@ func (o OrderMasterRepository) FindMaster(per, page int, filter map[string]inter
 		}
 	}
 	if len(selectKeys) == 0 {
-		selectKeys, _ = tools.GetStructFieldByJson(models.ResultOrderMaster{})
+		selectKeys = []string{"order_masters.*", "order_extend_infos.*"}
 	}
 	if len(orders) == 0 {
 		orders = []string{"order_masters.id desc"}
 	}
-	rows, err = sqlConn.Scopes(o.CustomerWhere(filter,selectKeys,o.Paginate(per, page), o.OrderBy(orders))).Rows()
+	rows, err = sqlConn.Scopes(o.CustomerWhere(filter, selectKeys, o.Paginate(per, page), o.OrderBy(orders))).Rows()
 	if err != nil {
 		return
 	}
 	for rows.Next() {
-		var data models.ResultOrderMaster
+		var data models.ResponseOrderMaster
 		_ = sqlConn.ScanRows(rows, &data)
 		masters = append(masters, data)
 	}
 	return
 }
+
 
 //
 func (o OrderMasterRepository) joinExtendInfo(db *gorm.DB) *gorm.DB {

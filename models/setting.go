@@ -38,35 +38,13 @@ type NumberSettingHistory struct {
 	CurrentNumber   int       `gorm:"default:0" json:"current_number"`
 }
 
-type ResultNumberSetting struct {
-	ID                    uint      `json:"id"`
-	CreatedAt             time.Time `json:"created_at"`
-	UserCompanyId         uint      `json:"user_company_id"`
-	UserCompaniesNameNick string    `json:"user_companies_name_nick"`
-	Prefix                string    `json:"prefix"`
-	Length                uint      `json:"length"`
-	DefaultRule           string    `json:"default_rule"`
-	Special               string    `json:"special"`
-	ApplicationNo         string    `json:"application_no"`
-	DefaultNumber         uint      `json:"default_number"`
-	CurrentNumber         uint      `json:"current_number"`
-	ClearRule             string    `json:"clear_rule"`
-}
 
-type ResultSetting struct {
-	Key   string `json:"key"`
-	Field string `json:"field"`
-	Value string `json:"value"`
-}
 
 func (Setting) TableName() string {
 	return "system_settings"
 }
 
 func (NumberSetting) TableName() string {
-	return "number_settings"
-}
-func (ResultNumberSetting) TableName() string {
 	return "number_settings"
 }
 

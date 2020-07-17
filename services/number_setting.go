@@ -8,7 +8,7 @@ import (
 
 type INumberSettingService interface {
 	Create(numberSetting models.NumberSetting, language string) (models.NumberSetting, error)
-	Find(per, page int, filter map[string]interface{}, selectKeys []string, order []string) (numberSettings []models.ResultNumberSetting,
+	Find(per, page int, filter map[string]interface{}, selectKeys []string, order []string) (numberSettings []models.ResponseNumberSetting,
 		total int64, err error)
 	Delete(id uint) error
 }
@@ -21,7 +21,7 @@ func (n NumberSettingService) Delete(id uint) error {
 	return n.repo.Delete(id)
 }
 
-func (n NumberSettingService) Find(per, page int, filter map[string]interface{}, selectKeys []string, order []string) (numberSettings []models.ResultNumberSetting,
+func (n NumberSettingService) Find(per, page int, filter map[string]interface{}, selectKeys []string, order []string) (numberSettings []models.ResponseNumberSetting,
 	total int64, err error) {
 	return n.repo.Find(per, page, filter, selectKeys, order, true)
 }

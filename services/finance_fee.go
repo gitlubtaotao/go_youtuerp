@@ -15,7 +15,7 @@ type IFinanceFee interface {
 	//对返回前端的费用进行预处理
 	HandleFeesShow(fee interface{}, enum conf.Enum) map[string]interface{}
 	FindFinanceFees(per, page int, filter map[string]interface{},
-		selectKeys []string, orders []string) ([]models.ResultFinanceFee, int64, error)
+		selectKeys []string, orders []string) ([]models.ResponseFinanceFee, int64, error)
 	/*将查询到的历史费用复制到对应的订单中
 	orderMasterId: 指定订单
 	feeIds: 对应费用ids
@@ -56,7 +56,6 @@ type FinanceFee struct {
 
 func (f FinanceFee) HandleFeesShow(fee interface{}, enum conf.Enum) map[string]interface{} {
 	data := toolOther.StructToMap(fee)
-	golog.Infof("data is %v",data)
 	data["pay_or_receive"] = enum.DefaultText("finance_fees_pay_or_receive.", data["pay_or_receive"].(string))
 	data["pay_type_id"] = f.baseDataFindFast(models.CIQType, data["pay_type_id"])
 	data["status_value"] = data["status"]
@@ -73,7 +72,7 @@ func (f FinanceFee) HandleFeesShow(fee interface{}, enum conf.Enum) map[string]i
 }
 
 func (f FinanceFee) FindFinanceFees(per, page int, filter map[string]interface{},
-	selectKeys []string, orders []string) ([]models.ResultFinanceFee, int64, error) {
+	selectKeys []string, orders []string) ([]models.ResponseFinanceFee, int64, error) {
 	return f.repo.FindFinanceFees(per, page, filter, selectKeys, orders)
 }
 
@@ -149,7 +148,7 @@ func (f FinanceFee) BulkHistoryFee(orderMasterId uint, feeIds []uint, companyId 
 	var (
 		financeFees  []models.FinanceFee
 		rates        []models.FinanceRate
-		orderMasters []models.ResultOrderMaster
+		orderMasters []models.ResponseOrderMaster
 		err          error
 	)
 	financeFees, err = f.FindFeesById(feeIds)
@@ -203,7 +202,7 @@ func (f FinanceFee) realTimeRateCopyFee(orderMasterIds []uint, financeFeeIds []u
 		return err
 	}
 	for _, order := range orderMaster {
-		go func(order models.ResultOrderMaster, financeFees []models.FinanceFee) {
+		go func(order models.ResponseOrderMaster, financeFees []models.FinanceFee) {
 			for i := 0; i < len(financeFees); i++ {
 				financeFees[i] = f.commonHandlerByCopyFee(rates, financeFees[i], order)
 			}
@@ -224,7 +223,7 @@ func (f FinanceFee) monthRateCopyFee(orderMasterIds []uint, financeFeeIds []uint
 		return err
 	}
 	for _, order := range orderMaster {
-		go func(order models.ResultOrderMaster, financeFees []models.FinanceFee, companyId uint) {
+		go func(order models.ResponseOrderMaster, financeFees []models.FinanceFee, companyId uint) {
 			rates, err := f.getRateByOrderCreate(companyId, order.CreatedAt)
 			if err != nil {
 				golog.Errorf("copy fee is error %v", err)
@@ -240,7 +239,7 @@ func (f FinanceFee) monthRateCopyFee(orderMasterIds []uint, financeFeeIds []uint
 }
 
 //复制费用，查询对于的订单信息
-func (f FinanceFee) getOrderMaster(orderMasterIds []uint) ([]models.ResultOrderMaster, error) {
+func (f FinanceFee) getOrderMaster(orderMasterIds []uint) ([]models.ResponseOrderMaster, error) {
 	orderServer := NewOrderMasterService()
 	keys := []string{
 		"order_masters.id as id",
@@ -272,7 +271,7 @@ func (f FinanceFee) getRateByOrderCreate(companyId uint, createdAt time.Time) (r
 }
 
 //复制费用实时汇率和按照月结汇率的共同操作
-func (f FinanceFee) commonHandlerByCopyFee(rates []models.FinanceRate, financeFee models.FinanceFee, order models.ResultOrderMaster) models.FinanceFee {
+func (f FinanceFee) commonHandlerByCopyFee(rates []models.FinanceRate, financeFee models.FinanceFee, order models.ResponseOrderMaster) models.FinanceFee {
 	rate := f.searchRate(rates, financeFee.FinanceCurrencyId)
 	if rate != 0 {
 		financeFee.FinanceCurrencyRate = rate

@@ -33,7 +33,7 @@ func (s *SelectController) GetCommon(ctx iris.Context) {
 	_, _ = s.ctx.JSON(iris.Map{"code": http.StatusOK, "data": data})
 }
 
-//获取公司select_api
+//获取合作单位对应的数据
 func (s *SelectController) GetCompany(ctx iris.Context) {
 	readData, err := s.base(ctx)
 	if err != nil {
@@ -46,18 +46,21 @@ func (s *SelectController) GetCompany(ctx iris.Context) {
 	_, _ = s.ctx.JSON(iris.Map{"code": http.StatusOK, "data": data})
 }
 
+//获取公司员工对应的数据
 func (s *SelectController) Employee(ctx iris.Context) {
 	service := services.NewEmployeeService()
 	data := service.FindRedis()
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": data})
 }
 
+//获取所属公司的数据
 func (s *SelectController) OwnerCompany(ctx iris.Context) {
 	service := services.NewCompanyService()
 	data := service.AllCompanyRedis()
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": data})
 }
 
+//获取仓库地址对应的数据
 func (s *SelectController) WarehouseAddress(ctx iris.Context) {
 	service := services.NewBaseWarehouse()
 	data, err := service.FindAllBySelect()
@@ -66,6 +69,42 @@ func (s *SelectController) WarehouseAddress(ctx iris.Context) {
 	} else {
 		_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": data})
 	}
+}
+
+//获取订单的数据信息
+func (s *SelectController) GetOrderMaster(ctx iris.Context) {
+	serialNumber := ctx.URLParamDefault("serial_number", "")
+	per := 100
+	if serialNumber != "" {
+		per = 0
+	}
+	service := services.NewOrderMasterService()
+	filters := map[string]interface{}{
+		"serial_number-rCount": serialNumber,
+	}
+	data, _, err := service.FindMasterNoTotal(per, 0, filters, []string{"order_masters.id", "serial_number"}, []string{"id desc"})
+	if err != nil {
+		s.Render500(ctx, err, "")
+	} else {
+		s.RenderSuccessJson(ctx, data)
+	}
+}
+
+// 获取基础代码的数据
+func (s *SelectController) GetBaseCode(ctx iris.Context) {
+	key := ctx.URLParamDefault("key", "")
+	service := services.NewBaseCode()
+	s.RenderSuccessJson(ctx, service.FindCollect(key))
+}
+
+//获取承运方的数据
+func (s *SelectController) GetCarrier(ctx iris.Context) {
+
+}
+
+//获取港口的数据
+func (s *SelectController) GetPort(ctx iris.Context) {
+
 }
 
 func (s *SelectController) base(ctx iris.Context) (readData ReadData, err error) {

@@ -54,7 +54,7 @@ func (d DepartmentRepository) Find(per, page int, filter map[string]interface{},
 		return
 	}
 	for rows.Next() {
-		var department models.ResultDepartment
+		var department models.ResponseDepartment
 		_ = sqlCon.ScanRows(rows, &department)
 		departments = append(departments, &department)
 	}

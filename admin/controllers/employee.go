@@ -16,7 +16,7 @@ type EmployeeController struct {
 }
 
 func (e *EmployeeController) GetColumn(ctx iris.Context) {
-	e.RenderModuleColumn(ctx, models.ResultEmployee{})
+	e.RenderModuleColumn(ctx, models.ResponseEmployee{})
 }
 
 func (e *EmployeeController) Get(ctx iris.Context) {

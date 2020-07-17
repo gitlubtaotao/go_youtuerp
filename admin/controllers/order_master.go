@@ -21,29 +21,25 @@ type OrderMaster struct {
 }
 
 func (o *OrderMaster) GetColumn(ctx iris.Context) {
-	o.RenderModuleColumn(ctx, models.ResultOrderMaster{})
+	o.RenderModuleColumn(ctx, models.ResponseOrderMaster{})
 }
 
+//前端获取订单数据
 func (o *OrderMaster) Get(ctx iris.Context) {
-	records, total, err := o.service.FindMaster(
+	data, total, err := o.service.FindMasterByIndex(
 		o.GetPer(ctx),
 		o.GetPage(ctx),
 		o.handlerParams(),
 		[]string{},
-		[]string{})
+		[]string{},
+		o.enum)
 	if err != nil {
 		o.Render500(ctx, err, "")
 		return
 	}
-	dataArray := make([]map[string]interface{}, 0, len(records))
-	o.mu.Lock()
-	defer o.mu.Unlock()
-	for _, record := range records {
-		dataArray = append(dataArray, o.service.HandlerOrderMasterShow(record, o.enum))
-	}
 	_, _ = ctx.JSON(iris.Map{
 		"code":  http.StatusOK,
-		"data":  dataArray,
+		"data":  data,
 		"total": total,
 	})
 }
@@ -232,7 +228,6 @@ func (o *OrderMaster) Before(ctx iris.Context) {
 	ctx.Next()
 }
 
-
 // 处理前端查询字段
 func (o *OrderMaster) handlerParams() map[string]interface{} {
 	var readMap map[string]interface{}
@@ -249,6 +244,7 @@ func (o *OrderMaster) handlerParams() map[string]interface{} {
 	}
 	return readMap
 }
+
 
 // 处理查询时间问题
 func (o *OrderMaster) HandlerFilterDate(filters map[string]interface{}, field string) {

@@ -8,15 +8,15 @@ import (
 )
 
 type ISelectRepository interface {
-	FindTable(tableName string, name string, scope map[string]interface{}, selectKeys []string) (selectResult []models.SelectResult, err error)
-	FirstRecord(tableName string, filter map[string]interface{}, selectKeys []string) (selectResult []models.SelectResult, err error)
+	FindTable(tableName string, name string, scope map[string]interface{}, selectKeys []string) (selectResult []models.ReadSelectResult, err error)
+	FirstRecord(tableName string, filter map[string]interface{}, selectKeys []string) (selectResult []models.ReadSelectResult, err error)
 }
 
 type SelectRepository struct {
 	BaseRepository
 }
 
-func (s *SelectRepository) FirstRecord(tableName string, filter map[string]interface{}, selectKeys []string) (selectResult []models.SelectResult, err error) {
+func (s *SelectRepository) FirstRecord(tableName string, filter map[string]interface{}, selectKeys []string) (selectResult []models.ReadSelectResult, err error) {
 	sqlCon := database.GetDBCon().Table(tableName)
 	var rows *sql.Rows
 	if len(selectKeys) == 0 {
@@ -27,7 +27,7 @@ func (s *SelectRepository) FirstRecord(tableName string, filter map[string]inter
 		return
 	}
 	for rows.Next() {
-		var temp models.SelectResult
+		var temp models.ReadSelectResult
 		_ = sqlCon.ScanRows(rows, &temp)
 		selectResult = append(selectResult, temp)
 	}
@@ -35,7 +35,7 @@ func (s *SelectRepository) FirstRecord(tableName string, filter map[string]inter
 }
 
 func (s *SelectRepository) FindTable(tableName string, name string, scope map[string]interface{},
-	selectKeys []string) (selectResult []models.SelectResult, err error) {
+	selectKeys []string) (selectResult []models.ReadSelectResult, err error) {
 	sqlCon := database.GetDBCon().Table(tableName)
 	if len(selectKeys) == 0 {
 		selectKeys = []string{"id", "name"}
@@ -46,10 +46,10 @@ func (s *SelectRepository) FindTable(tableName string, name string, scope map[st
 	sqlCon = sqlCon.Scopes(s.Ransack(scope)).Where("deleted_at is NULL").Select(selectKeys)
 	rows, err := sqlCon.Rows()
 	if err != nil {
-		return []models.SelectResult{}, nil
+		return []models.ReadSelectResult{}, nil
 	}
 	for rows.Next() {
-		var temp models.SelectResult
+		var temp models.ReadSelectResult
 		_ = sqlCon.ScanRows(rows, &temp)
 		selectResult = append(selectResult, temp)
 	}

@@ -75,11 +75,16 @@ func (b *BaseController) HandlerFilterDate(filters map[string]interface{}, field
 		return
 	}
 	stringTime := timeField.(string)
-	timeArray := strings.Split(stringTime, ",")
+	timeArray := b.StringToDateRange(stringTime)
 	if len(timeArray) == 2 {
-		filters[field+"-gtEq"] = b.stringToDate(timeArray[0])
-		filters[field+"-ltEq"] = b.stringToDate(timeArray[1])
+		filters[field+"-gtEq"] = timeArray[0]
+		filters[field+"-ltEq"] = timeArray[1]
 	}
+}
+
+func (b *BaseController) StringToDateRange(stringDate string) []time.Time {
+	timeArray := strings.Split(stringDate, ",")
+	return []time.Time{b.stringToDate(timeArray[0]), b.stringToDate(timeArray[1])}
 }
 
 // 将string转化成日期格式
@@ -93,7 +98,6 @@ func (b *BaseController) stringToDate(strTime string) time.Time {
 
 //错误消息处理
 type renderError struct {
-
 }
 
 //render 500 error

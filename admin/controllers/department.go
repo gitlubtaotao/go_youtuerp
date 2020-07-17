@@ -14,7 +14,7 @@ type DepartmentController struct {
 }
 
 func (d *DepartmentController) GetColumn(ctx iris.Context) {
-	d.RenderModuleColumn(ctx, models.ResultDepartment{})
+	d.RenderModuleColumn(ctx, models.ResponseDepartment{})
 }
 
 func (d *DepartmentController) Get(ctx iris.Context) () {

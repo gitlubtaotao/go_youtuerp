@@ -46,15 +46,7 @@ type Department struct {
 }
 
 //go index 查询结构
-type ResultDepartment struct {
-	ID                    uint      `json:"id"`
-	CreatedAt             time.Time `json:"created_at"`
-	UpdatedAt             time.Time `json:"updated_at"`
-	NameCn                string    `json:"name_cn"`
-	NameEn                string    `json:"name_en"`
-	UserCompanyId         int       `json:"user_company_id"`
-	UserCompaniesNameNick string    `json:"user_companies_name_nick"`
-}
+
 
 type Employee struct {
 	ID                  uint      `json:"id"`
@@ -87,24 +79,7 @@ type Employee struct {
 	CompanyType         uint        `json:"company_type"`
 }
 
-type ResultEmployee struct {
-	ID                    uint      `json:"id"`
-	CreatedAt             time.Time `json:"created_at"`
-	Email                 string    `json:"email"`
-	SignInCount           int       `json:"sign_in_count"`
-	LastSignInAt          time.Time `json:"last_sign_in_at"`
-	LastSignInIp          string    `json:"last_sign_in_ip"`
-	UserCompanyId         int       `json:"user_company_id"`
-	UserCompaniesNameNick string    `json:"user_companies_name_nick"`
-	DepartmentId          int       `json:"department_id"`
-	DepartmentsNameCN     string    `json:"departments_name_cn"`
-	Name                  string    `json:"name"`
-	UserNo                string    `json:"user_no"`
-	Phone                 string    `json:"phone"`
-	Remarks               string    `json:"remarks"`
-	Sex                   uint      `json:"sex"`
-	Address               string    `json:"address"`
-}
+
 
 func (UserCompany) TableName() string {
 	return "user_companies"
@@ -114,19 +89,13 @@ func (Department) TableName() string {
 	return "departments"
 }
 
-func (ResultDepartment) TableName() string {
-	return "departments"
-}
+
 
 func (Department) DefaultAddColumn() []string {
 	return []string{}
 }
 
 func (Employee) TableName() string {
-	return "users"
-}
-
-func (ResultEmployee) TableName() string {
 	return "users"
 }
 

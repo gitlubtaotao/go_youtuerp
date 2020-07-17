@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"errors"
-	"github.com/kataras/golog"
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"sync"
@@ -27,6 +26,23 @@ type CopyFeeReceive struct {
 	ClosingUnitId  uint   `json:"closing_unit_id"`
 }
 
+//查询费用对应的条件
+type SearchFinanceFee struct {
+	ClosingUnitId         uint   `json:"closing_unit_id"`
+	OrderMasterId         uint   `json:"order_master_id"`
+	FinanceCurrencyId     uint   `json:"finance_currency_id"`
+	SalesmanId            uint   `json:"salesman_id"`
+	OperationId           uint   `json:"operation_id"`
+	PayOrReceive          string `json:"pay_or_receive"`
+	MblSo                 string `json:"mbl_so"`
+	Name                  string `json:"name"`
+	CreatedAt             string `json:"created_at"`
+	Departure             string `json:"departure"`
+	Arrival               string `json:"arrival"`
+	OrderMastersCreatedAt string `json:"order_masters_created_at"`
+	Status                string `json:"status"`
+}
+
 func (f *FinanceFee) Create(ctx iris.Context) {
 	var (
 		financeFees []models.FinanceFee
@@ -41,7 +57,6 @@ func (f *FinanceFee) Create(ctx iris.Context) {
 		f.Render500(ctx, err, err.Error())
 		return
 	}
-	golog.Infof("finance fee is %v", financeFees)
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": financeFees})
 }
 
@@ -228,23 +243,21 @@ func (f *FinanceFee) GetColumn(ctx iris.Context) {
 //获取对账列表对应的费用信息
 func (f *FinanceFee) GetConfirmBillList(ctx iris.Context) {
 	var (
-		readMap     map[string]interface{}
+		readMap     SearchFinanceFee
 		err         error
 		total       int64
-		financeFees []models.ResultFinanceFee
+		financeFees []models.ResponseFinanceFee
 	)
 	if err = ctx.ReadJSON(&readMap); err != nil {
 		f.Render400(ctx, err, "")
 		return
 	}
-	for _, item := range []string{
-		"finance_fees.created_at",
-		"order_extend_infos.departure",
-		"order_extend_infos.arrival",
-		"order_masters.created_at",} {
-		f.HandlerFilterDate(readMap, item)
+	filter := f.handlerSearchFinanceFee(readMap)
+	if readMap.Status == "verify" {
+		delete(filter, "finance_fees.status-eq")
+		filter["finance_fees.status-in"] = []string{"verify", "pending", "approval", "review", "unapplied", "part_applied", "applied"}
 	}
-	financeFees, total, err = f.service.FindFinanceFees(f.GetPer(ctx), f.GetPage(ctx), readMap, []string{}, []string{"finance_fees.id asc"})
+	financeFees, total, err = f.service.FindFinanceFees(f.GetPer(ctx), f.GetPage(ctx), filter, []string{}, []string{"finance_fees.id asc"})
 	if err != nil {
 		f.Render400(ctx, err, "")
 		return
@@ -263,6 +276,68 @@ func (f *FinanceFee) handlerCreatedAt(dateRange int, searchParams map[string]int
 	searchParams["created_at-gtEq"] = beg.AddDate(0, -dateRange, 0)
 	return searchParams
 }
+
+//处理费用查询条件
+func (f *FinanceFee) handlerSearchFinanceFee(readStruct SearchFinanceFee) map[string]interface{} {
+	filters := make(map[string]interface{})
+	if readStruct.ClosingUnitId != 0 {
+		filters["finance_fees.closing_unit_id-eq"] = readStruct.ClosingUnitId
+	}
+	if readStruct.OrderMasterId != 0 {
+		filters["finance_fees.order_master_id-eq"] = readStruct.OrderMasterId
+	}
+	if readStruct.FinanceCurrencyId != 0 {
+		filters["finance_fees.finance_currency_id-eq"] = readStruct.FinanceCurrencyId
+	}
+	if readStruct.SalesmanId != 0 {
+		filters["order_masters.salesman_id-eq"] = readStruct.SalesmanId
+	}
+	if readStruct.OperationId != 0 {
+		filters["order_masters.operation_id-eq"] = readStruct.OperationId
+	}
+	if readStruct.MblSo != "" {
+		filters["order_extend_infos.mbl_so-rCount"] = readStruct.MblSo
+	}
+	if readStruct.PayOrReceive != "" {
+		filters["finance_fees.pay_or_receive-eq"] = readStruct.PayOrReceive
+	}
+	if readStruct.Name != "" {
+		filters["finance_fees.name-rCount"] = readStruct.Name
+	}
+	if readStruct.Status != "" {
+		filters["finance_fees.status-eq"] = readStruct.Status
+	}
+	if readStruct.CreatedAt != "" {
+		timeArray := f.StringToDateRange(readStruct.CreatedAt)
+		if len(timeArray) == 2 {
+			filters["finance_fees.created_at-gtEq"] = timeArray[0]
+			filters["finance_fees.created_at-ltEq"] = timeArray[1]
+		}
+	}
+	if readStruct.OrderMastersCreatedAt != "" {
+		timeArray := f.StringToDateRange(readStruct.OrderMastersCreatedAt)
+		if len(timeArray) == 2 {
+			filters["order_masters.created_at-gtEq"] = timeArray[0]
+			filters["order_masters.created_at-ltEq"] = timeArray[1]
+		}
+	}
+	if readStruct.Arrival != "" {
+		timeArray := f.StringToDateRange(readStruct.Arrival)
+		if len(timeArray) == 2 {
+			filters["order_extend_infos.arrival-gtEq"] = timeArray[0]
+			filters["order_extend_infos.arrival-ltEq"] = timeArray[1]
+		}
+	}
+	if readStruct.Departure != "" {
+		timeArray := f.StringToDateRange(readStruct.Departure)
+		if len(timeArray) == 2 {
+			filters["order_extend_infos.departure-gtEq"] = timeArray[0]
+			filters["order_extend_infos.departure-ltEq"] = timeArray[1]
+		}
+	}
+	return filters
+}
+
 func (f *FinanceFee) Before(ctx iris.Context) {
 	f.service = services.NewFinanceFee()
 	f.enum = conf.Enum{Locale: ctx.GetLocale()}

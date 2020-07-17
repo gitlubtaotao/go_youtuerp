@@ -8,7 +8,7 @@ import (
 )
 
 type ISettingService interface {
-	UpdateSystem(key string, setting []models.ResultSetting) error
+	UpdateSystem(key string, setting []models.ResponseSetting) error
 	Find(key string) ([]models.Setting, error)
 }
 
@@ -22,7 +22,7 @@ func (s SettingService) Find(key string) ([]models.Setting, error) {
 	return s.repo.Find(key)
 }
 
-func (s SettingService) UpdateSystem(key string, setting []models.ResultSetting) error {
+func (s SettingService) UpdateSystem(key string, setting []models.ResponseSetting) error {
 	var err error
 	err = s.repo.UpdateSystemSetting(key, setting)
 	if err != nil {

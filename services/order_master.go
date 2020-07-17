@@ -14,6 +14,10 @@ import (
 )
 
 type IOrderMasterService interface {
+	//获取订单数据
+	FindMasterByIndex(per, page int, filter map[string]interface{}, selectKeys []string, orders []string,enum conf.Enum)([]map[string]interface{},int64,error)
+	//查询订单信息，不需要进行total的统计
+	FindMasterNoTotal(per, page int, filter map[string]interface{}, selectKeys []string, orders []string) ([]models.ResponseOrderMaster, int64, error)
 	//前端显示订单信息预处理
 	HandlerOrderMasterShow(order interface{}, enum conf.Enum) map[string]interface{}
 	//处理港口显示
@@ -21,7 +25,7 @@ type IOrderMasterService interface {
 	//处理承运方显示
 	ShowCarrier(transportType interface{}, carrierId interface{}) string
 	//通过订单Ids查询订单
-	FindMasterByIds(ids []uint, otherFilter ...string) ([]models.ResultOrderMaster, error)
+	FindMasterByIds(ids []uint, otherFilter ...string) ([]models.ResponseOrderMaster, error)
 	//获取表单中对应的数据
 	GetFormerData(id uint, formerType string) (interface{}, error)
 	//获取委托单的数据
@@ -40,7 +44,7 @@ type IOrderMasterService interface {
 	UpdateMaster(id uint, order models.OrderMaster, language string) error
 	//查询订单
 	FirstMaster(id uint, load ...string) (models.OrderMaster, error)
-	FindMaster(per, page int, filter map[string]interface{}, selectKeys []string, orders []string) ([]models.ResultOrderMaster, int64, error)
+	FindMaster(per, page int, filter map[string]interface{}, selectKeys []string, orders []string) ([]models.ResponseOrderMaster, int64, error)
 	//创建订单
 	CreateMaster(order models.OrderMaster, language string) (models.OrderMaster, error)
 }
@@ -57,6 +61,23 @@ var orderStatusArray = []interface{}{
 type OrderMasterService struct {
 	repo repositories.IOrderMaster
 	BaseService
+}
+
+
+func (o OrderMasterService) FindMasterByIndex(per, page int, filter map[string]interface{}, selectKeys []string, orders []string, enum conf.Enum) ([]map[string]interface{}, int64, error) {
+	orderMasters, total, err := o.repo.FindMaster(per, page, filter, selectKeys, orders, true)
+	if err != nil {
+		return []map[string]interface{}{}, 0, err
+	}
+	data := make([]map[string]interface{}, len(orderMasters))
+	for i, record := range orderMasters {
+		data[i] = o.HandlerOrderMasterShow(record, enum)
+	}
+	return data, total, nil
+}
+
+func (o OrderMasterService) FindMasterNoTotal(per, page int, filter map[string]interface{}, selectKeys []string, orders []string) ([]models.ResponseOrderMaster, int64, error) {
+	return o.repo.FindMaster(per, page, filter, selectKeys, orders, false)
 }
 
 func (o OrderMasterService) ShowPort(transportType interface{}, portId interface{}) string {
@@ -112,7 +133,7 @@ func (o OrderMasterService) HandlerOrderMasterShow(order interface{}, enum conf.
 	return data
 }
 
-func (o OrderMasterService) FindMasterByIds(ids []uint, otherFilter ...string) ([]models.ResultOrderMaster, error) {
+func (o OrderMasterService) FindMasterByIds(ids []uint, otherFilter ...string) ([]models.ResponseOrderMaster, error) {
 	return o.repo.FindMasterByIds(ids, otherFilter...)
 }
 
@@ -183,7 +204,7 @@ func (o OrderMasterService) ShowTransport(enum conf.Enum, value interface{}) str
 		TransportType = record.TransportType
 		MainTransport = record.MainTransport
 	} else {
-		record := value.(models.ResultOrderMaster)
+		record := value.(models.ResponseOrderMaster)
 		TransportType = record.TransportType
 		MainTransport = record.MainTransport
 	}
@@ -194,8 +215,8 @@ func (o OrderMasterService) ShowTransport(enum conf.Enum, value interface{}) str
 	return temp
 }
 
-func (o OrderMasterService) FindMaster(per, page int, filter map[string]interface{}, selectKeys []string, orders []string) ([]models.ResultOrderMaster, int64, error) {
-	golog.Infof("find master is %v",per)
+func (o OrderMasterService) FindMaster(per, page int, filter map[string]interface{}, selectKeys []string, orders []string) ([]models.ResponseOrderMaster, int64, error) {
+	golog.Infof("find master is %v", per)
 	return o.repo.FindMaster(per, page, filter, selectKeys, orders, true)
 }
 

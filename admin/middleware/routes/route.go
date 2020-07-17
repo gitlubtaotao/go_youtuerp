@@ -34,7 +34,11 @@ func (r *Route) SelectRegister() {
 		p.Post("/base", j.Serve, selectData.GetCommon)
 		p.Get("/employee", j.Serve, selectData.Employee)
 		p.Get("/owner_company", j.Serve, selectData.OwnerCompany)
-		p.Get("/warehouse",j.Serve,selectData.WarehouseAddress)
+		p.Get("/warehouse", j.Serve, selectData.WarehouseAddress)
+		p.Get("/orderMaster", j.Serve, selectData.GetOrderMaster)
+		p.Get("/baseCode", j.Serve, selectData.GetBaseCode)
+		p.Get("/baseCarrier", j.Serve, selectData.GetCarrier)
+		p.Get("/basePort", j.Serve, selectData.GetPort)
 	})
 }
 

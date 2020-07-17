@@ -17,7 +17,7 @@ type INumberSettingRepository interface {
 	//查询历史流水号规则
 	//订单可以进行补录,不同补录时间，对应的当前流水号存在不一致
 	Create(numberSetting models.NumberSetting) (models.NumberSetting, error)
-	Find(per, page int, filter map[string]interface{}, selectKeys []string, order []string, isCount bool) (numberSettings []models.ResultNumberSetting,
+	Find(per, page int, filter map[string]interface{}, selectKeys []string, order []string, isCount bool) (numberSettings []models.ResponseNumberSetting,
 		total int64, err error)
 	Delete(id uint) error
 	//生成订单号
@@ -50,7 +50,7 @@ func (n NumberSettingRepository) Delete(id uint) error {
 	return n.crud.Delete(&models.NumberSetting{}, id)
 }
 
-func (n NumberSettingRepository) Find(per, page int, filter map[string]interface{}, selectKeys []string, order []string, isCount bool) (numberSettings []models.ResultNumberSetting,
+func (n NumberSettingRepository) Find(per, page int, filter map[string]interface{}, selectKeys []string, order []string, isCount bool) (numberSettings []models.ResponseNumberSetting,
 	total int64, err error) {
 	var rows *sql.Rows
 	sqlCon := database.GetDBCon().Model(&models.NumberSetting{}).Scopes(n.defaultJoin)
@@ -68,7 +68,7 @@ func (n NumberSettingRepository) Find(per, page int, filter map[string]interface
 		return
 	}
 	for rows.Next() {
-		var data models.ResultNumberSetting
+		var data models.ResponseNumberSetting
 		_ = sqlCon.ScanRows(rows, &data)
 		numberSettings = append(numberSettings, data)
 	}

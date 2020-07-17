@@ -14,6 +14,7 @@ import (
 	"youtuerp/redis"
 )
 
+
 func main() {
 	//加载系统配置文件
 	app := NewAppInfo()

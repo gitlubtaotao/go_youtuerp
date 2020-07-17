@@ -59,7 +59,7 @@ func (r Redis) HDeleteRecord(table string, id interface{}, field ...string) erro
 
 func (r Redis) findRecord(tableName string, filter map[string]interface{}, selectKey []string) (data []map[string]interface{}, err error) {
 	repo := repositories.NewSelectRepository()
-	var result []models.SelectResult
+	var result []models.ReadSelectResult
 	result, err = repo.FirstRecord(tableName, filter, selectKey)
 	if err != nil {
 		return

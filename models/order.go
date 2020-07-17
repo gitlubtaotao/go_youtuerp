@@ -54,49 +54,7 @@ type OrderExtendInfo struct {
 	SupplyAgentId uint       `sql:"index" json:"supply_agent_id"`
 }
 
-type ResultOrderMaster struct {
-	ID               uint       ``
-	CreatedAt        time.Time  `json:"created_at"`
-	UpdatedAt        time.Time  `json:"updated_at"`
-	SerialNumber     string     `json:"serial_number"`
-	InstructionId    uint       `json:"instruction_id"`
-	SalesmanId       uint       `json:"salesman_id"`
-	OperationId      uint       `json:"operation_id" validate:"required"`
-	TransportType    uint       `json:"transport_type" validate:"required" `
-	Status           string     `json:"status" validate:"required"`
-	CompanyId        uint       `json:"company_id"`
-	ContactId        uint       `json:"contact_id"`
-	MainTransport    uint       `json:"main_transport"`
-	PayableStatus    string     ` json:"payable_status"`
-	PaidStatus       string     `json:"paid_status"`
-	ReceivableStatus string     `json:"receivable_status"`
-	ReceivedStatus   string     `json:"received_status"`
-	Remarks          string     `gorm:"size:522" json:"remarks"`
-	OrderMasterId    uint       `sql:"index" json:"order_master_id"`
-	Number           uint       `comment:"包装数量" json:"number"`
-	PackageTypeId    uint       `comment:"包装类型" json:"package_type_id"`
-	GrossWeight      string     `gorm:"size:64" comment:"毛重" json:"gross_weight"`
-	Volume           string     `gorm:"size:64" comment:"体积" json:"volume"`
-	MblSO            string     `gorm:"size:16;index:mbl_so" json:"mbl_so"`
-	HblSO            string     `gorm:"size:16" json:"hbl_so"`
-	SONo             string     `gorm:"size:16;index:so_no" json:"so_no"`
-	CarrierId        uint       `sql:"index" json:"carrier_id"`
-	POLId            uint       `gorm:"index:pol_pod_and_index" json:"pol_id"`
-	PODId            uint       `gorm:"index:pol_pod_and_index" json:"pod_id"`
-	POTId            uint       `json:"pot_id"`
-	CutOffDay        *time.Time `sql:"index" json:"cut_off_day"`
-	Departure        *time.Time `sql:"index" json:"departure"`
-	Arrival          *time.Time `sql:"index" json:"arrival"`
-	Vessel           string     `gorm:"size:64" json:"vessel"`
-	Voyage           string     `gorm:"size:64" json:"voyage"`
-	FlightNo         string     `gorm:"size:16;index:flight_no" json:"flight_no"`
-	ChargedWeight    float64    `gorm:"default:0.0;PRECISION:4" comment:"计费重量" json:"charged_weight"`
-	CourierCodeId    uint       `sql:"index" json:"courier_code_id"`
-	CourierNo        string     `gorm:"size:16;index:courier_no" json:"courier_no"`
-	ShipperId        uint       `json:"shipper_id"`
-	SupplyAgentId    uint       `sql:"index" json:"supply_agent_id"`
-	//Roles            []Role     `json:"roles"`
-}
+
 
 const (
 	OrderStatusInit      = "init"
@@ -129,9 +87,7 @@ func (OrderExtendInfo) TableName() string {
 	return "order_extend_infos"
 }
 
-func (ResultOrderMaster) TableName() string {
-	return "order_masters"
-}
+
 
 func (OrderMaster) DefaultAddColumn() []string {
 	return []string{"order_extend_infos_carrier_id", "order_extend_infos_pol_id",

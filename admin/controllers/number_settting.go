@@ -15,7 +15,7 @@ type NumberSettingController struct {
 }
 
 func (n *NumberSettingController) GetColumn(ctx iris.Context) {
-	n.RenderModuleColumn(ctx, models.ResultNumberSetting{})
+	n.RenderModuleColumn(ctx, models.ResponseNumberSetting{})
 }
 
 func (n *NumberSettingController) Get(ctx iris.Context) {
