@@ -7,13 +7,13 @@ type User struct {
 	CreatedAt           time.Time  `json:"created_at"`
 	UpdatedAt           time.Time  `json:"updated_at"`
 	DeletedAt           *time.Time `sql:"index"`
-	Email               string     `grom:"type:varchar(100);email;unique;not_null;" form:"email" json:"email" validate:"required,email"` // email
+	Email               string     `gorm:"type:varchar(100);email;unique;not_null;" form:"email" json:"email" validate:"required,email"` // email
 	EncryptedPassword   string
 	ResetPasswordToken  string
 	ResetPasswordSentAt time.Time
 	RememberCreatedAt   time.Time
 	SignInCount         int       `json:"sign_in_count"`
-	CurrentSignInAt     time.Time `gorm:"default:current_time" json:"current_sign_in_at"`
+	CurrentSignInAt     time.Time `json:"current_sign_in_at"`
 	LastSignInAt        time.Time ` json:"last_sign_in_at"`
 	CurrentSignInIp     string    `json:"current_sign_in_ip"`
 	LastSignInIp        string    `json:"last_sign_in_ip"`
