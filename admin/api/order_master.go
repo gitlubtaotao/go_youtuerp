@@ -1,4 +1,4 @@
-package controllers
+package api
 
 import (
 	"github.com/kataras/iris/v12"
@@ -6,12 +6,13 @@ import (
 	"strings"
 	"sync"
 	"youtuerp/conf"
+	"youtuerp/global"
 	"youtuerp/models"
 	"youtuerp/services"
 )
 
 type OrderMaster struct {
-	BaseController
+	BaseApi
 	ctx             iris.Context
 	service         services.IOrderMasterService
 	companyService  services.ICompanyService
@@ -245,7 +246,6 @@ func (o *OrderMaster) handlerParams() map[string]interface{} {
 	return readMap
 }
 
-
 // 处理查询时间问题
 func (o *OrderMaster) HandlerFilterDate(filters map[string]interface{}, field string) {
 	timeField, ok := filters[field]
@@ -265,9 +265,9 @@ func (o *OrderMaster) handlerOrderInfo(order models.OrderMaster) map[string]inte
 	data, _ := o.StructToMap(order, o.ctx)
 	data["transport_type_text"] = o.service.ShowTransport(o.enum, order)
 	data["status_text"] = o.service.ShowStatus(o.enum, order.Status)
-	data["instruction_name"] = red.HGetCrm(order.InstructionId, "")
-	data["operation_name"] = red.HGetValue("users", order.OperationId, "")
-	data["salesman_name"] = red.HGetValue("users", order.SalesmanId, "")
+	data["instruction_name"] = global.RedSetting.HGetCrm(order.InstructionId, "")
+	data["operation_name"] = global.RedSetting.HGetValue("users", order.OperationId, "")
+	data["salesman_name"] = global.RedSetting.HGetValue("users", order.SalesmanId, "")
 	return data
 }
 

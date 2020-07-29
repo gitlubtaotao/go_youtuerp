@@ -1,7 +1,7 @@
 package routers
 
 import (
-	"youtuerp/admin/controllers"
+	"youtuerp/admin/api"
 )
 
 type Crm struct {
@@ -18,7 +18,7 @@ func (c *Crm) Index() {
 }
 
 func (c *Crm) track() {
-	track := controllers.CrmTrack{}
+	track := api.CrmTrack{}
 	j := c.route.jwtAccess()
 	trackApi := c.route.app.Party("/crm/tracks")
 	{
@@ -31,7 +31,7 @@ func (c *Crm) user() {
 	j := c.route.jwtAccess()
 	crmUserApi := c.route.app.Party("/crm/users")
 	{
-		crmUser := controllers.CrmUser{}
+		crmUser := api.CrmUser{}
 		crmUserApi.Use(crmUser.Before)
 		crmUserApi.Get("/column", j.Serve, crmUser.GetColumn)
 		crmUserApi.Post("/data", j.Serve, crmUser.Get)
@@ -44,7 +44,7 @@ func (c *Crm) company() {
 	j := c.route.jwtAccess()
 	crmCompanyApi := c.route.app.Party("/crm/companies")
 	{
-		record := controllers.CrmCompany{}
+		record := api.CrmCompany{}
 		crmCompanyApi.Use(record.Before)
 		crmCompanyApi.Get("/column", j.Serve, record.GetColumn)
 		crmCompanyApi.Post("/create", j.Serve, record.Create)
@@ -64,7 +64,7 @@ func (c *Crm) invoice() {
 	j := c.route.jwtAccess()
 	InvoiceApi := c.route.app.Party("/invoices")
 	{
-		record := controllers.Invoice{}
+		record := api.Invoice{}
 		InvoiceApi.Use(record.Before)
 		InvoiceApi.Get("/column", j.Serve, record.GetColumn)
 		InvoiceApi.Post("/data", j.Serve, record.Get)
@@ -77,7 +77,7 @@ func (c *Crm) address() {
 	j := c.route.jwtAccess()
 	AddressApi := c.route.app.Party("/address")
 	{
-		record := controllers.Address{}
+		record := api.Address{}
 		AddressApi.Use(record.Before)
 		AddressApi.Get("/column", j.Serve, record.GetColumn)
 		AddressApi.Post("/data", j.Serve, record.Get)
@@ -90,7 +90,7 @@ func (c *Crm) address() {
 func (c *Crm) clue() {
 	r := c.route
 	j := r.jwtAccess()
-	clue := controllers.CrmClue{}
+	clue := api.CrmClue{}
 	clueApi := r.app.Party("/crm/clues")
 	{
 		clueApi.Use(clue.Before)

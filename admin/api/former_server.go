@@ -1,4 +1,4 @@
-package controllers
+package api
 
 import (
 	"github.com/kataras/iris/v12"
@@ -9,7 +9,7 @@ import (
 )
 
 type FormerServer struct {
-	BaseController
+	BaseApi
 	service services.IFormerServer
 }
 

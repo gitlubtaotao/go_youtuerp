@@ -1,6 +1,6 @@
 //管理员工信息
 
-package controllers
+package api
 
 import (
 	"github.com/kataras/iris/v12"
@@ -9,17 +9,17 @@ import (
 	"youtuerp/services"
 )
 
-type EmployeeController struct {
+type Employee struct {
 	ctx     iris.Context
 	service services.IEmployeeService
-	BaseController
+	BaseApi
 }
 
-func (e *EmployeeController) GetColumn(ctx iris.Context) {
+func (e *Employee) GetColumn(ctx iris.Context) {
 	e.RenderModuleColumn(ctx, models.ResponseEmployee{})
 }
 
-func (e *EmployeeController) Get(ctx iris.Context) {
+func (e *Employee) Get(ctx iris.Context) {
 	var (
 		sy        sync.Mutex
 		sw        sync.WaitGroup
@@ -55,7 +55,7 @@ func (e *EmployeeController) Get(ctx iris.Context) {
 	})
 }
 
-func (e *EmployeeController) Create(ctx iris.Context) {
+func (e *Employee) Create(ctx iris.Context) {
 	var (
 		employee     models.Employee
 		readPassword models.ReadPassword
@@ -85,7 +85,7 @@ func (e *EmployeeController) Create(ctx iris.Context) {
 	e.RenderSuccessJson(ctx, data)
 }
 
-func (e *EmployeeController) Update(ctx iris.Context) {
+func (e *Employee) Update(ctx iris.Context) {
 	var (
 		id           uint
 		err          error
@@ -119,8 +119,7 @@ func (e *EmployeeController) Update(ctx iris.Context) {
 	return
 }
 
-
-func (e *EmployeeController) Delete(ctx iris.Context) {
+func (e *Employee) Delete(ctx iris.Context) {
 	var (
 		id  int
 		err error
@@ -136,13 +135,13 @@ func (e *EmployeeController) Delete(ctx iris.Context) {
 	e.RenderSuccessJson(ctx, iris.Map{})
 }
 
-func (e *EmployeeController) Before(ctx iris.Context) {
+func (e *Employee) Before(ctx iris.Context) {
 	e.service = services.NewEmployeeService()
 	e.ctx = ctx
 	ctx.Next()
 }
 
-func (e *EmployeeController) handlerGetParams() map[string]interface{} {
+func (e *Employee) handlerGetParams() map[string]interface{} {
 	searchColumn := make(map[string]interface{})
 	searchColumn["name-rCount"] = e.ctx.URLParamDefault("name", "")
 	searchColumn["phone-rCount"] = e.ctx.URLParamDefault("phone", "")
@@ -152,7 +151,7 @@ func (e *EmployeeController) handlerGetParams() map[string]interface{} {
 	return searchColumn
 }
 
-func (e *EmployeeController) selectDepartment() []interface{} {
+func (e *Employee) selectDepartment() []interface{} {
 	service := services.NewDepartmentService()
 	var selectKeys = []string{"departments.id", "user_company_id"}
 	if e.ctx.GetLocale().Language() == "en" {
@@ -164,7 +163,7 @@ func (e *EmployeeController) selectDepartment() []interface{} {
 	return result
 }
 
-func (e *EmployeeController) generatePassword(password string) (hashPassword string, err error) {
+func (e *Employee) generatePassword(password string) (hashPassword string, err error) {
 	session := services.NewSessionService()
 	hashPassword, err = session.GeneratePassword(password)
 	return

@@ -1,4 +1,4 @@
-package controllers
+package api
 
 import (
 	"github.com/kataras/iris/v12"
@@ -7,11 +7,11 @@ import (
 	"youtuerp/services"
 )
 
-type SettingController struct {
-	BaseController
+type Setting struct {
+	BaseApi
 }
 
-func (s *SettingController) Get(ctx iris.Context) {
+func (s *Setting) Get(ctx iris.Context) {
 	key := ctx.URLParamDefault("key", "system")
 	service := services.NewSettingService()
 	settings, err := service.Find(key)
@@ -21,11 +21,11 @@ func (s *SettingController) Get(ctx iris.Context) {
 	}
 	codeService := services.NewBaseCode()
 	_, _ = ctx.JSON(iris.Map{
-		"code": http.StatusOK,
-		"data": settings,
+		"code":            http.StatusOK,
+		"data":            settings,
 		"currencyOptions": codeService.FindCollect(models.CodeFinanceCurrency)})
 }
-func (s *SettingController) UpdateSystem(ctx iris.Context) {
+func (s *Setting) UpdateSystem(ctx iris.Context) {
 	var (
 		systemSetting []models.ResponseSetting
 		err           error
@@ -43,6 +43,6 @@ func (s *SettingController) UpdateSystem(ctx iris.Context) {
 	s.RenderSuccessJson(ctx, iris.Map{})
 }
 
-func (s *SettingController) UpdateUser(ctx iris.Context) {
+func (s *Setting) UpdateUser(ctx iris.Context) {
 
 }

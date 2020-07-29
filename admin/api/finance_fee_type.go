@@ -1,16 +1,16 @@
-package controllers
+package api
 
 import (
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"sync"
+	"youtuerp/global"
 	"youtuerp/models"
-	"youtuerp/redis"
 	"youtuerp/services"
 )
 
 type FinanceFeeType struct {
-	BaseController
+	BaseApi
 	service     services.IFinanceBase
 	codeService services.IBaseCode
 	ctx         iris.Context
@@ -23,7 +23,7 @@ func (f *FinanceFeeType) GetColumn(ctx iris.Context) {
 func (f *FinanceFeeType) Get(ctx iris.Context) {
 	currencyOptions := f.codeService.FindCollect(models.CodeFinanceCurrency)
 	feeTypes, total, err := f.service.FindFeeType(f.GetPer(ctx), f.GetPage(ctx), f.handleParams(), []string{}, []string{})
-	
+
 	dataArray := make([]map[string]interface{}, 0, len(feeTypes))
 	if err != nil {
 		f.Render500(ctx, err, "")
@@ -32,7 +32,7 @@ func (f *FinanceFeeType) Get(ctx iris.Context) {
 	f.sy.Lock()
 	defer f.sy.Unlock()
 	for _, i := range feeTypes {
-		dataArray = append(dataArray, f.handleData(redis.NewRedis(), i))
+		dataArray = append(dataArray, f.handleData(i))
 	}
 	_, _ = ctx.JSON(iris.Map{
 		"code":            http.StatusOK,
@@ -56,7 +56,7 @@ func (f *FinanceFeeType) Create(ctx iris.Context) {
 		return
 	}
 	feeType = record.(models.FinanceFeeType)
-	f.RenderSuccessJson(ctx, f.handleData(redis.NewRedis(), feeType))
+	f.RenderSuccessJson(ctx, f.handleData(feeType))
 }
 func (f *FinanceFeeType) Update(ctx iris.Context) {
 	var (
@@ -77,7 +77,7 @@ func (f *FinanceFeeType) Update(ctx iris.Context) {
 		return
 	}
 	record.ID = id
-	f.RenderSuccessJson(ctx, f.handleData(redis.NewRedis(), record))
+	f.RenderSuccessJson(ctx, f.handleData(record))
 }
 
 func (f *FinanceFeeType) Delete(ctx iris.Context) {
@@ -104,13 +104,13 @@ func (f *FinanceFeeType) Before(ctx iris.Context) {
 	ctx.Next()
 }
 
-func (f *FinanceFeeType) handleData(red redis.Redis, feeType models.FinanceFeeType) map[string]interface{} {
+func (f *FinanceFeeType) handleData(feeType models.FinanceFeeType) map[string]interface{} {
 	data, err := f.StructToMap(feeType, f.ctx)
 	if err != nil {
 		return map[string]interface{}{}
 	}
 	data["finance_currency_id_value"] = data["finance_currency_id"]
-	data["finance_currency_id"] = red.HGetRecord("base_data_codes", data["finance_currency_id"], "")
+	data["finance_currency_id"] = global.RedSetting.HGetRecord("base_data_codes", data["finance_currency_id"], "")
 	return data
 }
 

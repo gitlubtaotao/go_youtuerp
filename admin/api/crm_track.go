@@ -1,4 +1,4 @@
-package controllers
+package api
 
 import (
 	"github.com/kataras/iris/v12"
@@ -8,7 +8,7 @@ import (
 
 //跟进记录的操作方法
 type CrmTrack struct {
-	BaseController
+	BaseApi
 	service services.ICrmTrack
 	ctx     iris.Context
 }
@@ -31,8 +31,6 @@ func (c *CrmTrack) Create(ctx iris.Context) {
 	}
 	c.RenderSuccessJson(ctx, track)
 }
-
-
 
 func (c *CrmTrack) Before(ctx iris.Context) {
 	c.ctx = ctx

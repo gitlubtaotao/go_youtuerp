@@ -1,4 +1,4 @@
-package controllers
+package api
 
 import (
 	"github.com/kataras/iris/v12"
@@ -12,7 +12,7 @@ type CompanyController struct {
 	ctx     iris.Context
 	service services.ICompanyService
 	enum    conf.Enum
-	BaseController
+	BaseApi
 }
 
 //
@@ -26,7 +26,7 @@ func (c *CompanyController) Get(ctx iris.Context) {
 	for _, v := range companies {
 		dataArray = append(dataArray, c.itemChange(v))
 	}
-	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": dataArray, "total": total,})
+	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": dataArray, "total": total})
 }
 
 //

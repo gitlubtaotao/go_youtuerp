@@ -2,7 +2,7 @@ package routers
 
 import (
 	"github.com/kataras/iris/v12"
-	"youtuerp/admin/controllers"
+	"youtuerp/admin/api"
 )
 
 type Base struct {
@@ -19,7 +19,7 @@ func (b *Base) Code() {
 	r := b.route
 	j := r.jwtAccess()
 	r.app.PartyFunc("/base/codes", func(c iris.Party) {
-		record := controllers.BaseCodeController{}
+		record := api.BaseCodeController{}
 		c.Use(record.Before)
 		c.Get("/column", j.Serve, record.GetColumn)
 		c.Post("/create", j.Serve, record.Create)
@@ -34,7 +34,7 @@ func (b *Base) Port() {
 	r := b.route
 	j := r.jwtAccess()
 	r.app.PartyFunc("/base/ports", func(c iris.Party) {
-		record := controllers.BasePort{}
+		record := api.BasePort{}
 		c.Use(record.Before)
 		c.Get("/column", j.Serve, record.GetColumn)
 		c.Post("/create", j.Serve, record.Create)
@@ -48,7 +48,7 @@ func (b *Base) Carrier() {
 	r := b.route
 	j := r.jwtAccess()
 	r.app.PartyFunc("/base/carriers", func(c iris.Party) {
-		record := controllers.BaseCarrier{}
+		record := api.BaseCarrier{}
 		c.Use(record.Before)
 		c.Get("/column", j.Serve, record.GetColumn)
 		c.Post("/create", j.Serve, record.Create)
@@ -61,7 +61,7 @@ func (b *Base) Warehouse() {
 	r := b.route
 	j := r.jwtAccess()
 	r.app.PartyFunc("/base/warehouses", func(c iris.Party) {
-		record := controllers.BaseWarehouse{}
+		record := api.BaseWarehouse{}
 		c.Use(record.Before)
 		c.Get("/column", j.Serve, record.GetColumn)
 		c.Post("/create", j.Serve, record.Create)

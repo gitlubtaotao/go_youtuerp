@@ -1,4 +1,4 @@
-package controllers
+package api
 
 import (
 	"errors"
@@ -12,7 +12,7 @@ import (
 )
 
 type FinanceFee struct {
-	BaseController
+	BaseApi
 	service services.IFinanceFee
 	ctx     iris.Context
 	enum    conf.Enum

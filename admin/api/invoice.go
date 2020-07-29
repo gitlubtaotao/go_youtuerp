@@ -1,20 +1,21 @@
-package controllers
+package api
 
 import (
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"sync"
+	"youtuerp/global"
 	"youtuerp/models"
-	"youtuerp/redis"
 	"youtuerp/services"
 )
 
 type Invoice struct {
-	BaseController
+	BaseApi
 	service services.IInvoiceService
 	ctx     iris.Context
 	mu      sync.Mutex
 }
+
 func (a *Invoice) GetColumn(ctx iris.Context) {
 	a.RenderModuleColumn(ctx, models.Invoice{})
 }
@@ -36,13 +37,12 @@ func (a *Invoice) Get(ctx iris.Context) {
 		return
 	}
 	dataArray := make([]map[string]interface{}, 0)
-	red := redis.Redis{}
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	for _, v := range invoices {
-		dataArray = append(dataArray, a.handlerData(red, v))
+		dataArray = append(dataArray, a.handlerData(v))
 	}
-	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": dataArray, "total": total,})
+	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": dataArray, "total": total})
 }
 
 func (a *Invoice) Create(ctx iris.Context) {
@@ -59,14 +59,14 @@ func (a *Invoice) Create(ctx iris.Context) {
 		a.Render500(ctx, err, ctx.GetLocale().GetMessage("error.inter_error"))
 		return
 	}
-	a.RenderSuccessJson(ctx, a.handlerData(redis.NewRedis(), account))
+	a.RenderSuccessJson(ctx, a.handlerData(account))
 }
 
 func (a *Invoice) Update(ctx iris.Context) {
 	var (
-		account       models.Invoice
-		err           error
-		id            int
+		account models.Invoice
+		err     error
+		id      int
 	)
 	if id, err = ctx.Params().GetInt("id"); err != nil {
 		a.Render400(ctx, err, err.Error())
@@ -79,7 +79,7 @@ func (a *Invoice) Update(ctx iris.Context) {
 	if account, err = a.service.UpdateById(uint(id), account, ctx.GetLocale().Language()); err != nil {
 		a.Render500(ctx, err, "")
 	}
-	a.RenderSuccessJson(ctx, a.handlerData(redis.NewRedis(),account))
+	a.RenderSuccessJson(ctx, a.handlerData(account))
 }
 
 func (a *Invoice) Delete(ctx iris.Context) {
@@ -108,9 +108,9 @@ func (a *Invoice) handlerGetParams() map[string]interface{} {
 	return searchColumn
 }
 
-func (a *Invoice) handlerData(red redis.Redis, account models.Invoice) map[string]interface{} {
+func (a *Invoice) handlerData(account models.Invoice) map[string]interface{} {
 	data, _ := a.StructToMap(account, a.ctx)
 	data["user_company_id_value"] = data["user_company_id"]
-	data["user_company_id"] = red.HGetCrm(data["user_company_id"], "name_nick")
+	data["user_company_id"] = global.RedSetting.HGetCrm(data["user_company_id"], "name_nick")
 	return data
 }

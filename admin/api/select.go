@@ -1,4 +1,4 @@
-package controllers
+package api
 
 import (
 	"github.com/kataras/golog"
@@ -13,13 +13,13 @@ type ReadData struct {
 	Scope      map[string]interface{} `json:"scope"`
 }
 
-type SelectController struct {
-	BaseController
+type SelectApi struct {
+	BaseApi
 	service services.ISelectService
 	ctx     iris.Context
 }
 
-func (s *SelectController) GetCommon(ctx iris.Context) {
+func (s *SelectApi) GetCommon(ctx iris.Context) {
 	readData, err := s.base(ctx)
 	if err != nil {
 		s.renderError(ctx, err)
@@ -34,34 +34,34 @@ func (s *SelectController) GetCommon(ctx iris.Context) {
 }
 
 //获取合作单位对应的数据
-func (s *SelectController) GetCompany(ctx iris.Context) {
+func (s *SelectApi) GetCompany(ctx iris.Context) {
 	readData, err := s.base(ctx)
 	if err != nil {
 		s.renderError(ctx, err)
 		return
 	}
-	
+
 	name := ctx.URLParamDefault("name", "")
 	data, _ := s.service.GetCompanySelect(name, readData.Scope, readData.SelectKeys)
 	_, _ = s.ctx.JSON(iris.Map{"code": http.StatusOK, "data": data})
 }
 
 //获取公司员工对应的数据
-func (s *SelectController) Employee(ctx iris.Context) {
+func (s *SelectApi) Employee(ctx iris.Context) {
 	service := services.NewEmployeeService()
 	data := service.FindRedis()
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": data})
 }
 
 //获取所属公司的数据
-func (s *SelectController) OwnerCompany(ctx iris.Context) {
+func (s *SelectApi) OwnerCompany(ctx iris.Context) {
 	service := services.NewCompanyService()
 	data := service.AllCompanyRedis()
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": data})
 }
 
 //获取仓库地址对应的数据
-func (s *SelectController) WarehouseAddress(ctx iris.Context) {
+func (s *SelectApi) WarehouseAddress(ctx iris.Context) {
 	service := services.NewBaseWarehouse()
 	data, err := service.FindAllBySelect()
 	if err != nil {
@@ -72,7 +72,7 @@ func (s *SelectController) WarehouseAddress(ctx iris.Context) {
 }
 
 //获取订单的数据信息
-func (s *SelectController) GetOrderMaster(ctx iris.Context) {
+func (s *SelectApi) GetOrderMaster(ctx iris.Context) {
 	serialNumber := ctx.URLParamDefault("serial_number", "")
 	per := 100
 	if serialNumber != "" {
@@ -91,23 +91,23 @@ func (s *SelectController) GetOrderMaster(ctx iris.Context) {
 }
 
 // 获取基础代码的数据
-func (s *SelectController) GetBaseCode(ctx iris.Context) {
+func (s *SelectApi) GetBaseCode(ctx iris.Context) {
 	key := ctx.URLParamDefault("key", "")
 	service := services.NewBaseCode()
 	s.RenderSuccessJson(ctx, service.FindCollect(key))
 }
 
 //获取承运方的数据
-func (s *SelectController) GetCarrier(ctx iris.Context) {
+func (s *SelectApi) GetCarrier(ctx iris.Context) {
 
 }
 
 //获取港口的数据
-func (s *SelectController) GetPort(ctx iris.Context) {
+func (s *SelectApi) GetPort(ctx iris.Context) {
 
 }
 
-func (s *SelectController) base(ctx iris.Context) (readData ReadData, err error) {
+func (s *SelectApi) base(ctx iris.Context) (readData ReadData, err error) {
 	s.service = services.NewSelectService(ctx)
 	s.ctx = ctx
 	err = ctx.ReadJSON(&readData)
@@ -118,7 +118,7 @@ func (s *SelectController) base(ctx iris.Context) (readData ReadData, err error)
 	return
 }
 
-func (s *SelectController) renderError(ctx iris.Context, err error) {
+func (s *SelectApi) renderError(ctx iris.Context, err error) {
 	s.Render400(ctx, err, ctx.GetLocale().GetMessage("error.params_error"))
 	return
 }

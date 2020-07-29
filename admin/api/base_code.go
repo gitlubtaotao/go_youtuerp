@@ -1,31 +1,29 @@
-package controllers
+package api
 
 import (
-	"fmt"
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"sync"
-	"youtuerp/conf"
+	"youtuerp/global"
 	"youtuerp/models"
 	"youtuerp/services"
 )
 
-type BaseWarehouse struct {
-	BaseController
-	service services.IBaseWarehouse
-	ctx     iris.Context
-	mu      sync.Mutex
-	enum    conf.Enum
+type BaseCodeController struct {
+	service services.IBaseCode
+	BaseApi
+	ctx iris.Context
+	mu  sync.Mutex
 }
 
-func (b *BaseWarehouse) GetColumn(ctx iris.Context) {
-	b.RenderModuleColumn(ctx, models.BaseWarehouse{})
+func (b *BaseCodeController) GetColumn(ctx iris.Context) {
+	b.RenderModuleColumn(ctx, models.BaseDataCode{})
 }
-func (b *BaseWarehouse) Get(ctx iris.Context) {
+
+func (b *BaseCodeController) Get(ctx iris.Context) {
 	filter := b.handleParams()
 	codes, total, err := b.service.Find(b.GetPer(ctx), b.GetPage(ctx),
 		filter, []string{}, []string{})
-	fmt.Printf("code is  %v,total is  %v,err is  %v", codes, total, err)
 	if err != nil {
 		b.Render500(ctx, err, "")
 		return
@@ -33,17 +31,18 @@ func (b *BaseWarehouse) Get(ctx iris.Context) {
 	dataArray := make([]map[string]interface{}, 0)
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	for _, carrier := range codes {
-		data := b.handleData(carrier)
+	for _, user := range codes {
+		data := b.handleData(user)
 		dataArray = append(dataArray, data)
 	}
-	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": dataArray, "total": total})
+	codeLevel, _ := b.service.FindAllLevel()
+	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": dataArray, "total": total, "code_level": codeLevel})
 }
 
-func (b *BaseWarehouse) Create(ctx iris.Context) {
+func (b *BaseCodeController) Create(ctx iris.Context) {
 	var (
 		err  error
-		code models.BaseWarehouse
+		code models.BaseDataCode
 	)
 	if err = ctx.ReadJSON(&code); err != nil {
 		b.Render400(ctx, err, err.Error())
@@ -55,20 +54,17 @@ func (b *BaseWarehouse) Create(ctx iris.Context) {
 	}
 	b.RenderSuccessJson(ctx, b.handleData(code))
 }
-func (b *BaseWarehouse) Update(ctx iris.Context) {
+func (b *BaseCodeController) Update(ctx iris.Context) {
 	var (
 		id   uint
 		err  error
-		code models.BaseWarehouse
+		code models.BaseDataCode
 	)
 	if id, err = ctx.Params().GetUint("id"); err != nil {
 		b.Render400(ctx, err, err.Error())
 		return
 	}
-	if err = ctx.ReadJSON(&code); err != nil {
-		b.Render400(ctx, err, err.Error())
-		return
-	}
+	_ = ctx.ReadJSON(&code)
 	if err = b.service.Update(id, code, ctx.GetLocale().Language()); err != nil {
 		b.Render400(ctx, err, err.Error())
 		return
@@ -76,8 +72,7 @@ func (b *BaseWarehouse) Update(ctx iris.Context) {
 	code.ID = id
 	b.RenderSuccessJson(ctx, b.handleData(code))
 }
-
-func (b *BaseWarehouse) Delete(ctx iris.Context) {
+func (b *BaseCodeController) Delete(ctx iris.Context) {
 	var (
 		id  uint
 		err error
@@ -92,25 +87,23 @@ func (b *BaseWarehouse) Delete(ctx iris.Context) {
 		b.RenderSuccessJson(ctx, iris.Map{})
 	}
 }
-func (b *BaseWarehouse) Before(ctx iris.Context) {
-	b.service = services.NewBaseWarehouse()
+
+func (b *BaseCodeController) Before(ctx iris.Context) {
+	b.service = services.NewBaseCode()
 	b.ctx = ctx
-	b.enum = conf.Enum{Locale: ctx.GetLocale()}
 	ctx.Next()
 }
 
-func (b *BaseWarehouse) handleParams() map[string]interface{} {
+func (b *BaseCodeController) handleParams() map[string]interface{} {
 	data := make(map[string]interface{}, 0)
 	data["name-rCount"] = b.ctx.URLParamDefault("name", "")
-	data["contact_name-eq"] = b.ctx.URLParamDefault("contact_name", "")
-	data["contact_tel-eq"] = b.ctx.URLParamDefault("contact_tel", "")
+	data["code_name-eq"] = b.ctx.URLParamDefault("code_name", "")
 	return data
 }
 
-func (b *BaseWarehouse) handleData(carrier models.BaseWarehouse) map[string]interface{} {
-	data, err := b.StructToMap(carrier, b.ctx)
-	if err != nil {
-		return map[string]interface{}{}
-	}
+func (b *BaseCodeController) handleData(code models.BaseDataCode) map[string]interface{} {
+	data, _ := b.StructToMap(code, b.ctx)
+	data["code_name_value"] = data["code_name"]
+	data["code_name"] = global.RedSetting.HGetValue("base_data_levels", data["code_name"], "name")
 	return data
 }

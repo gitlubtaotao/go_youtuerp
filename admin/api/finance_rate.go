@@ -1,4 +1,4 @@
-package controllers
+package api
 
 import (
 	"errors"
@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"youtuerp/global"
 	"youtuerp/models"
 	"youtuerp/redis"
 	"youtuerp/services"
@@ -14,7 +15,7 @@ import (
 )
 
 type FinanceRate struct {
-	BaseController
+	BaseApi
 	service     services.IFinanceBase
 	codeService services.IBaseCode
 	ctx         iris.Context
@@ -34,7 +35,7 @@ func (f *FinanceRate) Get(ctx iris.Context) {
 	currencyOptions := f.codeService.FindCollect(models.CodeFinanceCurrency)
 	dataArray := make([]map[string]interface{}, 0)
 	for _, v := range rates {
-		dataArray = append(dataArray, f.handleData(redis.NewRedis(), v))
+		dataArray = append(dataArray, f.handleData(v))
 	}
 	_, _ = ctx.JSON(iris.Map{
 		"code":                   http.StatusOK,
@@ -68,7 +69,7 @@ func (f *FinanceRate) Create(ctx iris.Context) {
 		f.Render500(ctx, errors.New(ctx.GetLocale().GetMessage("error.inter_error")), "")
 		return
 	} else {
-		f.RenderSuccessJson(ctx, f.handleData(redis.NewRedis(), rate))
+		f.RenderSuccessJson(ctx, f.handleData(rate))
 	}
 }
 func (f *FinanceRate) Delete(ctx iris.Context) {
@@ -80,7 +81,7 @@ func (f *FinanceRate) Delete(ctx iris.Context) {
 		f.Render400(ctx, err, err.Error())
 		return
 	}
-	if err = f.service.Delete(id,&models.FinanceRate{}); err != nil {
+	if err = f.service.Delete(id, &models.FinanceRate{}); err != nil {
 		f.Render500(ctx, err, "")
 	} else {
 		f.RenderSuccessJson(ctx, iris.Map{})
@@ -93,17 +94,17 @@ func (f *FinanceRate) Before(ctx iris.Context) {
 	ctx.Next()
 }
 
-func (f *FinanceRate) handleData(red redis.Redis, feeType models.FinanceRate) map[string]interface{} {
+func (f *FinanceRate) handleData(feeType models.FinanceRate) map[string]interface{} {
 	data, err := f.StructToMap(feeType, f.ctx)
 	if err != nil {
 		return map[string]interface{}{}
 	}
 	data["finance_currency_id_value"] = data["finance_currency_id"]
-	data["finance_currency_id"] = red.HGetValue("base_data_codesFinanceCurrency", data["finance_currency_id"], "")
+	data["finance_currency_id"] = global.RedSetting.HGetValue("base_data_codesFinanceCurrency", data["finance_currency_id"], "")
 	data["user_id_value"] = data["user_id"]
-	data["user_id"] = red.HGetRecord(models.User{}.TableName(), data["user_id"], "name")
+	data["user_id"] = global.RedSetting.HGetRecord(models.User{}.TableName(), data["user_id"], "name")
 	data["company_id_value"] = data["company_id"]
-	data["company_id"] = red.HGetCompany(data["company_id"], "")
+	data["company_id"] = global.RedSetting.HGetCompany(data["company_id"], "")
 	return data
 }
 

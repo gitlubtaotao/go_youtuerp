@@ -1,6 +1,7 @@
-package controllers
+package api
 
 import (
+	"fmt"
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"sync"
@@ -9,22 +10,22 @@ import (
 	"youtuerp/services"
 )
 
-type BasePort struct {
-	BaseController
-	service services.IBasePort
+type BaseWarehouse struct {
+	BaseApi
+	service services.IBaseWarehouse
 	ctx     iris.Context
 	mu      sync.Mutex
 	enum    conf.Enum
 }
 
-func (b *BasePort) GetColumn(ctx iris.Context) {
-	b.RenderModuleColumn(ctx, models.BaseDataPort{})
+func (b *BaseWarehouse) GetColumn(ctx iris.Context) {
+	b.RenderModuleColumn(ctx, models.BaseWarehouse{})
 }
-
-func (b *BasePort) Get(ctx iris.Context) {
+func (b *BaseWarehouse) Get(ctx iris.Context) {
 	filter := b.handleParams()
 	codes, total, err := b.service.Find(b.GetPer(ctx), b.GetPage(ctx),
 		filter, []string{}, []string{})
+	fmt.Printf("code is  %v,total is  %v,err is  %v", codes, total, err)
 	if err != nil {
 		b.Render500(ctx, err, "")
 		return
@@ -32,16 +33,17 @@ func (b *BasePort) Get(ctx iris.Context) {
 	dataArray := make([]map[string]interface{}, 0)
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	for _, port := range codes {
-		dataArray = append(dataArray, b.handleData(port))
+	for _, carrier := range codes {
+		data := b.handleData(carrier)
+		dataArray = append(dataArray, data)
 	}
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": dataArray, "total": total})
 }
 
-func (b *BasePort) Create(ctx iris.Context) {
+func (b *BaseWarehouse) Create(ctx iris.Context) {
 	var (
 		err  error
-		code models.BaseDataPort
+		code models.BaseWarehouse
 	)
 	if err = ctx.ReadJSON(&code); err != nil {
 		b.Render400(ctx, err, err.Error())
@@ -53,17 +55,20 @@ func (b *BasePort) Create(ctx iris.Context) {
 	}
 	b.RenderSuccessJson(ctx, b.handleData(code))
 }
-func (b *BasePort) Update(ctx iris.Context) {
+func (b *BaseWarehouse) Update(ctx iris.Context) {
 	var (
 		id   uint
 		err  error
-		code models.BaseDataPort
+		code models.BaseWarehouse
 	)
 	if id, err = ctx.Params().GetUint("id"); err != nil {
 		b.Render400(ctx, err, err.Error())
 		return
 	}
-	_ = ctx.ReadJSON(&code)
+	if err = ctx.ReadJSON(&code); err != nil {
+		b.Render400(ctx, err, err.Error())
+		return
+	}
 	if err = b.service.Update(id, code, ctx.GetLocale().Language()); err != nil {
 		b.Render400(ctx, err, err.Error())
 		return
@@ -72,7 +77,7 @@ func (b *BasePort) Update(ctx iris.Context) {
 	b.RenderSuccessJson(ctx, b.handleData(code))
 }
 
-func (b *BasePort) Delete(ctx iris.Context) {
+func (b *BaseWarehouse) Delete(ctx iris.Context) {
 	var (
 		id  uint
 		err error
@@ -87,26 +92,25 @@ func (b *BasePort) Delete(ctx iris.Context) {
 		b.RenderSuccessJson(ctx, iris.Map{})
 	}
 }
-func (b *BasePort) Before(ctx iris.Context) {
-	b.service = services.NewBasePort()
+func (b *BaseWarehouse) Before(ctx iris.Context) {
+	b.service = services.NewBaseWarehouse()
 	b.ctx = ctx
 	b.enum = conf.Enum{Locale: ctx.GetLocale()}
 	ctx.Next()
 }
 
-func (b *BasePort) handleParams() map[string]interface{} {
+func (b *BaseWarehouse) handleParams() map[string]interface{} {
 	data := make(map[string]interface{}, 0)
 	data["name-rCount"] = b.ctx.URLParamDefault("name", "")
-	data["type-eq"] = b.ctx.URLParamIntDefault("type", 0)
+	data["contact_name-eq"] = b.ctx.URLParamDefault("contact_name", "")
+	data["contact_tel-eq"] = b.ctx.URLParamDefault("contact_tel", "")
 	return data
 }
 
-func (b *BasePort) handleData(port models.BaseDataPort) map[string]interface{} {
-	data, err := b.StructToMap(port, b.ctx)
+func (b *BaseWarehouse) handleData(carrier models.BaseWarehouse) map[string]interface{} {
+	data, err := b.StructToMap(carrier, b.ctx)
 	if err != nil {
 		return map[string]interface{}{}
 	}
-	data["type_value"] = data["type"]
-	data["type"] = b.enum.DefaultText("base_data_ports_type.", data["type"])
 	return data
 }

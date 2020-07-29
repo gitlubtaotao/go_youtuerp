@@ -2,7 +2,7 @@ package routers
 
 import (
 	"github.com/kataras/iris/v12"
-	"youtuerp/admin/controllers"
+	"youtuerp/admin/api"
 )
 
 type Order struct {
@@ -18,7 +18,7 @@ func (o *Order) order() {
 	r := o.Route
 	j := r.jwtAccess()
 	r.app.PartyFunc("/order/masters", func(p iris.Party) {
-		record := controllers.OrderMaster{}
+		record := api.OrderMaster{}
 		p.Use(record.Before)
 		p.Post("/create", j.Serve, record.Create)
 		p.Get("/column", j.Serve, record.GetColumn)
@@ -36,7 +36,7 @@ func (o *Order) formerServer() {
 	r := o.Route
 	j := r.jwtAccess()
 	r.app.PartyFunc("/order/masters", func(p iris.Party) {
-		record := controllers.FormerServer{}
+		record := api.FormerServer{}
 		p.Use(record.Before)
 		p.Get("/{id:uint}/getOtherServer", j.Serve, record.GetOtherServer)
 		p.Post("/{id:uint}/UpdateFormerData", j.Serve, record.UpdateFormerData)

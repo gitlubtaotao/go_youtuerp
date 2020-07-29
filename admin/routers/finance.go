@@ -2,7 +2,7 @@ package routers
 
 import (
 	"github.com/kataras/iris/v12"
-	"youtuerp/admin/controllers"
+	"youtuerp/admin/api"
 )
 
 type Finance struct {
@@ -19,7 +19,7 @@ func (f *Finance) fee() {
 	r := f.route
 	j := r.jwtAccess()
 	r.app.PartyFunc("/finance/fees", func(c iris.Party) {
-		record := controllers.FinanceFee{}
+		record := api.FinanceFee{}
 		c.Use(record.Before)
 		c.Post("/create", j.Serve, record.Create)
 		c.Get("/{id:uint}/OrderFees", j.Serve, record.OrderFees)
@@ -37,7 +37,7 @@ func (f *Finance) feeType() {
 	r := f.route
 	j := r.jwtAccess()
 	r.app.PartyFunc("/finance/fee_types", func(c iris.Party) {
-		record := controllers.FinanceFeeType{}
+		record := api.FinanceFeeType{}
 		c.Use(record.Before)
 		c.Get("/column", j.Serve, record.GetColumn)
 		c.Post("/create", j.Serve, record.Create)
@@ -51,7 +51,7 @@ func (f *Finance) rate() {
 	r := f.route
 	j := r.jwtAccess()
 	r.app.PartyFunc("/finance/rates", func(c iris.Party) {
-		record := controllers.FinanceRate{}
+		record := api.FinanceRate{}
 		c.Use(record.Before)
 		c.Get("/column", j.Serve, record.GetColumn)
 		c.Post("/create", j.Serve, record.Create)

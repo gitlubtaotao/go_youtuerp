@@ -1,17 +1,17 @@
-package controllers
+package api
 
 import (
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"sync"
 	"youtuerp/conf"
+	"youtuerp/global"
 	"youtuerp/models"
-	"youtuerp/redis"
 	"youtuerp/services"
 )
 
 type CrmUser struct {
-	BaseController
+	BaseApi
 	service services.ICrmUser
 	ctx     iris.Context
 	enum    conf.Enum
@@ -30,14 +30,13 @@ func (c *CrmUser) Get(ctx iris.Context) {
 		return
 	}
 	dataArray := make([]map[string]interface{}, 0)
-	red := redis.NewRedis()
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	for _, user := range users {
-		data := c.handleData(red, user)
+		data := c.handleData(user)
 		dataArray = append(dataArray, data)
 	}
-	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": dataArray, "total": total,})
+	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": dataArray, "total": total})
 }
 
 func (c *CrmUser) Create(ctx iris.Context) {
@@ -53,8 +52,7 @@ func (c *CrmUser) Create(ctx iris.Context) {
 		c.Render400(ctx, err, err.Error())
 		return
 	}
-	red := redis.NewRedis()
-	c.RenderSuccessJson(ctx, c.handleData(red, user))
+	c.RenderSuccessJson(ctx, c.handleData(user))
 }
 
 func (c *CrmUser) Update(ctx iris.Context) {
@@ -76,7 +74,7 @@ func (c *CrmUser) Update(ctx iris.Context) {
 		return
 	}
 	user.ID = id
-	data := c.handleData(redis.NewRedis(), user)
+	data := c.handleData(user)
 	c.RenderSuccessJson(ctx, data)
 }
 
@@ -103,7 +101,7 @@ func (c *CrmUser) Before(ctx iris.Context) {
 	ctx.Next()
 }
 
-func (c *CrmUser) handleData(red redis.Redis, user models.CrmContact) map[string]interface{} {
+func (c *CrmUser) handleData(user models.CrmContact) map[string]interface{} {
 	data, _ := c.StructToMap(user, c.ctx)
 	data["user_company_id_value"] = data["user_company_id"]
 	data["is_key_contact_value"] = data["is_key_contact"]
@@ -115,7 +113,7 @@ func (c *CrmUser) handleData(red redis.Redis, user models.CrmContact) map[string
 	data["sex_value"] = data["sex"]
 	data["sex"] = c.enum.DefaultText("users_sex.", data["sex"])
 	data["user_company_id_value"] = data["user_company_id"]
-	data["user_company_id"] = red.HGetCrm(data["user_company_id"], "name_nick")
+	data["user_company_id"] = global.RedSetting.HGetCrm(data["user_company_id"], "name_nick")
 	return data
 }
 

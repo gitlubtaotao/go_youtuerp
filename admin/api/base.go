@@ -1,4 +1,4 @@
-package controllers
+package api
 
 import (
 	"github.com/iris-contrib/middleware/jwt"
@@ -13,15 +13,19 @@ import (
 	"youtuerp/tools"
 )
 
-type BaseController struct {
+type BaseApi struct {
 	renderError
+}
+
+//错误消息处理
+type renderError struct {
 }
 
 var (
 	red = redis.Redis{}
 )
 
-func (b BaseController) RenderSuccessJson(ctx iris.Context, data interface{}) {
+func (b *BaseApi) RenderSuccessJson(ctx iris.Context, data interface{}) {
 	m := iris.Map{
 		"code": http.StatusOK,
 		"data": data,
@@ -29,7 +33,7 @@ func (b BaseController) RenderSuccessJson(ctx iris.Context, data interface{}) {
 	_, _ = ctx.JSON(m)
 }
 
-func (b BaseController) RenderModuleColumn(ctx iris.Context, model interface{}) {
+func (b *BaseApi) RenderModuleColumn(ctx iris.Context, model interface{}) {
 	column := services.NewColumnService(ctx.GetLocale())
 	data, err := column.StructColumn(model)
 	if err != nil {
@@ -40,12 +44,12 @@ func (b BaseController) RenderModuleColumn(ctx iris.Context, model interface{}) 
 }
 
 //获取用户的的列设置
-func (b BaseController) GetCustomerColumn(currentUser *models.Employee, model interface{}) []string {
+func (b *BaseApi) GetCustomerColumn(currentUser *models.Employee, model interface{}) []string {
 	return []string{}
 }
 
 //根据token获取当前用户
-func (b BaseController) CurrentUser(ctx iris.Context) (employee *models.Employee, err error) {
+func (b *BaseApi) CurrentUser(ctx iris.Context) (employee *models.Employee, err error) {
 	tokenInfo := ctx.Values().Get("jwt").(*jwt.Token)
 	foobar := tokenInfo.Claims.(jwt.MapClaims)
 	email := foobar["email"].(string)
@@ -56,20 +60,20 @@ func (b BaseController) CurrentUser(ctx iris.Context) (employee *models.Employee
 }
 
 //将struct 转化成map
-func (b *BaseController) StructToMap(currentObject interface{}, ctx iris.Context) (map[string]interface{}, error) {
+func (b *BaseApi) StructToMap(currentObject interface{}, ctx iris.Context) (map[string]interface{}, error) {
 	service := services.NewColumnService(ctx.GetLocale())
 	return service.StructToMap(currentObject)
 }
 
-func (b *BaseController) GetPage(ctx iris.Context) int {
+func (b *BaseApi) GetPage(ctx iris.Context) int {
 	return ctx.URLParamIntDefault("page", 1)
 }
 
-func (b *BaseController) GetPer(ctx iris.Context) int {
+func (b *BaseApi) GetPer(ctx iris.Context) int {
 	return ctx.URLParamIntDefault("limit", 20)
 }
 
-func (b *BaseController) HandlerFilterDate(filters map[string]interface{}, field string) {
+func (b *BaseApi) HandlerFilterDate(filters map[string]interface{}, field string) {
 	timeField, ok := filters[field]
 	if !ok {
 		return
@@ -82,22 +86,18 @@ func (b *BaseController) HandlerFilterDate(filters map[string]interface{}, field
 	}
 }
 
-func (b *BaseController) StringToDateRange(stringDate string) []time.Time {
+func (b *BaseApi) StringToDateRange(stringDate string) []time.Time {
 	timeArray := strings.Split(stringDate, ",")
 	return []time.Time{b.stringToDate(timeArray[0]), b.stringToDate(timeArray[1])}
 }
 
 // 将string转化成日期格式
-func (b *BaseController) stringToDate(strTime string) time.Time {
+func (b *BaseApi) stringToDate(strTime string) time.Time {
 	result, err := tools.TimeHelper{}.StringToTime(strTime)
 	if err != nil {
 		golog.Errorf("string to date is error %v", err)
 	}
 	return result
-}
-
-//错误消息处理
-type renderError struct {
 }
 
 //render 500 error

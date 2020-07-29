@@ -1,17 +1,18 @@
-package controllers
+package api
 
 import (
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"strings"
 	"youtuerp/conf"
+	"youtuerp/global"
 	"youtuerp/models"
 	"youtuerp/services"
 )
 
 type CrmCompany struct {
 	ctx iris.Context
-	BaseController
+	BaseApi
 	service services.ICrmCompanyService
 }
 
@@ -37,7 +38,7 @@ func (c *CrmCompany) Get(ctx iris.Context) {
 		result, _ := c.handleCompany(v)
 		dataArray = append(dataArray, result)
 	}
-	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": dataArray, "total": total,})
+	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": dataArray, "total": total})
 }
 
 func (c *CrmCompany) Create(ctx iris.Context) {
@@ -189,7 +190,6 @@ func (c *CrmCompany) GetOperationInfo(ctx iris.Context) {
 	c.RenderSuccessJson(ctx, c.service.GetOperationInfo(id))
 }
 
-
 func (c *CrmCompany) Before(ctx iris.Context) {
 	c.ctx = ctx
 	c.service = services.NewCrmCompanyService()
@@ -210,11 +210,11 @@ func (c *CrmCompany) handleCompany(company models.CrmCompany) (data map[string]i
 	accountPeriod := data["account_period"]
 	roles := data["roles"].([]models.Role)
 	for i, v := range roles {
-		roles[i].UserName = red.HGetRecord("users", v.UserId, "name")
+		roles[i].UserName = global.RedSetting.HGetRecord("users", v.UserId, "name")
 		roles[i].Name = enum.DefaultText("roles_name.", v.Name)
 	}
 	data["roles"] = roles
-	data["parent_id"] = red.HGetCompany(data["parent_id"], "name_nick")
+	data["parent_id"] = global.RedSetting.HGetCompany(data["parent_id"], "name_nick")
 	data["account_period"] = enum.DefaultText("user_companies_account_period.", accountPeriod)
 	data["account_period_value"] = accountPeriod
 	return data, err

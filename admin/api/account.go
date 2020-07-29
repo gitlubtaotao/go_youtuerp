@@ -1,25 +1,26 @@
-package controllers
+package api
 
 import (
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"sync"
+	"youtuerp/global"
 	"youtuerp/models"
 	"youtuerp/services"
 )
 
-type AccountController struct {
+type AccountApi struct {
 	service services.IAccountService
-	BaseController
+	BaseApi
 	ctx iris.Context
 	mu  sync.Mutex
 }
 
-func (a *AccountController) GetColumn(ctx iris.Context) {
+func (a *AccountApi) GetColumn(ctx iris.Context) {
 	a.RenderModuleColumn(ctx, models.Account{})
 }
 
-func (a *AccountController) Get(ctx iris.Context) {
+func (a *AccountApi) Get(ctx iris.Context) {
 	var (
 		accounts []models.Account
 		total    int64
@@ -41,10 +42,10 @@ func (a *AccountController) Get(ctx iris.Context) {
 	for _, v := range accounts {
 		dataArray = append(dataArray, a.handlerData(v, ty))
 	}
-	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": dataArray, "total": total,})
+	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": dataArray, "total": total})
 }
 
-func (a *AccountController) Create(ctx iris.Context) {
+func (a *AccountApi) Create(ctx iris.Context) {
 	var (
 		account models.Account
 		err     error
@@ -62,7 +63,7 @@ func (a *AccountController) Create(ctx iris.Context) {
 	a.RenderSuccessJson(ctx, data)
 }
 
-func (a *AccountController) Update(ctx iris.Context) {
+func (a *AccountApi) Update(ctx iris.Context) {
 	var (
 		updateContent models.Account
 		account       models.Account
@@ -84,10 +85,10 @@ func (a *AccountController) Update(ctx iris.Context) {
 	a.RenderSuccessJson(ctx, returnData)
 }
 
-func (a *AccountController) Edit(ctx iris.Context) {
+func (a *AccountApi) Edit(ctx iris.Context) {
 
 }
-func (a *AccountController) Delete(ctx iris.Context) {
+func (a *AccountApi) Delete(ctx iris.Context) {
 	id, err := ctx.Params().GetInt("id")
 	if err != nil {
 		a.Render400(ctx, err, err.Error())
@@ -100,13 +101,13 @@ func (a *AccountController) Delete(ctx iris.Context) {
 	}
 }
 
-func (a *AccountController) Before(ctx iris.Context) {
+func (a *AccountApi) Before(ctx iris.Context) {
 	a.service = services.NewAccountService()
 	a.ctx = ctx
 	ctx.Next()
 }
 
-func (a *AccountController) handlerGetParams() map[string]interface{} {
+func (a *AccountApi) handlerGetParams() map[string]interface{} {
 	searchColumn := make(map[string]interface{})
 	searchColumn["name-rCount"] = a.ctx.URLParamDefault("name", "")
 	searchColumn["user_name-rCount"] = a.ctx.URLParamDefault("user_name", "")
@@ -116,13 +117,13 @@ func (a *AccountController) handlerGetParams() map[string]interface{} {
 	searchColumn["user_company_id-eq"] = a.ctx.URLParamDefault("user_company_id", "")
 	return searchColumn
 }
-func (a *AccountController) handlerData(account models.Account, ty string) map[string]interface{} {
+func (a *AccountApi) handlerData(account models.Account, ty string) map[string]interface{} {
 	data, _ := a.StructToMap(account, a.ctx)
 	data["user_company_id_value"] = data["user_company_id"]
 	if ty == "oa" {
-		data["user_company_id"] = red.HGetCompany(data["user_company_id"], "name_nick")
+		data["user_company_id"] = global.RedSetting.HGetCompany(data["user_company_id"], "name_nick")
 	} else {
-		data["user_company_id"] = red.HGetCrm(data["user_company_id"], "name_nick")
+		data["user_company_id"] = global.RedSetting.HGetCrm(data["user_company_id"], "name_nick")
 	}
 	return data
 }

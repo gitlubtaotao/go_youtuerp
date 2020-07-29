@@ -1,23 +1,24 @@
 //管理部门信息
-package controllers
+package api
 
 import (
 	"github.com/kataras/iris/v12"
+	"youtuerp/global"
 	"youtuerp/models"
 	"youtuerp/services"
 )
 
-type DepartmentController struct {
+type Department struct {
 	ctx iris.Context
-	BaseController
+	BaseApi
 	service services.IDepartmentService
 }
 
-func (d *DepartmentController) GetColumn(ctx iris.Context) {
+func (d *Department) GetColumn(ctx iris.Context) {
 	d.RenderModuleColumn(ctx, models.ResponseDepartment{})
 }
 
-func (d *DepartmentController) Get(ctx iris.Context) () {
+func (d *Department) Get(ctx iris.Context) {
 	departments, total, err := d.service.Find(d.GetPer(ctx), d.GetPage(ctx), d.handlerGetParams(), []string{}, []string{}, true)
 	if err != nil {
 		d.Render500(ctx, err, "")
@@ -28,10 +29,10 @@ func (d *DepartmentController) Get(ctx iris.Context) () {
 		result, _ := d.StructToMap(v, ctx)
 		dataArray = append(dataArray, result)
 	}
-	d.RenderSuccessJson(ctx, iris.Map{"data": dataArray, "total": total,})
+	d.RenderSuccessJson(ctx, iris.Map{"data": dataArray, "total": total})
 }
 
-func (d *DepartmentController) Create(ctx iris.Context) {
+func (d *Department) Create(ctx iris.Context) {
 	var (
 		department models.Department
 		err        error
@@ -55,7 +56,7 @@ func (d *DepartmentController) Create(ctx iris.Context) {
 	d.RenderSuccessJson(ctx, d.handlerDataShow(department))
 }
 
-func (d *DepartmentController) Update(ctx iris.Context) {
+func (d *Department) Update(ctx iris.Context) {
 	var (
 		id       uint
 		err      error
@@ -86,7 +87,7 @@ func (d *DepartmentController) Update(ctx iris.Context) {
 	return
 }
 
-func (d *DepartmentController) Delete(ctx iris.Context) {
+func (d *Department) Delete(ctx iris.Context) {
 	id, err := ctx.Params().GetUint("id")
 	if err != nil {
 		d.Render400(ctx, err, err.Error())
@@ -100,12 +101,12 @@ func (d *DepartmentController) Delete(ctx iris.Context) {
 	}
 }
 
-func (d *DepartmentController) handlerDataShow(department interface{}) map[string]interface{}  {
-	data,_:= d.StructToMap(department,d.ctx)
-	data["user_companies_name_nick"] = red.HGetCompany(data["user_company_id"],"name_nick")
+func (d *Department) handlerDataShow(department interface{}) map[string]interface{} {
+	data, _ := d.StructToMap(department, d.ctx)
+	data["user_companies_name_nick"] = global.RedSetting.HGetCompany(data["user_company_id"], "name_nick")
 	return data
 }
-func (d *DepartmentController) handlerGetParams() map[string]interface{} {
+func (d *Department) handlerGetParams() map[string]interface{} {
 	searchColumn := make(map[string]interface{})
 	searchColumn["departments.name_cn-rCount"] = d.ctx.URLParamDefault("name_cn", "")
 	searchColumn["departments.name_en-rCount"] = d.ctx.URLParamDefault("name_en", "")
@@ -113,7 +114,7 @@ func (d *DepartmentController) handlerGetParams() map[string]interface{} {
 	return searchColumn
 }
 
-func (d *DepartmentController) Before(ctx iris.Context) {
+func (d *Department) Before(ctx iris.Context) {
 	d.service = services.NewDepartmentService()
 	d.ctx = ctx
 	ctx.Next()

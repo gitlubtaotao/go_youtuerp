@@ -2,7 +2,7 @@ package routers
 
 import (
 	"github.com/kataras/iris/v12/versioning"
-	"youtuerp/admin/controllers"
+	"youtuerp/admin/api"
 )
 
 type Session struct {
@@ -12,7 +12,7 @@ type Session struct {
 func (s *Session) Index() {
 	r := s.Route
 	j := r.jwtAccess()
-	session := controllers.SessionController{}
+	session := api.Session{}
 	users := s.Route.app.Party("user/")
 	{
 		users.Post("/login", versioning.NewMatcher(versioning.Map{

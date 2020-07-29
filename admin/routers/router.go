@@ -5,7 +5,7 @@ import (
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/context"
 	"net/http"
-	"youtuerp/admin/controllers"
+	"youtuerp/admin/api"
 	"youtuerp/conf"
 )
 
@@ -33,7 +33,7 @@ func (r *Routers) DefaultRegister() {
 func (r *Routers) selectRegister() {
 	j := r.jwtAccess()
 	r.app.PartyFunc("/select", func(p iris.Party) {
-		selectData := controllers.SelectController{}
+		selectData := api.SelectApi{}
 		p.Post("/companies", j.Serve, selectData.GetCompany)
 		p.Post("/base", j.Serve, selectData.GetCommon)
 		p.Get("/employee", j.Serve, selectData.Employee)
@@ -48,8 +48,8 @@ func (r *Routers) selectRegister() {
 
 func (r *Routers) otherRegister() {
 	j := r.jwtAccess()
-	uploader := controllers.UploadController{}
-	setting := controllers.SettingController{}
+	uploader := api.UploadApi{}
+	setting := api.Setting{}
 	r.app.Post("/upload", j.Serve, uploader.Upload)
 	r.app.Post("/setting/update_system", j.Serve, setting.UpdateSystem)
 	r.app.Post("/setting/update_user", j.Serve, setting.UpdateUser)

@@ -1,16 +1,16 @@
-package controllers
+package api
 
 import (
 	"github.com/kataras/iris/v12"
 	"youtuerp/tools/uploader"
 )
 
-type UploadController struct {
-	BaseController
+type UploadApi struct {
+	BaseApi
 }
 
 //上传文件
-func (u *UploadController) Upload(ctx iris.Context) {
+func (u *UploadApi) Upload(ctx iris.Context) {
 	value, header, _ := ctx.FormFile("filer")
 	up := uploader.NewQiNiuUploaderDefault()
 	url, key, err := up.Upload(value, header)

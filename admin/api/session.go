@@ -1,4 +1,4 @@
-package controllers
+package api
 
 import (
 	"errors"
@@ -19,13 +19,13 @@ type login struct {
 	Password string `json:"password"`
 }
 
-type SessionController struct {
-	BaseController
+type Session struct {
+	BaseApi
 	SService services.ISessionService
 	EService services.IEmployeeService
 }
 
-func (s *SessionController) Login(ctx iris.Context) {
+func (s *Session) Login(ctx iris.Context) {
 	var loginInfo login
 	s.initSession()
 	err := ctx.ReadJSON(&loginInfo)
@@ -50,7 +50,7 @@ func (s *SessionController) Login(ctx iris.Context) {
 			ctx.GetLocale().GetMessage("devise.invalid"))
 		return
 	}
-	
+
 	if err = s.updateLoginInfo(ctx, user); err != nil {
 		s.Render400(ctx, err,
 			ctx.GetLocale().GetMessage("devise.invalid"))
@@ -66,7 +66,7 @@ func (s *SessionController) Login(ctx iris.Context) {
 	s.RenderSuccessJson(ctx, iris.Map{"token": tokenString})
 }
 
-func (s *SessionController) Show(ctx iris.Context) {
+func (s *Session) Show(ctx iris.Context) {
 	currentUser, err := s.CurrentUser(ctx)
 	if err != nil {
 		s.Render500(ctx, err, "")
@@ -84,15 +84,15 @@ func (s *SessionController) Show(ctx iris.Context) {
 	return
 }
 
-func (s *SessionController) Logout(ctx iris.Context) {
+func (s *Session) Logout(ctx iris.Context) {
 	s.RenderSuccessJson(ctx, iris.Map{"message": "Logout is successful"})
 }
 
-func (s *SessionController) ResetToken(ctx iris.Context) {
+func (s *Session) ResetToken(ctx iris.Context) {
 
 }
 
-func (s *SessionController) Update(ctx iris.Context) {
+func (s *Session) Update(ctx iris.Context) {
 	s.initSession()
 	var userInfo models.Employee
 	//读取用户信息
@@ -135,7 +135,7 @@ func (s *SessionController) Update(ctx iris.Context) {
 	})
 }
 
-func (s *SessionController) UploadAvatar(ctx iris.Context) {
+func (s *Session) UploadAvatar(ctx iris.Context) {
 	s.initSession()
 	value, header, _ := ctx.FormFile("avatar")
 	up := uploader.NewQiNiuUploaderDefault()
@@ -153,12 +153,12 @@ func (s *SessionController) UploadAvatar(ctx iris.Context) {
 }
 
 //初始化session
-func (s *SessionController) initSession() {
+func (s *Session) initSession() {
 	s.SService = services.NewSessionService()
 	s.EService = services.NewEmployeeService()
 }
 
-func (s *SessionController) getSystemSetting() map[string]interface{} {
+func (s *Session) getSystemSetting() map[string]interface{} {
 	setting := make(map[string]interface{})
 	setting["system_standard_currency"] = redis.SystemFinanceCurrency()
 	setting["order_audit_mechanism"] = redis.OrderAuditMechanism()
@@ -168,7 +168,7 @@ func (s *SessionController) getSystemSetting() map[string]interface{} {
 }
 
 //保存当前登录用户的信息
-func (s *SessionController) updateLoginInfo(ctx iris.Context, employee *models.Employee) error {
+func (s *Session) updateLoginInfo(ctx iris.Context, employee *models.Employee) error {
 	otherHelper := tools.OtherHelper{}
 	ipAddress, _ := otherHelper.GetIPAddress(ctx.Request())
 	updateColumn := map[string]interface{}{
@@ -182,7 +182,7 @@ func (s *SessionController) updateLoginInfo(ctx iris.Context, employee *models.E
 }
 
 //获取当前登录用户信息数据进行处理
-func (s *SessionController) handleUserInfo(currentUser *models.Employee, userInfo map[string]interface{}) map[string]interface{} {
+func (s *Session) handleUserInfo(currentUser *models.Employee, userInfo map[string]interface{}) map[string]interface{} {
 	var avatar = "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif?imageView2/1/w/80/h/80"
 	if currentUser.Avatar != "" {
 		upload := uploader.NewQiNiuUploaderDefault()
@@ -194,7 +194,7 @@ func (s *SessionController) handleUserInfo(currentUser *models.Employee, userInf
 }
 
 //验证登录用户的信息
-func (s *SessionController) validateLogin(ctx iris.Context, login2 login) error {
+func (s *Session) validateLogin(ctx iris.Context, login2 login) error {
 	if login2.Password == "" {
 		return errors.New(ctx.GetLocale().GetMessage("devise.invalid"))
 	}
@@ -205,7 +205,7 @@ func (s *SessionController) validateLogin(ctx iris.Context, login2 login) error 
 }
 
 //更新用户上传的头像
-func (s *SessionController) UpdateAvatar(ctx iris.Context, key string) {
+func (s *Session) UpdateAvatar(ctx iris.Context, key string) {
 	sy := sync.WaitGroup{}
 	user, err := s.CurrentUser(ctx)
 	if err != nil {
@@ -213,7 +213,7 @@ func (s *SessionController) UpdateAvatar(ctx iris.Context, key string) {
 	}
 	updateColumn := map[string]interface{}{"avatar": key}
 	sy.Add(1)
-	go func(s *SessionController, user *models.Employee, updateColumn map[string]interface{}) {
+	go func(s *Session, user *models.Employee, updateColumn map[string]interface{}) {
 		defer sy.Done()
 		err := s.EService.UpdateColumn(user, updateColumn)
 		golog.Error(err)

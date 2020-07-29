@@ -2,7 +2,7 @@ package routers
 
 import (
 	"github.com/kataras/iris/v12"
-	"youtuerp/admin/controllers"
+	"youtuerp/admin/api"
 )
 
 //附件管理对于的路由
@@ -11,7 +11,7 @@ type Attachment struct {
 }
 
 func (a *Attachment) Index() {
-	attach := controllers.Attachment{}
+	attach := api.Attachment{}
 	j := a.route.jwtAccess()
 	a.route.app.PartyFunc("/attachments", func(c iris.Party) {
 		c.Use(attach.Before)

@@ -1,4 +1,4 @@
-package controllers
+package api
 
 import (
 	"errors"
@@ -10,7 +10,7 @@ import (
 )
 
 type Attachment struct {
-	BaseController
+	BaseApi
 	service services.IAttachment
 }
 

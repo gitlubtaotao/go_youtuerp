@@ -1,4 +1,4 @@
-package controllers
+package api
 
 import (
 	"fmt"
@@ -8,17 +8,17 @@ import (
 	"youtuerp/services"
 )
 
-type NumberSettingController struct {
-	BaseController
+type NumberSetting struct {
+	BaseApi
 	ctx     iris.Context
 	service services.INumberSettingService
 }
 
-func (n *NumberSettingController) GetColumn(ctx iris.Context) {
+func (n *NumberSetting) GetColumn(ctx iris.Context) {
 	n.RenderModuleColumn(ctx, models.ResponseNumberSetting{})
 }
 
-func (n *NumberSettingController) Get(ctx iris.Context) {
+func (n *NumberSetting) Get(ctx iris.Context) {
 	numberSettings, total, err := n.service.Find(n.GetPer(ctx), n.GetPage(ctx), n.handlerGetParams(), []string{}, []string{})
 	if err != nil {
 		n.Render500(ctx, err, ctx.GetLocale().GetMessage("error.inter_error"))
@@ -39,7 +39,7 @@ func (n *NumberSettingController) Get(ctx iris.Context) {
 	})
 }
 
-func (n *NumberSettingController) Create(ctx iris.Context) {
+func (n *NumberSetting) Create(ctx iris.Context) {
 	var (
 		numberSetting models.NumberSetting
 		err           error
@@ -60,7 +60,7 @@ func (n *NumberSettingController) Create(ctx iris.Context) {
 	}
 	n.RenderSuccessJson(ctx, data)
 }
-func (n *NumberSettingController) Delete(ctx iris.Context) {
+func (n *NumberSetting) Delete(ctx iris.Context) {
 	var (
 		id  int
 		err error
@@ -76,13 +76,13 @@ func (n *NumberSettingController) Delete(ctx iris.Context) {
 	n.RenderSuccessJson(ctx, iris.Map{})
 }
 
-func (n *NumberSettingController) Before(ctx iris.Context) {
+func (n *NumberSetting) Before(ctx iris.Context) {
 	n.ctx = ctx
 	n.service = services.NewNumberSetting()
 	ctx.Next()
 }
 
-func (n *NumberSettingController) handlerGetParams() map[string]interface{} {
+func (n *NumberSetting) handlerGetParams() map[string]interface{} {
 	searchColumn := make(map[string]interface{})
 	searchColumn["number_settings.user_company_id-eq"] = n.ctx.URLParamDefault("user_company_id", "")
 	return searchColumn

@@ -2,7 +2,7 @@ package routers
 
 import (
 	"github.com/kataras/iris/v12"
-	"youtuerp/admin/controllers"
+	"youtuerp/admin/api"
 )
 
 type Oa struct {
@@ -18,7 +18,7 @@ func (o *Oa) Index() {
 }
 
 func (o *Oa) companies() {
-	company := controllers.CompanyController{}
+	company := api.CompanyController{}
 	companyApi := o.route.app.Party("/companies")
 	j := o.route.jwtAccess()
 	{
@@ -33,7 +33,7 @@ func (o *Oa) companies() {
 }
 
 func (o *Oa) departments() {
-	department := controllers.DepartmentController{}
+	department := api.Department{}
 	j := o.route.jwtAccess()
 	o.route.app.PartyFunc("/departments", func(c iris.Party) {
 		c.Use(department.Before)
@@ -45,7 +45,7 @@ func (o *Oa) departments() {
 	})
 }
 func (o *Oa) accounts() {
-	account := controllers.AccountController{}
+	account := &api.AccountApi{}
 	j := o.route.jwtAccess()
 	o.route.app.PartyFunc("/accounts", func(c iris.Party) {
 		c.Use(account.Before)
@@ -58,7 +58,7 @@ func (o *Oa) accounts() {
 	})
 }
 func (o *Oa) employees() {
-	employee := controllers.EmployeeController{}
+	employee := api.Employee{}
 	j := o.route.jwtAccess()
 	o.route.app.PartyFunc("/employees", func(c iris.Party) {
 		c.Use(employee.Before)
@@ -70,7 +70,7 @@ func (o *Oa) employees() {
 	})
 }
 func (o *Oa) numberSetting() {
-	numberSetting := controllers.NumberSettingController{}
+	numberSetting := api.NumberSetting{}
 	j := o.route.jwtAccess()
 	o.route.app.PartyFunc("/number_settings", func(c iris.Party) {
 		c.Use(numberSetting.Before)

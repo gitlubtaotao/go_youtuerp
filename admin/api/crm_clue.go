@@ -1,4 +1,4 @@
-package controllers
+package api
 
 import (
 	"github.com/kataras/iris/v12"
@@ -10,7 +10,7 @@ import (
 )
 
 type CrmClue struct {
-	BaseController
+	BaseApi
 	ctx     iris.Context
 	service services.ICrmClueService
 }
@@ -30,7 +30,7 @@ func (c *CrmClue) Get(ctx iris.Context) {
 		result, _ := c.handleClue(v)
 		dataArray = append(dataArray, result)
 	}
-	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": dataArray, "total": total,})
+	_, _ = ctx.JSON(iris.Map{"code": http.StatusOK, "data": dataArray, "total": total})
 }
 
 func (c *CrmClue) Create(ctx iris.Context) {
