@@ -4,7 +4,7 @@ import (
 	"github.com/kataras/golog"
 	"strconv"
 	"youtuerp/internal/models"
-	"youtuerp/tools/uploader"
+	"youtuerp/pkg/uploader"
 )
 
 func (r Redis) HGetCrm(id interface{}, field string) (value string) {

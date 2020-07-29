@@ -3,7 +3,7 @@ package services
 import (
 	"youtuerp/internal/dao"
 	"youtuerp/internal/models"
-	"youtuerp/tools/uploader"
+	"youtuerp/pkg/uploader"
 )
 
 type IAttachment interface {

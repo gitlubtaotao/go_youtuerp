@@ -23,7 +23,7 @@ func main() {
 	if err = setupIrisLogger(); err != nil {
 		panic(err)
 	}
-	config := iris.WithConfiguration(iris.YAML("../conf/iris.yaml"))
+	config := iris.WithConfiguration(iris.YAML("../config/iris.yaml"))
 	global.IrisAppEngine.Run(iris.Addr(":8082"), config, iris.WithoutServerError(iris.ErrServerClosed))
 }
 

@@ -36,7 +36,7 @@ type EnvironmentConfig struct {
  * 初始化系统环境变量设置
  */
 func NewSysConfig(env string) (err error) {
-	fileReader, err := ioutil.ReadFile("../conf/conf.yaml")
+	fileReader, err := ioutil.ReadFile("../config/conf.yaml")
 	if err != nil {
 		return err
 	}
@@ -54,5 +54,3 @@ func NewSysConfig(env string) (err error) {
 	err = json.Unmarshal(bytes, &Configuration)
 	return err
 }
-
-

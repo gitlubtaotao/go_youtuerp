@@ -79,11 +79,11 @@ func (d *QiNiuUploader) FilerUpload(file multipart.File, fileHeader *multipart.F
 	uploader := storage.NewFormUploader(&cfg)
 	putExtra := storage.PutExtra{}
 	err = uploader.PutWithoutKey(context.Background(), &ret, token, file, size, &putExtra)
-	
+
 	if err != nil {
 		return
 	}
-	
+
 	return d.FileServer + ret.Key, ret.Key, nil
 }
 
@@ -96,8 +96,6 @@ func (d *QiNiuUploader) PrivateReadURL(key string) string {
 	privateAccessURL := storage.MakePrivateURL(mac, d.FileServer, key, deadline)
 	return privateAccessURL
 }
-
-
 
 func (d *QiNiuUploader) PublicReadUrl(key string) string {
 	publicAccessURL := storage.MakePublicURL(d.FileServer, key)

@@ -9,9 +9,9 @@ import (
 	"time"
 	"youtuerp/internal/models"
 	"youtuerp/internal/services"
+	"youtuerp/pkg/uploader"
 	"youtuerp/redis"
 	"youtuerp/tools"
-	"youtuerp/tools/uploader"
 )
 
 type login struct {
@@ -141,7 +141,7 @@ func (s *Session) UploadAvatar(ctx iris.Context) {
 	up := uploader.NewQiNiuUploaderDefault()
 	url, key, err := up.Upload(value, header)
 	if err != nil {
-		s.Render400(ctx, err, ctx.GetLocale().GetMessage("error.upload"))
+		s.Render400(ctx, err, ctx.GetLocale().GetMessage("error.uploader"))
 		return
 	}
 	url = up.PrivateReadURL(key)

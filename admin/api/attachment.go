@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"youtuerp/internal/models"
 	"youtuerp/internal/services"
-	"youtuerp/tools/uploader"
+	"youtuerp/pkg/uploader"
 )
 
 type Attachment struct {

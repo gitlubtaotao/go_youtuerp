@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/kataras/iris/v12"
-	"youtuerp/tools/uploader"
+	"youtuerp/pkg/uploader"
 )
 
 type UploadApi struct {
@@ -15,7 +15,7 @@ func (u *UploadApi) Upload(ctx iris.Context) {
 	up := uploader.NewQiNiuUploaderDefault()
 	url, key, err := up.Upload(value, header)
 	if err != nil {
-		u.Render400(ctx, err, ctx.GetLocale().GetMessage("error.upload"))
+		u.Render400(ctx, err, ctx.GetLocale().GetMessage("error.uploader"))
 		return
 	}
 	url = up.PrivateReadURL(key)

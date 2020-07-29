@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-//上传文件的方法
+// uploader interface
 type Uploader interface {
 	Upload(file multipart.File, fileHeader *multipart.FileHeader) (string, string, error)
 }
