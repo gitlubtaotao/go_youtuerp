@@ -16,15 +16,14 @@ type OrderMaster struct {
 	CompanyId        uint           `sql:"index" json:"company_id" validate:"required"`
 	ContactId        uint           `json:"contact_id"`
 	MainTransport    uint           `json:"main_transport"`
-	PayableStatus    string         `gorm:"size:16;index:payable_paid_status;default:unfinished" json:"payable_status"`
-	PaidStatus       string         `gorm:"size:16;index:payable_paid_status;default:unfinished" json:"paid_status"`
-	ReceivableStatus string         `gorm:"size:16;index:receive_received_status;default:unfinished" sql:"index" json:"receivable_status"`
-	ReceivedStatus   string         `gorm:"size:16;index:receive_received_status;default:unfinished" json:"received_status"`
+	PayableStatus    string         `gorm:"size:16;index:payable_paid_status" json:"payable_status"`
+	PaidStatus       string         `gorm:"size:16;index:payable_paid_status" json:"paid_status"`
+	ReceivableStatus string         `gorm:"size:16;index:receive_received_status" sql:"index" json:"receivable_status"`
+	ReceivedStatus   string         `gorm:"size:16;index:receive_received_status" json:"received_status"`
 	Remarks          string         `gorm:"size:522" json:"remarks"`
 	Roles            []Role         `gorm:"polymorphic:Source;" json:"roles"`
 	SeaCargoInfos    []SeaCargoInfo `gorm:"polymorphic:Source;association_autocreate:false;association_autoupdate:false" json:"sea_cargo_infos"`
 	OrderExtendInfo  OrderExtendInfo `gorm:"foreignkey:order_master_id;association_foreignkey:id" json:"order_extend_info"`
-	//OrderExtendInfo OrderExtendInfo `gorm:"embedded" json:"order_extend_info"`
 }
 
 type OrderExtendInfo struct {
