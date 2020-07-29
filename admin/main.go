@@ -9,28 +9,19 @@ import (
 	"os"
 	"runtime/trace"
 	"time"
-	"youtuerp/admin/middleware/routes"
+	"youtuerp/admin/routers"
 	"youtuerp/conf"
 	"youtuerp/global"
 )
 
 func main() {
-
 	var err error
 	////加载系统配置文件
 	if err = NewAppInfo(); err != nil {
 		panic(err)
 	}
-	if f, err := setupIrisLogger(); err != nil {
+	if err = setupIrisLogger(); err != nil {
 		panic(err)
-	} else {
-		global.IrisAppEngine.Logger().AddOutput(f)
-		f.Close()
-	}
-	if conf.Configuration.Env == "dev" {
-		global.IrisAppEngine.Logger().SetLevel("debug")
-	} else {
-		global.IrisAppEngine.Logger().SetLevel("error")
 	}
 	config := iris.WithConfiguration(iris.YAML("../conf/iris.yaml"))
 	global.IrisAppEngine.Run(iris.Addr(":8082"), config, iris.WithoutServerError(iris.ErrServerClosed))
@@ -42,8 +33,8 @@ func NewAppInfo() error {
 		return err
 	}
 	global.NewIrisAppEngine()
-	route := routes.NewRoute(global.IrisAppEngine)
-	route.DefaultRegister()
+	// loading router
+	routers.DefaultIrisRoute(global.IrisAppEngine)
 	//加载数据库操作
 	if err := setupDBEngine(); err != nil {
 		return err
@@ -103,9 +94,19 @@ func setupI18nEngine() error {
 }
 
 // setup iris log
-func setupIrisLogger() (f *os.File, err error) {
+func setupIrisLogger() error {
+	if conf.Configuration.Env == "dev" {
+		global.IrisAppEngine.Logger().SetLevel("debug")
+	} else {
+		global.IrisAppEngine.Logger().SetLevel("error")
+	}
 	today := time.Now().Format("2006-01-02")
 	name := today + "-" + "iris" + ".log"
 	// 打开以当前日期为文件名的文件（不存在则创建文件，存在则追加内容）
-	return os.Create("./log/" + name)
+	f, err := os.Create("./log/" + name)
+	if err != nil {
+		return nil
+	}
+	global.IrisAppEngine.Logger().AddOutput(f)
+	return nil
 }

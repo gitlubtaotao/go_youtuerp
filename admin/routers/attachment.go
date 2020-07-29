@@ -1,4 +1,4 @@
-package routes
+package routers
 
 import (
 	"github.com/kataras/iris/v12"
@@ -7,13 +7,13 @@ import (
 
 //附件管理对于的路由
 type Attachment struct {
-	Route *Route
+	route *Routers
 }
 
 func (a *Attachment) Index() {
 	attach := controllers.Attachment{}
-	j := a.Route.jwtAccess()
-	a.Route.app.PartyFunc("/attachments", func(c iris.Party) {
+	j := a.route.jwtAccess()
+	a.route.app.PartyFunc("/attachments", func(c iris.Party) {
 		c.Use(attach.Before)
 		c.Post("/UploadOrder", j.Serve, attach.UploadOrder)
 		c.Get("/{id:uint}/GetOrderFile", j.Serve, attach.GetOrderFile)
@@ -24,6 +24,6 @@ func (a *Attachment) Index() {
 func (a *Attachment) order() {
 
 }
-func NewAttachmentRoute(r *Route) *Attachment {
-	return &Attachment{r}
+func newAttachmentRoute(r *Routers) *Attachment {
+	return &Attachment{route: r}
 }

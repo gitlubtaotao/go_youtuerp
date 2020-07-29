@@ -1,4 +1,4 @@
-package routes
+package routers
 
 import (
 	"github.com/kataras/iris/v12"
@@ -6,7 +6,7 @@ import (
 )
 
 type Order struct {
-	Route *Route
+	Route *Routers
 }
 
 func (o *Order) Index() {
@@ -38,15 +38,15 @@ func (o *Order) formerServer() {
 	r.app.PartyFunc("/order/masters", func(p iris.Party) {
 		record := controllers.FormerServer{}
 		p.Use(record.Before)
-		p.Get("/{id:uint}/getOtherServer",j.Serve,record.GetOtherServer)
+		p.Get("/{id:uint}/getOtherServer", j.Serve, record.GetOtherServer)
 		p.Post("/{id:uint}/UpdateFormerData", j.Serve, record.UpdateFormerData)
 		p.Post("/{id:uint}/UpdateCargoInfo", j.Serve, record.UpdateCargoInfo)
 		p.Post("/DeleteCargoInfo", j.Serve, record.DeleteCargoInfo)
-		p.Post("/SaveOtherServer",j.Serve,record.SaveOtherServer)
-		p.Delete("/{id:uint}/DeleteOtherServer",j.Serve,record.DeleteOtherServer)
+		p.Post("/SaveOtherServer", j.Serve, record.SaveOtherServer)
+		p.Delete("/{id:uint}/DeleteOtherServer", j.Serve, record.DeleteOtherServer)
 	})
 }
 
-func NewRouteOrder(route *Route) *Order {
+func newRouteOrder(route *Routers) *Order {
 	return &Order{route}
 }

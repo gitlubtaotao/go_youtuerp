@@ -1,4 +1,4 @@
-package routes
+package routers
 
 import (
 	"github.com/iris-contrib/middleware/jwt"
@@ -9,24 +9,28 @@ import (
 	"youtuerp/conf"
 )
 
-//
-type Route struct {
+type Routers struct {
 	app *iris.Application
 }
 
-func (r *Route) DefaultRegister() {
-	r.SelectRegister()
-	r.OtherRegister()
-	NewRouteSession(r).Index()
-	NewRouteBase(r).Index()
-	NewRouteOrder(r).Index()
-	NewRouteFinance(r).Index()
-	NewRouteCrm(r).Index()
-	NewRouteOa(r).Index()
-	NewAttachmentRoute(r).Index()
+func DefaultIrisRoute(app *iris.Application) {
+	router := &Routers{app: app}
+	router.DefaultRegister()
 }
 
-func (r *Route) SelectRegister() {
+func (r *Routers) DefaultRegister() {
+	r.selectRegister()
+	r.otherRegister()
+	newRouteSession(r).Index()
+	newRouteBase(r).Index()
+	newRouteOrder(r).Index()
+	newRouteFinance(r).Index()
+	newRouteCrm(r).Index()
+	newRouteOa(r).Index()
+	newAttachmentRoute(r).Index()
+}
+
+func (r *Routers) selectRegister() {
 	j := r.jwtAccess()
 	r.app.PartyFunc("/select", func(p iris.Party) {
 		selectData := controllers.SelectController{}
@@ -42,7 +46,7 @@ func (r *Route) SelectRegister() {
 	})
 }
 
-func (r *Route) OtherRegister() {
+func (r *Routers) otherRegister() {
 	j := r.jwtAccess()
 	uploader := controllers.UploadController{}
 	setting := controllers.SettingController{}
@@ -53,7 +57,7 @@ func (r *Route) OtherRegister() {
 }
 
 //验证jwt token
-func (r *Route) jwtAccess() *jwt.Middleware {
+func (r *Routers) jwtAccess() *jwt.Middleware {
 	j := jwt.New(jwt.Config{
 		// 通过 "token" URL参数提取。
 		Extractor: jwt.FromAuthHeader,
@@ -73,11 +77,7 @@ func (r *Route) jwtAccess() *jwt.Middleware {
 	return j
 }
 
-func (r *Route) versionNotFound(ctx iris.Context) {
+func (r *Routers) versionNotFound(ctx iris.Context) {
 	ctx.StatusCode(404)
 	_, _ = ctx.JSON(iris.Map{"code": http.StatusNotFound})
-}
-
-func NewRoute(app *iris.Application) *Route {
-	return &Route{app: app}
 }

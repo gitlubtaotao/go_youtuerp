@@ -1,9 +1,11 @@
-package routes
+package routers
 
-import "youtuerp/admin/controllers"
+import (
+	"youtuerp/admin/controllers"
+)
 
 type Crm struct {
-	Route *Route
+	route *Routers
 }
 
 func (c *Crm) Index() {
@@ -17,8 +19,8 @@ func (c *Crm) Index() {
 
 func (c *Crm) track() {
 	track := controllers.CrmTrack{}
-	j := c.Route.jwtAccess()
-	trackApi := c.Route.app.Party("/crm/tracks")
+	j := c.route.jwtAccess()
+	trackApi := c.route.app.Party("/crm/tracks")
 	{
 		trackApi.Use(track.Before)
 		trackApi.Post("/data", j.Serve, track.Get)
@@ -26,8 +28,8 @@ func (c *Crm) track() {
 	}
 }
 func (c *Crm) user() {
-	j := c.Route.jwtAccess()
-	crmUserApi := c.Route.app.Party("/crm/users")
+	j := c.route.jwtAccess()
+	crmUserApi := c.route.app.Party("/crm/users")
 	{
 		crmUser := controllers.CrmUser{}
 		crmUserApi.Use(crmUser.Before)
@@ -39,8 +41,8 @@ func (c *Crm) user() {
 	}
 }
 func (c *Crm) company() {
-	j := c.Route.jwtAccess()
-	crmCompanyApi := c.Route.app.Party("/crm/companies")
+	j := c.route.jwtAccess()
+	crmCompanyApi := c.route.app.Party("/crm/companies")
 	{
 		record := controllers.CrmCompany{}
 		crmCompanyApi.Use(record.Before)
@@ -59,8 +61,8 @@ func (c *Crm) company() {
 }
 
 func (c *Crm) invoice() {
-	j := c.Route.jwtAccess()
-	InvoiceApi := c.Route.app.Party("/invoices")
+	j := c.route.jwtAccess()
+	InvoiceApi := c.route.app.Party("/invoices")
 	{
 		record := controllers.Invoice{}
 		InvoiceApi.Use(record.Before)
@@ -72,8 +74,8 @@ func (c *Crm) invoice() {
 	}
 }
 func (c *Crm) address() {
-	j := c.Route.jwtAccess()
-	AddressApi := c.Route.app.Party("/address")
+	j := c.route.jwtAccess()
+	AddressApi := c.route.app.Party("/address")
 	{
 		record := controllers.Address{}
 		AddressApi.Use(record.Before)
@@ -86,7 +88,7 @@ func (c *Crm) address() {
 }
 
 func (c *Crm) clue() {
-	r := c.Route
+	r := c.route
 	j := r.jwtAccess()
 	clue := controllers.CrmClue{}
 	clueApi := r.app.Party("/crm/clues")
@@ -102,6 +104,6 @@ func (c *Crm) clue() {
 	}
 }
 
-func NewRouteCrm(r *Route) *Crm {
-	return &Crm{r}
+func newRouteCrm(r *Routers) *Crm {
+	return &Crm{route: r}
 }

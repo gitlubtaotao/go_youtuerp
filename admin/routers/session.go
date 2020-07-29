@@ -1,4 +1,4 @@
-package routes
+package routers
 
 import (
 	"github.com/kataras/iris/v12/versioning"
@@ -6,7 +6,7 @@ import (
 )
 
 type Session struct {
-	Route *Route
+	Route *Routers
 }
 
 func (s *Session) Index() {
@@ -25,6 +25,6 @@ func (s *Session) Index() {
 		users.Post("/upload", j.Serve, session.UploadAvatar)
 	}
 }
-func NewRouteSession(r *Route) *Session {
+func newRouteSession(r *Routers) *Session {
 	return &Session{r}
 }

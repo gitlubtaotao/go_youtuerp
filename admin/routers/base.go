@@ -1,4 +1,4 @@
-package routes
+package routers
 
 import (
 	"github.com/kataras/iris/v12"
@@ -6,7 +6,7 @@ import (
 )
 
 type Base struct {
-	Route *Route
+	route *Routers
 }
 
 func (b *Base) Index() {
@@ -16,7 +16,7 @@ func (b *Base) Index() {
 	b.Warehouse()
 }
 func (b *Base) Code() {
-	r := b.Route
+	r := b.route
 	j := r.jwtAccess()
 	r.app.PartyFunc("/base/codes", func(c iris.Party) {
 		record := controllers.BaseCodeController{}
@@ -27,11 +27,11 @@ func (b *Base) Code() {
 		c.Patch("/{id:uint}/update", j.Serve, record.Update)
 		c.Delete("/{id:uint}/destroy", j.Serve, record.Delete)
 	})
-	
+
 }
 
 func (b *Base) Port() {
-	r := b.Route
+	r := b.route
 	j := r.jwtAccess()
 	r.app.PartyFunc("/base/ports", func(c iris.Party) {
 		record := controllers.BasePort{}
@@ -45,7 +45,7 @@ func (b *Base) Port() {
 }
 
 func (b *Base) Carrier() {
-	r := b.Route
+	r := b.route
 	j := r.jwtAccess()
 	r.app.PartyFunc("/base/carriers", func(c iris.Party) {
 		record := controllers.BaseCarrier{}
@@ -58,7 +58,7 @@ func (b *Base) Carrier() {
 	})
 }
 func (b *Base) Warehouse() {
-	r := b.Route
+	r := b.route
 	j := r.jwtAccess()
 	r.app.PartyFunc("/base/warehouses", func(c iris.Party) {
 		record := controllers.BaseWarehouse{}
@@ -71,6 +71,6 @@ func (b *Base) Warehouse() {
 	})
 }
 
-func NewRouteBase(r *Route) *Base {
-	return &Base{r}
+func newRouteBase(r *Routers) *Base {
+	return &Base{route: r}
 }

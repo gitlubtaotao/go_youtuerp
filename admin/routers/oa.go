@@ -1,4 +1,4 @@
-package routes
+package routers
 
 import (
 	"github.com/kataras/iris/v12"
@@ -6,7 +6,7 @@ import (
 )
 
 type Oa struct {
-	Route *Route
+	route *Routers
 }
 
 func (o *Oa) Index() {
@@ -19,8 +19,8 @@ func (o *Oa) Index() {
 
 func (o *Oa) companies() {
 	company := controllers.CompanyController{}
-	companyApi := o.Route.app.Party("/companies")
-	j := o.Route.jwtAccess()
+	companyApi := o.route.app.Party("/companies")
+	j := o.route.jwtAccess()
 	{
 		companyApi.Use(company.Before)
 		companyApi.Post("/data", j.Serve, company.Get)
@@ -34,8 +34,8 @@ func (o *Oa) companies() {
 
 func (o *Oa) departments() {
 	department := controllers.DepartmentController{}
-	j := o.Route.jwtAccess()
-	o.Route.app.PartyFunc("/departments", func(c iris.Party) {
+	j := o.route.jwtAccess()
+	o.route.app.PartyFunc("/departments", func(c iris.Party) {
 		c.Use(department.Before)
 		c.Get("/column", j.Serve, department.GetColumn)
 		c.Post("/create", j.Serve, department.Create)
@@ -46,8 +46,8 @@ func (o *Oa) departments() {
 }
 func (o *Oa) accounts() {
 	account := controllers.AccountController{}
-	j := o.Route.jwtAccess()
-	o.Route.app.PartyFunc("/accounts", func(c iris.Party) {
+	j := o.route.jwtAccess()
+	o.route.app.PartyFunc("/accounts", func(c iris.Party) {
 		c.Use(account.Before)
 		c.Get("/column", j.Serve, account.GetColumn)
 		c.Post("/create", j.Serve, account.Create)
@@ -59,8 +59,8 @@ func (o *Oa) accounts() {
 }
 func (o *Oa) employees() {
 	employee := controllers.EmployeeController{}
-	j := o.Route.jwtAccess()
-	o.Route.app.PartyFunc("/employees", func(c iris.Party) {
+	j := o.route.jwtAccess()
+	o.route.app.PartyFunc("/employees", func(c iris.Party) {
 		c.Use(employee.Before)
 		c.Get("/column", j.Serve, employee.GetColumn)
 		c.Post("/create", j.Serve, employee.Create)
@@ -71,8 +71,8 @@ func (o *Oa) employees() {
 }
 func (o *Oa) numberSetting() {
 	numberSetting := controllers.NumberSettingController{}
-	j := o.Route.jwtAccess()
-	o.Route.app.PartyFunc("/number_settings", func(c iris.Party) {
+	j := o.route.jwtAccess()
+	o.route.app.PartyFunc("/number_settings", func(c iris.Party) {
 		c.Use(numberSetting.Before)
 		c.Get("/column", j.Serve, numberSetting.GetColumn)
 		c.Post("/create", j.Serve, numberSetting.Create)
@@ -80,6 +80,6 @@ func (o *Oa) numberSetting() {
 		c.Delete("/{id:uint}/delete", j.Serve, numberSetting.Delete)
 	})
 }
-func NewRouteOa(r *Route) *Oa {
-	return &Oa{r}
+func newRouteOa(r *Routers) *Oa {
+	return &Oa{route: r}
 }

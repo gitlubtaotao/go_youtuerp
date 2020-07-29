@@ -1,4 +1,4 @@
-package routes
+package routers
 
 import (
 	"github.com/kataras/iris/v12"
@@ -6,7 +6,7 @@ import (
 )
 
 type Finance struct {
-	Route *Route
+	route *Routers
 }
 
 func (f *Finance) Index() {
@@ -16,7 +16,7 @@ func (f *Finance) Index() {
 }
 
 func (f *Finance) fee() {
-	r := f.Route
+	r := f.route
 	j := r.jwtAccess()
 	r.app.PartyFunc("/finance/fees", func(c iris.Party) {
 		record := controllers.FinanceFee{}
@@ -34,7 +34,7 @@ func (f *Finance) fee() {
 }
 
 func (f *Finance) feeType() {
-	r := f.Route
+	r := f.route
 	j := r.jwtAccess()
 	r.app.PartyFunc("/finance/fee_types", func(c iris.Party) {
 		record := controllers.FinanceFeeType{}
@@ -48,7 +48,7 @@ func (f *Finance) feeType() {
 }
 
 func (f *Finance) rate() {
-	r := f.Route
+	r := f.route
 	j := r.jwtAccess()
 	r.app.PartyFunc("/finance/rates", func(c iris.Party) {
 		record := controllers.FinanceRate{}
@@ -59,6 +59,6 @@ func (f *Finance) rate() {
 		c.Delete("/{id:uint}/delete", j.Serve, record.Delete)
 	})
 }
-func NewRouteFinance(r *Route) *Finance {
-	return &Finance{r}
+func newRouteFinance(r *Routers) *Finance {
+	return &Finance{route: r}
 }
