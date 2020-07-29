@@ -4,7 +4,7 @@ import (
 	"github.com/kataras/golog"
 	"github.com/kataras/iris/v12"
 	"net/http"
-	"youtuerp/services"
+	"youtuerp/internal/services"
 )
 
 type ReadData struct {

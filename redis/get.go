@@ -3,7 +3,7 @@ package redis
 import (
 	"github.com/kataras/golog"
 	"strconv"
-	"youtuerp/models"
+	"youtuerp/internal/models"
 	"youtuerp/tools/uploader"
 )
 
@@ -34,7 +34,7 @@ func (r Redis) HGetRecord(table string, id interface{}, field string) (value str
 		field = "name"
 	}
 	key := r.CombineKey(table, id)
-	
+
 	if value, err = r.HGet(key, field); err != nil {
 		golog.Errorf("HGetValue is error table_name is %v,id is %v,error is %v", table, id, err)
 		return ""

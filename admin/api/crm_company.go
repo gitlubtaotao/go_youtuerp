@@ -6,8 +6,8 @@ import (
 	"strings"
 	"youtuerp/conf"
 	"youtuerp/global"
-	"youtuerp/models"
-	"youtuerp/services"
+	"youtuerp/internal/models"
+	"youtuerp/internal/services"
 )
 
 type CrmCompany struct {

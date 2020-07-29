@@ -4,8 +4,8 @@ import (
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"youtuerp/conf"
-	"youtuerp/models"
-	"youtuerp/services"
+	"youtuerp/internal/models"
+	"youtuerp/internal/services"
 )
 
 type CompanyController struct {

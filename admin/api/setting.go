@@ -3,8 +3,8 @@ package api
 import (
 	"github.com/kataras/iris/v12"
 	"net/http"
-	"youtuerp/models"
-	"youtuerp/services"
+	"youtuerp/internal/models"
+	"youtuerp/internal/services"
 )
 
 type Setting struct {

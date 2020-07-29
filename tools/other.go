@@ -39,7 +39,7 @@ func (o OtherHelper) GetIPAddress(r *http.Request) (string, error) {
 	if ip != "" {
 		return ip, nil
 	}
-	
+
 	if ip, _, err := net.SplitHostPort(strings.TrimSpace(r.RemoteAddr)); err == nil {
 		return ip, nil
 	}
@@ -152,7 +152,7 @@ func StructToChange(src interface{}) map[string]interface{} {
 func GetStructFieldByJson(model interface{}) (data []string, err error) {
 	t := reflect.TypeOf(model)
 	if t.Kind() != reflect.Struct {
-		err = errors.New("model is not struct")
+		err = errors.New("models is not struct")
 		return
 	}
 	for i := 0; i < t.NumField(); i++ {

@@ -2,8 +2,8 @@ package api
 
 import (
 	"github.com/kataras/iris/v12"
-	"youtuerp/models"
-	"youtuerp/services"
+	"youtuerp/internal/models"
+	"youtuerp/internal/services"
 )
 
 //跟进记录的操作方法

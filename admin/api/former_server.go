@@ -4,8 +4,8 @@ import (
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"sync"
-	"youtuerp/models"
-	"youtuerp/services"
+	"youtuerp/internal/models"
+	"youtuerp/internal/services"
 )
 
 type FormerServer struct {

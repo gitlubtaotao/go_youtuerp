@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"sync"
 	"youtuerp/conf"
-	"youtuerp/models"
-	"youtuerp/services"
+	"youtuerp/internal/models"
+	"youtuerp/internal/services"
 )
 
 type BaseCarrier struct {

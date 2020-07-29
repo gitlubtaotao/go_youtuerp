@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strconv"
 	"youtuerp/conf"
-	"youtuerp/models"
-	"youtuerp/services"
+	"youtuerp/internal/models"
+	"youtuerp/internal/services"
 )
 
 type CrmClue struct {

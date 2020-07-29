@@ -8,9 +8,9 @@ import (
 	"sync"
 	"time"
 	"youtuerp/global"
-	"youtuerp/models"
+	"youtuerp/internal/models"
+	"youtuerp/internal/services"
 	"youtuerp/redis"
-	"youtuerp/services"
 	"youtuerp/tools"
 )
 

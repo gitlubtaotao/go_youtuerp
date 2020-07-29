@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/kataras/iris/v12"
 	"youtuerp/conf"
-	"youtuerp/models"
-	"youtuerp/services"
+	"youtuerp/internal/models"
+	"youtuerp/internal/services"
 )
 
 type NumberSetting struct {

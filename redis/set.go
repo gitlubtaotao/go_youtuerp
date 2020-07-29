@@ -2,8 +2,8 @@ package redis
 
 import (
 	"github.com/kataras/golog"
-	"youtuerp/models"
-	"youtuerp/repositories"
+	"youtuerp/internal/dao"
+	"youtuerp/internal/models"
 	"youtuerp/tools"
 )
 
@@ -23,8 +23,6 @@ func (r Redis) HSetCompany(key string, id interface{}) error {
 	}
 	return nil
 }
-
-
 
 func (r Redis) HSetRecord(tableName string, id interface{}, selectKeys []string) error {
 	if len(selectKeys) == 0 {
@@ -58,7 +56,7 @@ func (r Redis) HDeleteRecord(table string, id interface{}, field ...string) erro
 }
 
 func (r Redis) findRecord(tableName string, filter map[string]interface{}, selectKey []string) (data []map[string]interface{}, err error) {
-	repo := repositories.NewSelectRepository()
+	repo := dao.NewSelectRepository()
 	var result []models.ReadSelectResult
 	result, err = repo.FirstRecord(tableName, filter, selectKey)
 	if err != nil {
@@ -79,5 +77,3 @@ func HSetValue(table string, id interface{}, value map[string]interface{}) {
 			table, id, err)
 	}
 }
-
-

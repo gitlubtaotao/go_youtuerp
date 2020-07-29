@@ -4,8 +4,8 @@ import (
 	"errors"
 	"github.com/kataras/iris/v12"
 	"strconv"
-	"youtuerp/models"
-	"youtuerp/services"
+	"youtuerp/internal/models"
+	"youtuerp/internal/services"
 	"youtuerp/tools/uploader"
 )
 

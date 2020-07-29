@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"sync"
 	"youtuerp/global"
-	"youtuerp/models"
-	"youtuerp/services"
+	"youtuerp/internal/models"
+	"youtuerp/internal/services"
 )
 
 type Address struct {

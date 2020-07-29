@@ -6,8 +6,8 @@ import (
 	"sync"
 	"youtuerp/conf"
 	"youtuerp/global"
-	"youtuerp/models"
-	"youtuerp/services"
+	"youtuerp/internal/models"
+	"youtuerp/internal/services"
 )
 
 type CrmUser struct {

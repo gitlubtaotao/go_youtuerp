@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"sync"
 	"time"
-	"youtuerp/models"
+	"youtuerp/internal/models"
+	"youtuerp/internal/services"
 	"youtuerp/redis"
-	"youtuerp/services"
 	"youtuerp/tools"
 	"youtuerp/tools/uploader"
 )

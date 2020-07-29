@@ -4,8 +4,8 @@ package api
 import (
 	"github.com/kataras/iris/v12"
 	"youtuerp/global"
-	"youtuerp/models"
-	"youtuerp/services"
+	"youtuerp/internal/models"
+	"youtuerp/internal/services"
 )
 
 type Department struct {
