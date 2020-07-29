@@ -8,59 +8,54 @@ import (
 	"github.com/kataras/iris/v12"
 	"os"
 	"runtime/trace"
+	"time"
+	"youtuerp/admin/middleware/routes"
 	"youtuerp/conf"
-	"youtuerp/database"
-	"youtuerp/initialize"
-	"youtuerp/redis"
+	"youtuerp/global"
 )
 
-
 func main() {
-	//加载系统配置文件
-	app := NewAppInfo()
-	f, err := initialize.NewLogFile("iris")
-	if err != nil {
-		app.Logger().Error(err)
+
+	var err error
+	////加载系统配置文件
+	if err = NewAppInfo(); err != nil {
 		panic(err)
 	}
-	defer f.Close()
-	app.Logger().AddOutput(f)
-	if conf.Configuration.Env == "dev" {
-		golog.SetLevel("debug")
+	if f, err := setupIrisLogger(); err != nil {
+		panic(err)
 	} else {
-		golog.SetLevel("error")
+		global.IrisAppEngine.Logger().AddOutput(f)
+		f.Close()
 	}
-	golog.SetPrefix(conf.Configuration.Env + "-")
+	if conf.Configuration.Env == "dev" {
+		global.IrisAppEngine.Logger().SetLevel("debug")
+	} else {
+		global.IrisAppEngine.Logger().SetLevel("error")
+	}
 	config := iris.WithConfiguration(iris.YAML("../conf/iris.yaml"))
-	_ = app.Run(iris.Addr(":8082"), config, iris.WithoutServerError(iris.ErrServerClosed))
+	global.IrisAppEngine.Run(iris.Addr(":8082"), config, iris.WithoutServerError(iris.ErrServerClosed))
 }
 
 //初始化app
-func NewAppInfo() *iris.Application {
-	configEnv := flag.String("env", "development", "set env development or production")
-	flag.Parse()
-	err := initialize.InitConfig(*configEnv)
-	if err != nil {
-		panic(err)
+func NewAppInfo() error {
+	if err := setupSetting(); err != nil {
+		return err
 	}
-	app := initialize.NewApp()
-	err = new(database.DataBase).DefaultInit()
+	global.NewIrisAppEngine()
+	route := routes.NewRoute(global.IrisAppEngine)
+	route.DefaultRegister()
 	//加载数据库操作
-	if err != nil {
-		app.Logger().Error(err)
-		panic(err)
+	if err := setupDBEngine(); err != nil {
+		return err
 	}
-	conf.ReisCon = redis.Connect()
-	iris.RegisterOnInterrupt(func() {
-		conf.ReisCon.Close()
-	})
+	if err := global.NewRedisEngine(); err != nil {
+		return err
+	}
 	//国际化翻译
-	err = initialize.I18nInit(app)
-	if err != nil {
-		app.Logger().Error(err)
-		panic(err)
+	if err := setupI18nEngine(); err != nil {
+		return err
 	}
-	return app
+	return nil
 }
 
 //Golang 性能测试 (3) 协程追踪术
@@ -76,4 +71,41 @@ func jsonOutput(l *golog.Log) bool {
 	enc.SetIndent("", "    ")
 	err := enc.Encode(l)
 	return err == nil
+}
+
+func setupSetting() error {
+	configEnv := flag.String("env", "development", "set env development or production")
+	flag.Parse()
+	return conf.NewSysConfig(*configEnv)
+}
+
+// set database engine
+func setupDBEngine() error {
+	if err := global.NewDBEngine(); err != nil {
+		return err
+	}
+	if err := global.NewDBMigrate(); err != nil {
+		return err
+	}
+	return nil
+}
+
+// set i18n engine
+func setupI18nEngine() error {
+	err := global.IrisAppEngine.I18n.Load("../locales/*/*", "en", "zh-CN")
+	if err != nil {
+		return err
+	}
+	global.IrisAppEngine.I18n.SetDefault("zh-CN")
+	global.IrisAppEngine.I18n.Subdomain = true
+	global.IrisAppEngine.I18n.URLParameter = "lang"
+	return nil
+}
+
+// setup iris log
+func setupIrisLogger() (f *os.File, err error) {
+	today := time.Now().Format("2006-01-02")
+	name := today + "-" + "iris" + ".log"
+	// 打开以当前日期为文件名的文件（不存在则创建文件，存在则追加内容）
+	return os.Create("./log/" + name)
 }
