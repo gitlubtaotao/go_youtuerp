@@ -7,8 +7,8 @@ import (
 	"youtuerp/conf"
 	"youtuerp/internal/dao"
 	"youtuerp/internal/models"
+	"youtuerp/pkg/util"
 	"youtuerp/redis"
-	"youtuerp/tools"
 )
 
 type IFinanceFee interface {
@@ -55,7 +55,7 @@ type FinanceFee struct {
 }
 
 func (f FinanceFee) HandleFeesShow(fee interface{}, enum conf.Enum) map[string]interface{} {
-	data := toolOther.StructToMap(fee)
+	data := util.StructToMap(fee)
 	data["pay_or_receive"] = enum.DefaultText("finance_fees_pay_or_receive.", data["pay_or_receive"].(string))
 	data["pay_type_id"] = f.baseDataFindFast(models.CIQType, data["pay_type_id"])
 	data["status_value"] = data["status"]
@@ -82,10 +82,9 @@ func (f FinanceFee) GetHistoryFee(filter map[string]interface{}) ([]map[string]i
 	if err != nil {
 		return returnResult, err
 	}
-	tool := tools.OtherHelper{}
 	codeServer := NewBaseCode()
 	for _, fee := range financeFees {
-		result := tool.StructToMap(fee)
+		result := util.StructToMap(fee)
 		result["finance_currency_id"] = codeServer.HGetValue(models.CodeFinanceCurrency, result["finance_currency_id"], "")
 		result["type_id"] = codeServer.HGetValue(models.FinanceTag, result["type_id"], "")
 		result["pay_type_id"] = codeServer.HGetValue(models.CIQType, result["pay_type_id"], "")
@@ -126,11 +125,11 @@ func (f FinanceFee) ChangeStatusFees(ids []uint, status string) error {
 		closingUnitId = append(closingUnitId, item.ClosingUnitId)
 		payOrReceive = append(payOrReceive, item.PayOrReceive)
 	}
-	closingUnitId = tools.UniqueUintSlice(closingUnitId)
+	closingUnitId = util.UniqueUintSlice(closingUnitId)
 	if len(closingUnitId) > 1 {
 		return errors.New("只能对同一个结算单位进行操作")
 	}
-	payOrReceive = tools.UniqueStringSlice(payOrReceive)
+	payOrReceive = util.UniqueStringSlice(payOrReceive)
 	if len(payOrReceive) > 1 {
 		return errors.New("只能对同一个收支类型进行操作")
 	}

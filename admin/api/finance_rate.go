@@ -10,8 +10,8 @@ import (
 	"youtuerp/global"
 	"youtuerp/internal/models"
 	"youtuerp/internal/services"
+	"youtuerp/pkg/util"
 	"youtuerp/redis"
-	"youtuerp/tools"
 )
 
 type FinanceRate struct {
@@ -116,8 +116,8 @@ func (f *FinanceRate) handleParams() map[string]interface{} {
 	createdAt := strings.Split(f.ctx.URLParamDefault("created_at", ""), ",")
 	//调用转化方法，传入上面准备好的的三个参数
 	if len(createdAt) == 2 {
-		tmp, _ := tools.TimeHelper{}.StringToTime(createdAt[0])
-		tmp2, _ := tools.TimeHelper{}.StringToTime(createdAt[1])
+		tmp, _ := util.TimeHelper{}.StringToTime(createdAt[0])
+		tmp2, _ := util.TimeHelper{}.StringToTime(createdAt[1])
 		params["created_at-gtEq"] = tmp
 		params["created_at-ltEq"] = tmp2
 	}

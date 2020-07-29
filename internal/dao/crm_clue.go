@@ -5,7 +5,7 @@ import (
 	"gorm.io/gorm"
 	"youtuerp/database"
 	"youtuerp/internal/models"
-	"youtuerp/tools"
+	"youtuerp/pkg/util"
 )
 
 type ICrmClue interface {
@@ -26,7 +26,7 @@ func (c CrmClue) Delete(id uint) error {
 
 func (c CrmClue) Update(id uint, clue models.CrmClue) error {
 	var record models.CrmClue
-	err := database.GetDBCon().First(&record, "id = ? ", id).Updates(tools.StructToChange(clue)).Error
+	err := database.GetDBCon().First(&record, "id = ? ", id).Updates(util.StructToChange(clue)).Error
 	return err
 }
 

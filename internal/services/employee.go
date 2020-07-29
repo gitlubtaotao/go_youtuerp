@@ -6,6 +6,7 @@ import (
 	"sync"
 	"youtuerp/internal/dao"
 	"youtuerp/internal/models"
+	"youtuerp/pkg/util"
 	"youtuerp/redis"
 )
 
@@ -48,7 +49,7 @@ func (e EmployeeService) FindRedis() []map[string]string {
 			"user_company_id": strconv.Itoa(k.UserCompanyId),
 			"name":            k.Name,
 		}
-		go e.SaveRedisData(toolOther.StructToMap(k))
+		go e.SaveRedisData(util.StructToMap(k))
 		data = append(data, temp)
 	}
 	return data
@@ -76,7 +77,7 @@ func (e EmployeeService) Create(employee models.Employee) (models.Employee, erro
 	if err != nil {
 		return data, err
 	}
-	go e.SaveRedisData(toolOther.StructToMap(data))
+	go e.SaveRedisData(util.StructToMap(data))
 	return data, nil
 }
 
@@ -93,7 +94,7 @@ func (e *EmployeeService) UpdateRecord(userId uint, employee models.Employee) er
 	if err != nil {
 		return err
 	}
-	go e.SaveRedisData(toolOther.StructToMap(employee))
+	go e.SaveRedisData(util.StructToMap(employee))
 	return nil
 }
 
@@ -102,7 +103,7 @@ func (e EmployeeService) UpdateColumn(user *models.Employee, updateColumn map[st
 	if err != nil {
 		return err
 	}
-	go e.SaveRedisData(toolOther.StructToMap(*user))
+	go e.SaveRedisData(util.StructToMap(*user))
 	return nil
 }
 

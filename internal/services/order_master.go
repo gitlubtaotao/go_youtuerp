@@ -9,8 +9,8 @@ import (
 	"youtuerp/conf"
 	"youtuerp/internal/dao"
 	"youtuerp/internal/models"
+	"youtuerp/pkg/util"
 	"youtuerp/redis"
-	"youtuerp/tools"
 )
 
 type IOrderMasterService interface {
@@ -106,7 +106,7 @@ func (o OrderMasterService) ShowCarrier(transportType interface{}, carrierId int
 }
 
 func (o OrderMasterService) HandlerOrderMasterShow(order interface{}, enum conf.Enum) map[string]interface{} {
-	data := toolOther.StructToMap(order)
+	data := util.StructToMap(order)
 	data["cut_off_day"] = toolTime.InterfaceFormat(data["cut_off_day"], "zh-CN")
 	data["departure"] = toolTime.InterfaceFormat(data["departure"], "zh-CN")
 	data["arrival"] = toolTime.InterfaceFormat(data["arrival"], "zh-CN")
@@ -163,7 +163,7 @@ func (o OrderMasterService) DeleteMaster(id uint) error {
 
 //进行订单状态的更新
 func (o OrderMasterService) ChangeStatus(id uint, status string) error {
-	_, b := tools.ContainsSlice(orderStatusArray, status)
+	_, b := util.ContainsSlice(orderStatusArray, status)
 	if !b {
 		return errors.New("状态有误,请重新确认")
 	}
@@ -254,7 +254,7 @@ func (o OrderMasterService) GetSeaFormerInstruction(master models.OrderMaster, f
 	attr["type"] = formerItemType
 	attr["shipper_id"] = master.InstructionId
 	attr["shipper_content"] = crmService.GetOperationInfo(master.InstructionId)
-	_, status := tools.ContainsSlice([]interface{}{models.InstructionMaster, models.InstructionSplit}, formerItemType)
+	_, status := util.ContainsSlice([]interface{}{models.InstructionMaster, models.InstructionSplit}, formerItemType)
 	if !status {
 		return data, errors.New("传入的参数有误")
 	}
@@ -285,7 +285,7 @@ func (o OrderMasterService) getFormerBooking(order models.OrderMaster, formerTyp
 
 //获取自动重填的信息
 func (o OrderMasterService) AutoFillData(src interface{}, dst interface{}) map[string]interface{} {
-	data := tools.StructToChange(dst)
+	data := util.StructToChange(dst)
 	dataTypeOf := reflect.TypeOf(dst)
 	typeOf := reflect.TypeOf(src)
 	result := make(map[string]interface{})

@@ -5,7 +5,7 @@ import (
 	"github.com/kataras/iris/v12/context"
 	"reflect"
 	"sync"
-	"youtuerp/tools"
+	"youtuerp/pkg/util"
 )
 
 type IColumnService interface {
@@ -23,7 +23,7 @@ func (c *ColumnService) StructToMap(currentObject interface{}) (map[string]inter
 	if currentObject == nil {
 		return map[string]interface{}{}, errors.New(c.loader.GetMessage("error.params_error"))
 	}
-	return tools.OtherHelper{}.StructToMap(currentObject), nil
+	return util.StructToMap(currentObject), nil
 }
 
 func (c *ColumnService) StructColumn(model interface{}, args ...interface{}) (dataArray []interface{}, err error) {
@@ -120,7 +120,7 @@ func (c *ColumnService) isHiddenColumn(hiddenColumns interface{}, column string)
 
 //将蛇形字符转换成_风格
 func (c *ColumnService) toSnakeCase(str string) string {
-	return tools.OtherHelper{}.ToSnakeCase(str)
+	return util.ToSnakeCase(str)
 }
 
 //获取的model对应的table name

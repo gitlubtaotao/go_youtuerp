@@ -4,7 +4,7 @@ import (
 	"gorm.io/gorm"
 	"youtuerp/database"
 	"youtuerp/internal/models"
-	"youtuerp/tools"
+	"youtuerp/pkg/util"
 )
 
 type IFinanceFee interface {
@@ -124,7 +124,7 @@ func (f FinanceFee) BulkInsertOrUpdate(financeFees []models.FinanceFee) ([]model
 	}
 	err := sqlConn.Transaction(func(tx *gorm.DB) error {
 		for _, item := range updateFinance {
-			if err := tx.Model(&models.FinanceFee{ID: item.ID}).Updates(tools.StructToChange(item)).Error; err != nil {
+			if err := tx.Model(&models.FinanceFee{ID: item.ID}).Updates(util.StructToChange(item)).Error; err != nil {
 				return err
 			}
 		}

@@ -4,7 +4,7 @@ import (
 	"github.com/kataras/golog"
 	"youtuerp/internal/dao"
 	"youtuerp/internal/models"
-	"youtuerp/tools"
+	"youtuerp/pkg/util"
 )
 
 //保存公司redis信息
@@ -64,7 +64,7 @@ func (r Redis) findRecord(tableName string, filter map[string]interface{}, selec
 	}
 	r.sy.Lock()
 	for _, v := range result {
-		data = append(data, tools.OtherHelper{}.StructToMap(v))
+		data = append(data, util.StructToMap(v))
 	}
 	r.sy.Unlock()
 	return data, nil

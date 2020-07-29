@@ -4,7 +4,7 @@ import (
 	"gorm.io/gorm"
 	"youtuerp/database"
 	"youtuerp/internal/models"
-	"youtuerp/tools"
+	"youtuerp/pkg/util"
 )
 
 type IInvoiceRepository interface {
@@ -31,7 +31,7 @@ func (i InvoiceRepository) UpdateById(id uint, updateContent models.Invoice) (mo
 	if err != nil {
 		return invoice, err
 	}
-	err = database.GetDBCon().Model(&invoice).Updates(tools.StructToChange(updateContent)).Error
+	err = database.GetDBCon().Model(&invoice).Updates(util.StructToChange(updateContent)).Error
 	return invoice, err
 }
 

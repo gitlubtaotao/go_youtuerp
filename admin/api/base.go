@@ -9,8 +9,8 @@ import (
 	"time"
 	"youtuerp/internal/models"
 	"youtuerp/internal/services"
+	"youtuerp/pkg/util"
 	"youtuerp/redis"
-	"youtuerp/tools"
 )
 
 type BaseApi struct {
@@ -93,7 +93,7 @@ func (b *BaseApi) StringToDateRange(stringDate string) []time.Time {
 
 // 将string转化成日期格式
 func (b *BaseApi) stringToDate(strTime string) time.Time {
-	result, err := tools.TimeHelper{}.StringToTime(strTime)
+	result, err := util.TimeHelper{}.StringToTime(strTime)
 	if err != nil {
 		golog.Errorf("string to date is error %v", err)
 	}

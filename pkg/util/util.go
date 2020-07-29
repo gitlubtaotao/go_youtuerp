@@ -1,9 +1,8 @@
 //其他一些帮助方法
-package tools
+package util
 
 import (
 	"errors"
-	"github.com/kataras/golog"
 	"net"
 	"net/http"
 	"reflect"
@@ -18,7 +17,6 @@ var (
 )
 
 type IOtherHelper interface {
-	GetIPAddress() (string, error)
 	MapMerge(dst, src map[string]interface{}) map[string]interface{}
 	StructToMap(currentObject interface{}) map[string]interface{}
 }
@@ -27,7 +25,7 @@ type OtherHelper struct {
 }
 
 //获取访问的iP真实地址
-func (o OtherHelper) GetIPAddress(r *http.Request) (string, error) {
+func GetIPAddress(r *http.Request) (string, error) {
 	var ip string
 	for _, ip = range strings.Split(r.Header.Get("X-Forwarded-For"), ",") {
 		ip = strings.TrimSpace(ip)
@@ -47,11 +45,12 @@ func (o OtherHelper) GetIPAddress(r *http.Request) (string, error) {
 }
 
 //map 进行合并
-func (o OtherHelper) MapMerge(dst, src map[string]interface{}) map[string]interface{} {
-	return o.merge(dst, src, 0)
+func MapMerge(dst, src map[string]interface{}) map[string]interface{} {
+	other := OtherHelper{}
+	return other.merge(dst, src, 0)
 }
 
-func (o OtherHelper) StructToMap(currentObject interface{}) map[string]interface{} {
+func StructToMap(currentObject interface{}) map[string]interface{} {
 	res := map[string]interface{}{}
 	v := reflect.TypeOf(currentObject)
 	utils := TimeHelper{}
@@ -65,14 +64,14 @@ func (o OtherHelper) StructToMap(currentObject interface{}) map[string]interface
 		kind := temp.Kind()
 		tag := v.Field(i).Tag.Get("json")
 		if tag == "" {
-			tag = o.ToSnakeCase(v.Field(i).Name)
+			tag = ToSnakeCase(v.Field(i).Name)
 		}
 		field := reflectValue.Field(i).Interface()
 		if kind == reflect.Struct {
 			if temp.Name() == "Time" {
 				res[tag] = utils.DefaultDate(field.(time.Time), "zh-CN")
 			} else {
-				res[tag] = o.StructToMap(field)
+				res[tag] = StructToMap(field)
 			}
 		} else {
 			if tag != "" {
@@ -84,7 +83,7 @@ func (o OtherHelper) StructToMap(currentObject interface{}) map[string]interface
 }
 
 //字符串转化
-func (o OtherHelper) ToSnakeCase(str string) string {
+func ToSnakeCase(str string) string {
 	snake := matchAllCap.ReplaceAllString(str, "${1}_${2}")
 	return strings.ToLower(strings.ToLower(snake))
 }
@@ -189,15 +188,9 @@ func StructTableName(v reflect.Value) string {
 		value := methodName.Call([]reflect.Value{})
 		data = value[0].String()
 	} else {
-		data = OtherHelper{}.ToSnakeCase(v.Kind().String())
+		data = ToSnakeCase(v.Kind().String())
 	}
 	return data
-}
-
-//结构体中某个字段对应的数据去重复
-func StructFieldCount(src interface{}, field interface{}) {
-	v := reflect.TypeOf(src)
-	golog.Infof("kind is %v,string is %v,name is %v", v.Kind(), v.String(), v.Name())
 }
 
 func (o OtherHelper) merge(dst, src map[string]interface{}, depth int) map[string]interface{} {

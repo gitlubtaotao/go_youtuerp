@@ -1,5 +1,5 @@
 //对时间格式进行转换
-package tools
+package util
 
 import (
 	"reflect"

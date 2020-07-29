@@ -1,8 +1,8 @@
 package services
 
 import (
+	"youtuerp/pkg/util"
 	"youtuerp/redis"
-	"youtuerp/tools"
 )
 
 type IBaseService interface {
@@ -12,7 +12,7 @@ type BaseService struct {
 }
 
 var (
-	toolOther = tools.OtherHelper{}
+	toolOther = util.OtherHelper{}
 	red       = redis.Redis{}
-	toolTime  = tools.TimeHelper{}
+	toolTime  = util.TimeHelper{}
 )

@@ -10,8 +10,8 @@ import (
 	"youtuerp/internal/models"
 	"youtuerp/internal/services"
 	"youtuerp/pkg/uploader"
+	"youtuerp/pkg/util"
 	"youtuerp/redis"
-	"youtuerp/tools"
 )
 
 type login struct {
@@ -169,8 +169,7 @@ func (s *Session) getSystemSetting() map[string]interface{} {
 
 //保存当前登录用户的信息
 func (s *Session) updateLoginInfo(ctx iris.Context, employee *models.Employee) error {
-	otherHelper := tools.OtherHelper{}
-	ipAddress, _ := otherHelper.GetIPAddress(ctx.Request())
+	ipAddress, _ := util.GetIPAddress(ctx.Request())
 	updateColumn := map[string]interface{}{
 		"sign_in_count":      employee.SignInCount + 1,
 		"current_sign_in_at": time.Now(),

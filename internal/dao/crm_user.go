@@ -4,7 +4,7 @@ import (
 	"gorm.io/gorm"
 	"youtuerp/database"
 	"youtuerp/internal/models"
-	"youtuerp/tools"
+	"youtuerp/pkg/util"
 )
 
 type ICrmUser interface {
@@ -22,7 +22,7 @@ func (c CrmUser) Delete(id uint) error {
 	return c.crud.Delete(&models.CrmContact{}, id)
 }
 func (c CrmUser) Update(id uint, user models.CrmContact) error {
-	return database.GetDBCon().Model(&models.CrmContact{ID: id}).Updates(tools.StructToChange(user)).Error
+	return database.GetDBCon().Model(&models.CrmContact{ID: id}).Updates(util.StructToChange(user)).Error
 }
 
 func (c CrmUser) Find(per, page int, filter map[string]interface{}, selectKeys []string,

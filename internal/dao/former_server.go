@@ -5,7 +5,7 @@ import (
 	"gorm.io/gorm"
 	"youtuerp/database"
 	"youtuerp/internal/models"
-	"youtuerp/tools"
+	"youtuerp/pkg/util"
 )
 
 type IFormerServer interface {
@@ -82,7 +82,7 @@ func (f FormerServer) UpdateFormerData(formerType string, data models.RenderForm
 }
 
 func (f FormerServer) UpdateExtendInfo(id uint, data models.OrderExtendInfo) error {
-	return database.GetDBCon().Model(&models.OrderExtendInfo{ID: id}).Updates(tools.StructToChange(data)).Error
+	return database.GetDBCon().Model(&models.OrderExtendInfo{ID: id}).Updates(util.StructToChange(data)).Error
 }
 func (f FormerServer) GetFormerOtherService(orderMasterId uint) ([]models.FormerOtherService, error) {
 	var formerOtherServer []models.FormerOtherService
@@ -104,7 +104,7 @@ func (f FormerServer) UpdateSeaCargoInfo(infos []models.SeaCargoInfo) (interface
 	err := sqlConn.Transaction(func(tx *gorm.DB) error {
 		for _, item := range infos {
 			if item.ID != 0 {
-				if err := tx.Model(&models.SeaCargoInfo{ID: item.ID}).Updates(tools.StructToChange(item)).Error; err != nil {
+				if err := tx.Model(&models.SeaCargoInfo{ID: item.ID}).Updates(util.StructToChange(item)).Error; err != nil {
 					return err
 				}
 			} else {
@@ -148,7 +148,7 @@ func (f FormerServer) updateFormerSeaInstruction(data models.RenderFormerData) e
 		return err
 	}
 	return sqlConn.Transaction(func(tx *gorm.DB) error {
-		if err := sqlConn.Set("gorm:association_autoupdate", false).Set("gorm:association_autocreate", false).Model(&record).Updates(tools.StructToChange(instruction)).Error; err != nil {
+		if err := sqlConn.Set("gorm:association_autoupdate", false).Set("gorm:association_autocreate", false).Model(&record).Updates(util.StructToChange(instruction)).Error; err != nil {
 			return err
 		}
 		if len(instruction.SeaCapLists) >= 1 {
@@ -163,7 +163,7 @@ func (f FormerServer) updateFormerSeaBooking(data models.RenderFormerData) error
 	book := data.FormerSeaBook
 	sqlConn = sqlConn.First(&record, "id = ? ", book.ID)
 	return sqlConn.Transaction(func(tx *gorm.DB) error {
-		if err := sqlConn.Set("gorm:association_autoupdate", false).Set("gorm:association_autocreate", false).Updates(tools.StructToChange(book)).Error; err != nil {
+		if err := sqlConn.Set("gorm:association_autoupdate", false).Set("gorm:association_autocreate", false).Updates(util.StructToChange(book)).Error; err != nil {
 			return err
 		}
 		if len(book.SeaCapLists) >= 1 {
@@ -177,7 +177,7 @@ func (f FormerServer) updateFormerSoNo(formerType string, data models.RenderForm
 	if formerType == "former_sea_so_no" {
 		var soNo = data.FormerSeaSoNo
 		golog.Infof("current time is %v", soNo)
-		return database.GetDBCon().Model(&models.FormerSeaSoNo{ID: soNo.ID}).Updates(tools.StructToChange(soNo)).Error
+		return database.GetDBCon().Model(&models.FormerSeaSoNo{ID: soNo.ID}).Updates(util.StructToChange(soNo)).Error
 	}
 	return nil
 }
@@ -192,7 +192,7 @@ func (f FormerServer) saveFormerTrailerOrder(data models.FormerTrailerOrder) (ui
 	var temp models.FormerTrailerOrder
 	sqlConn = sqlConn.First(&temp, "id = ? ", data.ID)
 	err := sqlConn.Transaction(func(tx *gorm.DB) error {
-		if err := sqlConn.Set("gorm:association_autoupdate", false).Set("gorm:association_autocreate", false).Updates(tools.StructToChange(data)).Error; err != nil {
+		if err := sqlConn.Set("gorm:association_autoupdate", false).Set("gorm:association_autocreate", false).Updates(util.StructToChange(data)).Error; err != nil {
 			return err
 		}
 		if len(data.SeaCapLists) >= 1 {
@@ -229,7 +229,7 @@ func (f FormerServer) saveFormerOtherService(data models.FormerOtherService) (ui
 		err := database.GetDBCon().Create(&data).Error
 		return data.ID, err
 	}
-	err := database.GetDBCon().Model(models.FormerOtherService{ID: data.ID}).Updates(tools.StructToChange(data)).Error
+	err := database.GetDBCon().Model(models.FormerOtherService{ID: data.ID}).Updates(util.StructToChange(data)).Error
 	return data.ID, err
 }
 
@@ -239,7 +239,7 @@ func (f FormerServer) saveFormerWarehouseService(data models.FormerWarehouseServ
 		err := database.GetDBCon().Create(&data).Error
 		return data.ID, err
 	}
-	err := database.GetDBCon().Model(models.FormerWarehouseService{ID: data.ID}).Updates(tools.StructToChange(data)).Error
+	err := database.GetDBCon().Model(models.FormerWarehouseService{ID: data.ID}).Updates(util.StructToChange(data)).Error
 	return data.ID, err
 }
 
@@ -249,7 +249,7 @@ func (f FormerServer) saveFormerCustomClearance(data models.FormerCustomClearanc
 		err := database.GetDBCon().Create(&data).Error
 		return data.ID, err
 	}
-	err := database.GetDBCon().Model(models.FormerCustomClearance{ID: data.ID}).Updates(tools.StructToChange(data)).Error
+	err := database.GetDBCon().Model(models.FormerCustomClearance{ID: data.ID}).Updates(util.StructToChange(data)).Error
 	return data.ID, err
 }
 
