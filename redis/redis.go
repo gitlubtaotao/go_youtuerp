@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"youtuerp/conf"
+	"youtuerp/global"
 )
 
 //链接redis
@@ -29,47 +29,47 @@ type Redis struct {
 }
 
 func (r Redis) HSet(key string, field string, value interface{}) error {
-	return conf.ReisCon.HSet(key, field, value).Err()
+	return global.RedisEngine.HSet(key, field, value).Err()
 }
 
 func (r Redis) SAdd(key string, member ...interface{}) error {
-	return conf.ReisCon.SAdd(key, member...).Err()
+	return global.RedisEngine.SAdd(key, member...).Err()
 }
 
 func (r Redis) SMembers(key string) []string {
-	return conf.ReisCon.SMembers(key).Val()
+	return global.RedisEngine.SMembers(key).Val()
 }
 
 func (r Redis) SRemove(key string, member ...interface{}) error {
-	return conf.ReisCon.SRem(key, member...).Err()
+	return global.RedisEngine.SRem(key, member...).Err()
 }
 
 func (r Redis) HDelete(key string, field ...string) error {
-	return conf.ReisCon.HDel(key, field...).Err()
+	return global.RedisEngine.HDel(key, field...).Err()
 }
 
 func (r Redis) HGet(key string, field string) (string, error) {
-	if conf.ReisCon.HExists(key, field).Val() {
-		return conf.ReisCon.HGet(key, field).Result()
+	if global.RedisEngine.HExists(key, field).Val() {
+		return global.RedisEngine.HGet(key, field).Result()
 	}
 	return "", nil
 }
 
 //Key是否存在
 func (r Redis) KeyIsExist(key string) {
-	conf.ReisCon.Exists(key).Val()
+	global.RedisEngine.Exists(key).Val()
 }
 
 func (r Redis) HMSet(key string, value ...interface{}) error {
-	return conf.ReisCon.HMSet(key, value...).Err()
+	return global.RedisEngine.HMSet(key, value...).Err()
 }
 
 func (r Redis) HMGet(key string, fields ...string) ([]interface{}, error) {
-	return conf.ReisCon.HMGet(key, fields...).Result()
+	return global.RedisEngine.HMGet(key, fields...).Result()
 }
 
 func (r Redis) HGetAll(key string) (map[string]string, error) {
-	val, err := conf.ReisCon.HGetAll(key).Result()
+	val, err := global.RedisEngine.HGetAll(key).Result()
 	if err != nil {
 		return map[string]string{}, err
 	}
@@ -77,7 +77,7 @@ func (r Redis) HGetAll(key string) (map[string]string, error) {
 }
 
 func (r Redis) Scan(tableName string, cursor uint64, count int64) ([]string, uint64, error) {
-	return conf.ReisCon.Scan(cursor, tableName+"*", count).Result()
+	return global.RedisEngine.Scan(cursor, tableName+"*", count).Result()
 }
 
 func (r Redis) CombineKey(tableName string, key interface{}) string {
