@@ -1,56 +1,12 @@
-package redis
+package redisService
 
 import (
 	"github.com/kataras/golog"
 	"strconv"
-	"youtuerp/internal/models"
 	"youtuerp/pkg/uploader"
 )
 
-func (r Redis) HGetCrm(id interface{}, field string) (value string) {
-	if key := id.(uint); key == 0 {
-		return ""
-	}
-	var err error
-	value, err = r.getUserCompany(models.CrmCompany{}.RedisKey(), id, field)
-	if err != nil {
-		golog.Errorf("get crm redis is error %v", err)
-	}
-	return value
-}
-
-func (r Redis) HGetCompany(id interface{}, field string) (value string) {
-	var err error
-	value, err = r.getUserCompany(models.Company{}.TableName(), id, field)
-	if err != nil {
-		golog.Errorf("get crm redis is error %v", err)
-	}
-	return value
-}
-
-func (r Redis) HGetRecord(table string, id interface{}, field string) (value string) {
-	var err error
-	if field == "" {
-		field = "name"
-	}
-	key := r.CombineKey(table, id)
-
-	if value, err = r.HGet(key, field); err != nil {
-		golog.Errorf("HGetValue is error table_name is %v,id is %v,error is %v", table, id, err)
-		return ""
-	}
-	if value != "" {
-		return value
-	}
-	if err := r.HSetRecord(table, id, []string{}); err != nil {
-		golog.Errorf("set %v redis is error %v", table, err)
-		return ""
-	}
-	value, _ = r.HGet(key, field)
-	return
-}
-
-func (r Redis) HGetValue(table string, id interface{}, field string) string {
+func (r RedisService) HGetValue(table string, id interface{}, field string) string {
 	if field == "" {
 		field = "name"
 	}
@@ -62,7 +18,7 @@ func (r Redis) HGetValue(table string, id interface{}, field string) string {
 	return value
 }
 
-func (r Redis) HGetAllValue(table string, id interface{}) (value map[string]string) {
+func (r RedisService) HGetAllValue(table string, id interface{}) (value map[string]string) {
 	key := r.CombineKey(table, id)
 	var err error
 	if value, err = r.HGetAll(key); err != nil {
@@ -73,7 +29,7 @@ func (r Redis) HGetAllValue(table string, id interface{}) (value map[string]stri
 }
 
 //获取某一张表中所有的缓存集合
-func (r Redis) HCollectOptions(table string) []map[string]string {
+func (r RedisService) HCollectOptions(table string) []map[string]string {
 	var collect []map[string]string
 	members := r.SMembers(table)
 	r.sy.Lock()
@@ -89,7 +45,7 @@ func (r Redis) HCollectOptions(table string) []map[string]string {
 	return collect
 }
 
-func (r Redis) getUserCompany(tableName string, id interface{}, field string) (value string, err error) {
+func (r RedisService) getUserCompany(tableName string, id interface{}, field string) (value string, err error) {
 	if field == "" {
 		field = "name_nick"
 	}
