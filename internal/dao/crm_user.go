@@ -2,6 +2,7 @@ package dao
 
 import (
 	"gorm.io/gorm"
+	"youtuerp/global"
 	"youtuerp/internal/models"
 	"youtuerp/pkg/util"
 )

@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"youtuerp/global"
 	"youtuerp/internal/models"
 )
 

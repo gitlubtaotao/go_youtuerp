@@ -9,6 +9,7 @@ import (
 	"os"
 	"runtime/trace"
 	"time"
+	"youtuerp/admin/routers"
 	"youtuerp/conf"
 	"youtuerp/global"
 )
@@ -30,7 +31,7 @@ func main() {
 func NewAppInfo() error {
 	global.NewIrisAppEngine()
 	// loading router
-	//routers.DefaultIrisRoute(global.IrisAppEngine)
+	routers.DefaultIrisRoute(global.IrisAppEngine)
 	//加载数据库操作
 	//国际化翻译
 	if err := setupI18nEngine(); err != nil {
