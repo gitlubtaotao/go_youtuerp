@@ -6,7 +6,6 @@ import (
 	"youtuerp/internal/dao"
 	"youtuerp/internal/models"
 	"youtuerp/pkg/enumerize"
-	"youtuerp/redis"
 )
 
 type ICompanyService interface {
@@ -31,7 +30,7 @@ type CompanyService struct {
 
 //获取所有的redis 数据
 func (c *CompanyService) AllCompanyRedis() []map[string]string {
-	red := redis.NewRedis()
+	red := RedisService
 	tableName := models.UserCompany{}.TableName()
 	data := make([]map[string]string, 0)
 	data = red.HCollectOptions(tableName)
@@ -115,7 +114,7 @@ func (c *CompanyService) LimitCompany(limit int, filters map[string]interface{},
 
 func (c *CompanyService) SaveRedisData(result models.UserCompany) {
 
-	redis.HSetValue(models.Company{}.TableName(), result.ID, map[string]interface{}{
+	RedisService.HSetValue(models.Company{}.TableName(), result.ID, map[string]interface{}{
 		"id":        result.ID,
 		"name_nick": result.NameNick,
 		"name_en":   result.NameEn,

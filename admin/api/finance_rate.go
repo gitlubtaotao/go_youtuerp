@@ -9,8 +9,8 @@ import (
 	"time"
 	"youtuerp/internal/models"
 	"youtuerp/internal/services"
+	"youtuerp/pkg/redisService"
 	"youtuerp/pkg/util"
-	"youtuerp/redis"
 )
 
 type FinanceRate struct {
@@ -41,8 +41,8 @@ func (f *FinanceRate) Get(ctx iris.Context) {
 		"data":                   dataArray,
 		"total":                  total,
 		"currencyOptions":        currencyOptions,
-		"systemFinanceRate":      redis.SystemRateSetting(),
-		"systemStandardCurrency": redis.SystemFinanceCurrency(),
+		"systemFinanceRate":      redisService.SystemRateSetting(),
+		"systemStandardCurrency": redisService.SystemFinanceCurrency(),
 	})
 }
 

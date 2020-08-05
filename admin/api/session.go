@@ -9,9 +9,9 @@ import (
 	"time"
 	"youtuerp/internal/models"
 	"youtuerp/internal/services"
+	"youtuerp/pkg/redisService"
 	"youtuerp/pkg/uploader"
 	"youtuerp/pkg/util"
-	"youtuerp/redis"
 )
 
 type login struct {
@@ -160,10 +160,10 @@ func (s *Session) initSession() {
 
 func (s *Session) getSystemSetting() map[string]interface{} {
 	setting := make(map[string]interface{})
-	setting["system_standard_currency"] = redis.SystemFinanceCurrency()
-	setting["order_audit_mechanism"] = redis.OrderAuditMechanism()
-	setting["system_finance_approve"] = redis.SystemFinanceApprove()
-	setting["system_finance_audit"] = redis.SystemFinanceAudit()
+	setting["system_standard_currency"] = redisService.SystemFinanceCurrency()
+	setting["order_audit_mechanism"] = redisService.OrderAuditMechanism()
+	setting["system_finance_approve"] = redisService.SystemFinanceApprove()
+	setting["system_finance_audit"] = redisService.SystemFinanceAudit()
 	return setting
 }
 

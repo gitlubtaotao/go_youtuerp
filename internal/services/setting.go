@@ -4,7 +4,6 @@ import (
 	"sync"
 	"youtuerp/internal/dao"
 	"youtuerp/internal/models"
-	"youtuerp/redis"
 )
 
 type ISettingService interface {
@@ -39,7 +38,7 @@ func (s SettingService) UpdateSystem(key string, setting []models.ResponseSettin
 }
 
 func (s SettingService) saveRedis(key string, values map[string]interface{}) error {
-	red := redis.NewRedis()
+	red := RedisService
 	return red.HSetValue(models.Setting{}.TableName(), key, values)
 }
 

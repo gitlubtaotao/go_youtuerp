@@ -6,7 +6,6 @@ import (
 	"sync"
 	"youtuerp/internal/dao"
 	"youtuerp/internal/models"
-	"youtuerp/redis"
 )
 
 type IBaseCarrier interface {
@@ -25,7 +24,7 @@ type BaseCarrier struct {
 }
 
 func (b BaseCarrier) FindCollect(key string) []map[string]string {
-	red := redis.NewRedis()
+	red := RedisService
 	tableName := models.BaseDataCarrier{}.TableName()
 	data := make([]map[string]string, 0)
 	data = red.HCollectOptions(tableName + key)
@@ -73,7 +72,7 @@ func (b BaseCarrier) Create(code models.BaseDataCarrier, language string) (model
 }
 
 func (b BaseCarrier) SaveRedisData(result models.BaseDataCarrier) {
-	redis.HSetValue(models.BaseDataCarrier{}.TableName()+strconv.Itoa(int(result.Type)), result.ID, map[string]interface{}{
+	RedisService.HSetValue(models.BaseDataCarrier{}.TableName()+strconv.Itoa(int(result.Type)), result.ID, map[string]interface{}{
 		"id":   result.ID,
 		"name": result.Name,
 	})

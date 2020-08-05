@@ -9,8 +9,8 @@ import (
 	"time"
 	"youtuerp/internal/models"
 	"youtuerp/internal/services"
+	"youtuerp/pkg/redisService"
 	"youtuerp/pkg/util"
-	"youtuerp/redis"
 )
 
 type BaseApi struct {
@@ -22,7 +22,7 @@ type renderError struct {
 }
 
 var (
-	RedSetting = redis.NewRedis() // redis setting instance
+	RedSetting = redisService.NewRedis() // redis setting instance
 )
 
 func (b *BaseApi) RenderSuccessJson(ctx iris.Context, data interface{}) {

@@ -9,8 +9,8 @@ import (
 	"youtuerp/internal/dao"
 	"youtuerp/internal/models"
 	"youtuerp/pkg/enumerize"
+	"youtuerp/pkg/redisService"
 	"youtuerp/pkg/util"
-	"youtuerp/redis"
 )
 
 type IOrderMasterService interface {
@@ -89,7 +89,7 @@ func (o OrderMasterService) ShowPort(transportType interface{}, portId interface
 	case 2:
 		key = strconv.Itoa(models.BaseTypeAir)
 	}
-	return red.HGetValue(tableName+key, portId, "name")
+	return RedisService.HGetValue(tableName+key, portId, "name")
 }
 
 func (o OrderMasterService) ShowCarrier(transportType interface{}, carrierId interface{}) string {
@@ -102,7 +102,7 @@ func (o OrderMasterService) ShowCarrier(transportType interface{}, carrierId int
 	case 2:
 		key = strconv.Itoa(models.BaseTypeAir)
 	}
-	return red.HGetValue(tableName+key, carrierId, "name")
+	return RedisService.HGetValue(tableName+key, carrierId, "name")
 }
 
 func (o OrderMasterService) HandlerOrderMasterShow(order interface{}, enum enumerize.Enumerize) map[string]interface{} {
@@ -111,12 +111,12 @@ func (o OrderMasterService) HandlerOrderMasterShow(order interface{}, enum enume
 	data["departure"] = toolTime.InterfaceFormat(data["departure"], "zh-CN")
 	data["arrival"] = toolTime.InterfaceFormat(data["arrival"], "zh-CN")
 	data["instruction_id_value"] = data["instruction_id"]
-	data["instruction_id"] = red.HGetCrm(data["instruction_id"], "")
-	data["supply_agent_id"] = red.HGetCrm(data["supply_agent_id"], "")
+	data["instruction_id"] = RedisService.HGetCrm(data["instruction_id"], "")
+	data["supply_agent_id"] = RedisService.HGetCrm(data["supply_agent_id"], "")
 	data["salesman_id_value"] = data["salesman_id"]
-	data["salesman_id"] = red.HGetRecord("users", data["salesman_id"], "")
+	data["salesman_id"] = RedisService.HGetRecord("users", data["salesman_id"], "")
 	data["operation_id_value"] = data["operation_id"]
-	data["operation_id"] = red.HGetRecord("users", data["operation_id"], "")
+	data["operation_id"] = RedisService.HGetRecord("users", data["operation_id"], "")
 	data["pol_id"] = o.ShowPort(data["transport_type"], data["pol_id"])
 	data["pod_id"] = o.ShowPort(data["transport_type"], data["pod_id"])
 	data["carrier_id"] = o.ShowCarrier(data["transport_type"], data["carrier_id"])
@@ -124,7 +124,7 @@ func (o OrderMasterService) HandlerOrderMasterShow(order interface{}, enum enume
 	data["transport_type"] = o.ShowTransport(enum, order)
 	data["status_value"] = data["status"]
 	data["status"] = o.ShowStatus(enum, data["status"])
-	data["company_id"] = red.HGetCompany(data["company_id"], "")
+	data["company_id"] = RedisService.HGetCompany(data["company_id"], "")
 	for _, v := range []string{"paid_status", "received_status", "payable_status", "receivable_status"} {
 		data[v+"_value"] = data[v]
 		data[v] = o.ShowFinanceStatus(enum, v, data[v])
@@ -220,7 +220,7 @@ func (o OrderMasterService) FindMaster(per, page int, filter map[string]interfac
 }
 
 func (o OrderMasterService) CreateMaster(order models.OrderMaster, language string) (models.OrderMaster, error) {
-	if redis.OrderAuditMechanism() == "false" {
+	if redisService.OrderAuditMechanism() == "false" {
 		order.Status = models.OrderStatusPro
 	} else {
 		order.Status = models.OrderStatusAudit

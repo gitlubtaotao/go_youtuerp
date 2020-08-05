@@ -6,7 +6,6 @@ import (
 	"sync"
 	"youtuerp/internal/dao"
 	"youtuerp/internal/models"
-	"youtuerp/redis"
 )
 
 type IBaseCode interface {
@@ -27,12 +26,12 @@ type BaseCode struct {
 }
 
 func (b BaseCode) HGetValue(key string, id interface{}, field string) string {
-	red := redis.NewRedis()
+	red := RedisService
 	return red.HGetValue(models.BaseDataCode{}.TableName()+key, id, field)
 }
 
 func (b BaseCode) FindCollect(key string) []map[string]string {
-	red := redis.NewRedis()
+	red := RedisService
 	tableName := models.BaseDataCode{}.TableName()
 	data := make([]map[string]string, 1)
 	data = red.HCollectOptions(tableName + key)
@@ -85,7 +84,7 @@ func (b BaseCode) Find(per, page int, filter map[string]interface{}, selectKeys 
 }
 
 func (b BaseCode) FindAllLevel() (data []map[string]string, err error) {
-	red := redis.NewRedis()
+	red := RedisService
 	//data = red.HCollectOptions(models.BaseDataLevel{}.TableName())
 	//if len(data) > 0 {
 	//	return
@@ -105,7 +104,7 @@ func (b BaseCode) FindAllLevel() (data []map[string]string, err error) {
 }
 
 func (b BaseCode) SaveRedisData(result models.BaseDataCode) {
-	redis.HSetValue(models.BaseDataCode{}.TableName()+result.CodeName, result.ID, map[string]interface{}{
+	RedisService.HSetValue(models.BaseDataCode{}.TableName()+result.CodeName, result.ID, map[string]interface{}{
 		"id":   result.ID,
 		"name": result.Name,
 	})

@@ -7,7 +7,6 @@ import (
 	"youtuerp/internal/dao"
 	"youtuerp/internal/models"
 	"youtuerp/pkg/util"
-	"youtuerp/redis"
 )
 
 type IEmployeeService interface {
@@ -30,7 +29,7 @@ type EmployeeService struct {
 }
 
 func (e EmployeeService) FindRedis() []map[string]string {
-	red := redis.NewRedis()
+	red := RedisService
 	tableName := models.Employee{}.TableName()
 	data := make([]map[string]string, 0)
 	data = red.HCollectOptions(tableName)
@@ -60,7 +59,7 @@ func (e EmployeeService) Delete(id uint) error {
 	if err != nil {
 		return err
 	}
-	go redis.NewRedis().SRemove(models.User{}.TableName(), id)
+	go RedisService.SRemove(models.User{}.TableName(), id)
 	return nil
 }
 
@@ -124,7 +123,7 @@ func (e EmployeeService) FirstByPhoneOrEmail(account string) (*models.Employee, 
 
 //
 func (e EmployeeService) SaveRedisData(result map[string]interface{}) {
-	redis.HSetValue(models.User{}.TableName(), result["id"], map[string]interface{}{
+	RedisService.HSetValue(models.User{}.TableName(), result["id"], map[string]interface{}{
 		"id":              result["id"],
 		"name":            result["name"],
 		"user_company_id": result["user_company_id"],

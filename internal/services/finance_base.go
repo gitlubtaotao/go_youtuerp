@@ -7,7 +7,7 @@ import (
 	"time"
 	"youtuerp/internal/dao"
 	"youtuerp/internal/models"
-	"youtuerp/redis"
+	"youtuerp/pkg/redisService"
 )
 
 type IFinanceBase interface {
@@ -28,7 +28,7 @@ type FinanceBase struct {
 }
 
 func (f FinanceBase) GetAllFeeRate(companyId uint, filterOther ...map[string]interface{}) ([]models.FinanceRate, error) {
-	rateSetting := redis.SystemRateSetting()
+	rateSetting := redisService.SystemRateSetting()
 	//按照实时的汇率进行计算
 	if rateSetting == models.SettingFeeRateNow {
 		return f.repo.GetAllFeeRate(map[string]interface{}{"start_month": 0, "end_month": 0, "company_id": companyId})
@@ -45,7 +45,7 @@ func (f FinanceBase) GetAllFeeRate(companyId uint, filterOther ...map[string]int
 }
 
 func (f FinanceBase) FindFeeTypeRedis() []map[string]string {
-	red := redis.NewRedis()
+	red := RedisService
 	tableName := models.FinanceFeeType{}.TableName()
 	data := make([]map[string]string, 0)
 	data = red.HCollectOptions(tableName)
@@ -120,7 +120,7 @@ func (f FinanceBase) saveRedisData(data interface{}) {
 		"name_cn":             record.NameCn,
 		"finance_currency_id": record.FinanceCurrencyId,
 	}
-	redis.HSetValue(tableName, record.ID, temp)
+	redisService.HSetValue(tableName, record.ID, temp)
 }
 
 //删除币种和费用对应的redis缓存
@@ -130,7 +130,7 @@ func (f FinanceBase) deleteRedisData(id uint, data interface{}) {
 		return
 	}
 	tableName := models.FinanceFeeType{}.TableName()
-	red := redis.NewRedis()
+	red := RedisService
 	red.SRemove(tableName, id)
 }
 

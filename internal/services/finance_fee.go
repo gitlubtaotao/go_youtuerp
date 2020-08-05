@@ -7,8 +7,8 @@ import (
 	"youtuerp/internal/dao"
 	"youtuerp/internal/models"
 	"youtuerp/pkg/enumerize"
+	"youtuerp/pkg/redisService"
 	"youtuerp/pkg/util"
-	"youtuerp/redis"
 )
 
 type IFinanceFee interface {
@@ -64,7 +64,7 @@ func (f FinanceFee) HandleFeesShow(fee interface{}, enum enumerize.Enumerize) ma
 	data["type_id"] = f.baseDataFindFast(models.FinanceTag, data["type_id"])
 	data["finance_currency_id"] = f.baseDataFindFast(models.CodeFinanceCurrency, data["finance_currency_id"])
 	data["closing_unit_id_value"] = data["closing_unit_id"]
-	data["closing_unit_id"] = red.HGetCrm(data["closing_unit_id"], "")
+	data["closing_unit_id"] = RedisService.HGetCrm(data["closing_unit_id"], "")
 	data["order_master_id_value"] = data["order_master_id"]
 	data["order_master_id"] = data["serial_number"]
 	data["status"] = enum.DefaultText("finance_fees_status.", data["status"])
@@ -95,7 +95,7 @@ func (f FinanceFee) GetHistoryFee(filter map[string]interface{}) ([]map[string]i
 
 func (f FinanceFee) CopyFee(orderMasterId []uint, financeFeeIds []uint, companyId int) error {
 	//var sy sync.WaitGroup
-	if redis.SystemRateSetting() == models.SettingFeeRateNow {
+	if redisService.SystemRateSetting() == models.SettingFeeRateNow {
 		return f.realTimeRateCopyFee(orderMasterId, financeFeeIds, uint(companyId))
 	} else {
 		return f.monthRateCopyFee(orderMasterId, financeFeeIds, uint(companyId))
@@ -185,7 +185,7 @@ func (f FinanceFee) BulkHistoryFee(orderMasterId uint, feeIds []uint, companyId 
 	}
 	order := orderMasters[0]
 	financeBase := NewFinanceBase()
-	if redis.SystemRateSetting() == models.SettingFeeRateNow {
+	if redisService.SystemRateSetting() == models.SettingFeeRateNow {
 		rates, err = financeBase.GetAllFeeRate(companyId)
 	} else {
 		rates, err = f.getRateByOrderCreate(companyId, order.CreatedAt)
@@ -320,7 +320,7 @@ func (f FinanceFee) commonHandlerByCopyFee(rates []models.FinanceRate, financeFe
 }
 
 func (f FinanceFee) baseDataFindFast(key string, value interface{}) string {
-	return red.HGetValue(models.BaseDataCode{}.TableName()+key, value, "name")
+	return RedisService.HGetValue(models.BaseDataCode{}.TableName()+key, value, "name")
 }
 
 func NewFinanceFee() IFinanceFee {

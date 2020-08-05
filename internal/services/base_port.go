@@ -6,7 +6,6 @@ import (
 	"sync"
 	"youtuerp/internal/dao"
 	"youtuerp/internal/models"
-	"youtuerp/redis"
 )
 
 type IBasePort interface {
@@ -25,7 +24,7 @@ type BasePort struct {
 }
 
 func (b BasePort) FindCollect(key string) []map[string]string {
-	red := redis.NewRedis()
+	red := RedisService
 	tableName := models.BaseDataPort{}.TableName()
 	data := make([]map[string]string, 0)
 	data = red.HCollectOptions(tableName + key)
@@ -77,7 +76,7 @@ func (b BasePort) Find(per, page int, filter map[string]interface{}, selectKeys 
 }
 
 func (b BasePort) SaveRedisData(result models.BaseDataPort) {
-	redis.HSetValue(models.BaseDataPort{}.TableName()+strconv.Itoa(int(result.Type)), result.ID, map[string]interface{}{
+	RedisService.HSetValue(models.BaseDataPort{}.TableName()+strconv.Itoa(int(result.Type)), result.ID, map[string]interface{}{
 		"id":   result.ID,
 		"name": result.Name,
 	})
