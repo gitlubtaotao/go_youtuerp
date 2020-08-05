@@ -1,7 +1,6 @@
 package dao
 
 import (
-	"youtuerp/database"
 	"youtuerp/internal/models"
 )
 
@@ -18,26 +17,26 @@ type BaseCode struct {
 }
 
 func (b BaseCode) Update(id uint, code models.BaseDataCode) error {
-	return database.GetDBCon().Model(&models.BaseDataCode{ID: id}).Updates(code).Error
+	return global.DataEngine.Model(&models.BaseDataCode{ID: id}).Updates(code).Error
 }
 
 func (b BaseCode) Delete(id uint) error {
 	return b.crud.Delete(&models.BaseDataCode{}, id)
 }
 func (b BaseCode) Create(code models.BaseDataCode) (models.BaseDataCode, error) {
-	err := database.GetDBCon().Create(&code).Error
+	err := global.DataEngine.Create(&code).Error
 	return code, err
 }
 
 func (b BaseCode) FindAllLevel() (levels []models.BaseDataLevel, err error) {
-	sqlConn := database.GetDBCon().Model(&models.BaseDataLevel{})
+	sqlConn := global.DataEngine.Model(&models.BaseDataLevel{})
 	err = sqlConn.Find(&levels).Error
 	return levels, err
 }
 
 func (b BaseCode) Find(per, page int, filter map[string]interface{}, selectKeys []string,
 	orders []string, isTotal bool) (codes []models.BaseDataCode, total int64, err error) {
-	sqlConn := database.GetDBCon().Model(&models.BaseDataCode{})
+	sqlConn := global.DataEngine.Model(&models.BaseDataCode{})
 	if isTotal {
 		if total, err = b.Count(sqlConn, filter); err != nil {
 			return

@@ -3,7 +3,7 @@ package dao
 import (
 	"database/sql"
 	"gorm.io/gorm"
-	"youtuerp/database"
+	"youtuerp/global"
 	"youtuerp/internal/models"
 	"youtuerp/pkg/util"
 )
@@ -26,13 +26,13 @@ func (c CrmClue) Delete(id uint) error {
 
 func (c CrmClue) Update(id uint, clue models.CrmClue) error {
 	var record models.CrmClue
-	err := database.GetDBCon().First(&record, "id = ? ", id).Updates(util.StructToChange(clue)).Error
+	err := global.DataEngine.First(&record, "id = ? ", id).Updates(util.StructToChange(clue)).Error
 	return err
 }
 
 func (c CrmClue) First(id uint, isTacks bool) (models.CrmClue, error) {
 	var data models.CrmClue
-	sqlConn := database.GetDBCon().Model(&models.CrmClue{})
+	sqlConn := global.DataEngine.Model(&models.CrmClue{})
 	if isTacks {
 		sqlConn = sqlConn.Preload("UserCreate")
 	}
@@ -42,9 +42,9 @@ func (c CrmClue) First(id uint, isTacks bool) (models.CrmClue, error) {
 func (c CrmClue) Find(per, page int, filter map[string]interface{}, selectKeys []string,
 	orders []string, isCount bool) (clues []models.CrmClue, total int64, err error) {
 	var rows *sql.Rows
-	sqlCon := database.GetDBCon().Model(&models.CrmClue{}).Scopes(c.defaultScope())
+	sqlCon := global.DataEngine.Model(&models.CrmClue{}).Scopes(c.defaultScope())
 	if isCount {
-		if total, err = c.Count(database.GetDBCon().Model(&models.CrmClue{}).Scopes(c.defaultScope()), filter); err != nil {
+		if total, err = c.Count(global.DataEngine.Model(&models.CrmClue{}).Scopes(c.defaultScope()), filter); err != nil {
 			return
 		}
 	}
@@ -64,7 +64,7 @@ func (c CrmClue) Find(per, page int, filter map[string]interface{}, selectKeys [
 }
 
 func (c CrmClue) Create(clue models.CrmClue) (models.CrmClue, error) {
-	sqlCon := database.GetDBCon().Set("gorm:association_autoupdate", false)
+	sqlCon := global.DataEngine.Set("gorm:association_autoupdate", false)
 	sqlCon = sqlCon.Set("gorm:association_autocreate", false)
 	err := sqlCon.Create(&clue).Error
 	if err != nil {

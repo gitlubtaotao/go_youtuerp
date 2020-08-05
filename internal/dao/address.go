@@ -2,7 +2,7 @@ package dao
 
 import (
 	"gorm.io/gorm"
-	"youtuerp/database"
+	"youtuerp/global"
 	"youtuerp/internal/models"
 )
 
@@ -30,35 +30,35 @@ func (a AddressRepository) UpdateById(id uint, updateContent models.Address) (mo
 	if err != nil {
 		return address, err
 	}
-	err = database.GetDBCon().Model(&address).Updates(updateContent).Error
+	err = global.DataEngine.Model(&address).Updates(updateContent).Error
 	return address, err
 }
 
 func (a AddressRepository) First(id uint) (models.Address, error) {
 	var data models.Address
-	err := database.GetDBCon().First(&data, id).Error
+	err := global.DataEngine.First(&data, id).Error
 	return data, err
 }
 
 func (a AddressRepository) FindByOa(per, page int, filter map[string]interface{}, selectKeys []string,
 	order []string) (address []models.Address, total int64, err error) {
-	sqlCon := database.GetDBCon().Model(&models.Address{}).Scopes(a.defaultOaScoped)
+	sqlCon := global.DataEngine.Model(&models.Address{}).Scopes(a.defaultOaScoped)
 	address, err = a.Find(sqlCon, per, page, filter, selectKeys, order)
-	total, err = a.Count(database.GetDBCon().Model(&models.Address{}).Scopes(a.defaultOaScoped), filter)
+	total, err = a.Count(global.DataEngine.Model(&models.Address{}).Scopes(a.defaultOaScoped), filter)
 	return
 }
 
 func (a AddressRepository) FindByCrm(per, page int, filter map[string]interface{}, selectKeys []string,
 	orders []string) (address []models.Address, total int64, err error) {
-	sqlCon := database.GetDBCon().Model(&models.Address{}).Scopes(a.defaultCrmScoped)
+	sqlCon := global.DataEngine.Model(&models.Address{}).Scopes(a.defaultCrmScoped)
 	address, err = a.Find(sqlCon, per, page, filter, selectKeys, orders)
-	total, err = a.Count(database.GetDBCon().Model(&models.Address{}).Scopes(a.defaultCrmScoped), filter)
+	total, err = a.Count(global.DataEngine.Model(&models.Address{}).Scopes(a.defaultCrmScoped), filter)
 	return
 }
 
 //创建银行账户信息
 func (a AddressRepository) Create(address models.Address) (models.Address, error) {
-	err := database.GetDBCon().Set("gorm:association_autocreate", false).Create(&address).Error
+	err := global.DataEngine.Set("gorm:association_autocreate", false).Create(&address).Error
 	if err != nil {
 		return models.Address{}, err
 	}

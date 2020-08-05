@@ -2,7 +2,7 @@ package dao
 
 import (
 	"gorm.io/gorm"
-	"youtuerp/database"
+	"youtuerp/global"
 	"youtuerp/internal/models"
 	"youtuerp/pkg/util"
 )
@@ -33,8 +33,8 @@ type FinanceFee struct {
 
 func (f FinanceFee) FindFinanceFees(per, page int, filter map[string]interface{},
 	selectKeys []string, orders []string) (financeFees []models.ResponseFinanceFee, total int64, err error) {
-	sqlCon := database.GetDBCon().Model(&models.FinanceFee{}).Scopes(f.defaultJoinTables).Where("finance_fees.deleted_at IS NULL")
-	if total, err = f.Count(database.GetDBCon().Model(&models.FinanceFee{}).Scopes(f.defaultJoinTables), filter); err != nil {
+	sqlCon := global.DataEngine.Model(&models.FinanceFee{}).Scopes(f.defaultJoinTables).Where("finance_fees.deleted_at IS NULL")
+	if total, err = f.Count(global.DataEngine.Model(&models.FinanceFee{}).Scopes(f.defaultJoinTables), filter); err != nil {
 		return
 	}
 	if len(selectKeys) == 0 {
@@ -58,7 +58,7 @@ func (f FinanceFee) GetHistoryFee(filter map[string]interface{}, limit int, sele
 	if limit == 0 {
 		limit = 50
 	}
-	sqlCon := database.GetDBCon().Model(&models.FinanceFee{}).Where("finance_fees.deleted_at is NULL")
+	sqlCon := global.DataEngine.Model(&models.FinanceFee{}).Where("finance_fees.deleted_at is NULL")
 	if len(filter) > 0 {
 		sqlCon = sqlCon.Scopes(f.Ransack(filter))
 	}
@@ -79,7 +79,7 @@ func (f FinanceFee) GetHistoryFee(filter map[string]interface{}, limit int, sele
 
 func (f FinanceFee) FindFeesById(ids []uint, otherFilter map[string]interface{}, otherKeys ...string) ([]models.FinanceFee, error) {
 	var financeFees []models.FinanceFee
-	sqlConn := database.GetDBCon().Where("id IN (?)", ids)
+	sqlConn := global.DataEngine.Where("id IN (?)", ids)
 	if len(otherFilter) > 0 {
 		sqlConn.Scopes(f.crud.ransack(otherFilter))
 	}
@@ -96,7 +96,7 @@ func (f FinanceFee) FindFees(per, page int, filter map[string]interface{}, selec
 }
 
 func (f FinanceFee) ChangeStatusFees(ids []uint, otherFilter map[string]interface{}, status string) error {
-	sqlCon := database.GetDBCon().Model(&models.FinanceFee{})
+	sqlCon := global.DataEngine.Model(&models.FinanceFee{})
 	if len(otherFilter) > 0 {
 		sqlCon.Scopes(f.crud.ransack(otherFilter))
 	}
@@ -104,7 +104,7 @@ func (f FinanceFee) ChangeStatusFees(ids []uint, otherFilter map[string]interfac
 }
 
 func (f FinanceFee) DeleteFees(ids []uint) error {
-	return database.GetDBCon().Where("id IN (?) and status IN (?)", ids, []string{
+	return global.DataEngine.Where("id IN (?) and status IN (?)", ids, []string{
 		models.FinanceFeeStatusInit,
 		models.FinanceFeeStatusDismiss,
 		models.FinanceFeeStatusVerify,
@@ -112,7 +112,7 @@ func (f FinanceFee) DeleteFees(ids []uint) error {
 }
 
 func (f FinanceFee) BulkInsertOrUpdate(financeFees []models.FinanceFee) ([]models.FinanceFee, error) {
-	sqlConn := database.GetDBCon()
+	sqlConn := global.DataEngine
 	var updateFinance []models.FinanceFee
 	var createFinance []models.FinanceFee
 	for _, item := range financeFees {
@@ -146,7 +146,7 @@ func (f FinanceFee) OrderFees(attr map[string]interface{}, payOrReceive ...strin
 		return financeFees, nil
 	}
 	for _, item := range payOrReceive {
-		if err := database.GetDBCon().Where(attr).Where("pay_or_receive = ?", item).Find(&temp).Error; err != nil {
+		if err := global.DataEngine.Where(attr).Where("pay_or_receive = ?", item).Find(&temp).Error; err != nil {
 			return financeFees, err
 		}
 		financeFees[item] = temp

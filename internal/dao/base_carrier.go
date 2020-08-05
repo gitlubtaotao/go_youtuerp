@@ -1,7 +1,7 @@
 package dao
 
 import (
-	"youtuerp/database"
+	"youtuerp/global"
 	"youtuerp/internal/models"
 )
 
@@ -18,20 +18,20 @@ type BaseCarrier struct {
 }
 
 func (b BaseCarrier) Update(id uint, carrier models.BaseDataCarrier) error {
-	return database.GetDBCon().Model(&models.BaseDataCarrier{ID: id}).Updates(carrier).Error
+	return global.DataEngine.Model(&models.BaseDataCarrier{ID: id}).Updates(carrier).Error
 }
 
 func (b BaseCarrier) Delete(id uint) error {
 	return b.crud.Delete(&models.BaseDataCarrier{}, id)
 }
 func (b BaseCarrier) Create(code models.BaseDataCarrier) (models.BaseDataCarrier, error) {
-	err := database.GetDBCon().Create(&code).Error
+	err := global.DataEngine.Create(&code).Error
 	return code, err
 }
 
 func (b BaseCarrier) Find(per, page int, filter map[string]interface{}, selectKeys []string,
 	orders []string, isTotal bool) (codes []models.BaseDataCarrier, total int64, err error) {
-	sqlConn := database.GetDBCon().Model(&models.BaseDataCarrier{})
+	sqlConn := global.DataEngine.Model(&models.BaseDataCarrier{})
 	if isTotal {
 		if total, err = b.Count(sqlConn, filter); err != nil {
 			return

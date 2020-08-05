@@ -3,7 +3,7 @@ package dao
 import (
 	"database/sql"
 	"reflect"
-	"youtuerp/database"
+	"youtuerp/global"
 	"youtuerp/internal/models"
 )
 
@@ -23,7 +23,7 @@ type FinanceBase struct {
 }
 
 func (f FinanceBase) GetAllFeeRate(filterOther ...map[string]interface{}) (feeRate []models.FinanceRate, err error) {
-	sqlCon := database.GetDBCon().Model(&models.FinanceRate{})
+	sqlCon := global.DataEngine.Model(&models.FinanceRate{})
 	var rows *sql.Rows
 	if len(filterOther) >= 1 {
 		for _, filter := range filterOther {
@@ -45,20 +45,20 @@ func (f FinanceBase) GetAllFeeRate(filterOther ...map[string]interface{}) (feeRa
 func (f FinanceBase) Update(id uint, record interface{}) error {
 	name := reflect.TypeOf(record).Name()
 	if name == "FinanceRate" {
-		return database.GetDBCon().Model(&models.FinanceRate{ID: id}).Updates(record).Error
+		return global.DataEngine.Model(&models.FinanceRate{ID: id}).Updates(record).Error
 	} else if name == "FinanceFeeType" {
-		return database.GetDBCon().Model(&models.FinanceFeeType{ID: id}).Updates(record).Error
+		return global.DataEngine.Model(&models.FinanceFeeType{ID: id}).Updates(record).Error
 	}
 	return nil
 }
 func (f FinanceBase) Delete(id uint, model interface{}) error {
-	return database.GetDBCon().Delete(model, "id = ?", id).Error
+	return global.DataEngine.Delete(model, "id = ?", id).Error
 }
 
 func (f FinanceBase) FindRate(per, page int, filter map[string]interface{},
 	selectKeys []string, orders []string) (records []models.FinanceRate, total int64, err error) {
 	var rows *sql.Rows
-	sqlConn := database.GetDBCon().Model(&models.FinanceRate{})
+	sqlConn := global.DataEngine.Model(&models.FinanceRate{})
 	if total, err = f.Count(sqlConn, filter); err != nil {
 		return
 	}
@@ -75,7 +75,7 @@ func (f FinanceBase) FindRate(per, page int, filter map[string]interface{},
 }
 func (f FinanceBase) FindFeeType(per, page int, filter map[string]interface{},
 	selectKeys []string, orders []string) (records []models.FinanceFeeType, total int64, err error) {
-	sqlConn := database.GetDBCon().Model(&models.FinanceFeeType{})
+	sqlConn := global.DataEngine.Model(&models.FinanceFeeType{})
 	if total, err = f.Count(sqlConn, filter); err != nil {
 		return
 	}
@@ -89,12 +89,12 @@ func (f FinanceBase) Create(record interface{}) (interface{}, error) {
 	rt := reflect.TypeOf(record)
 	if rt.Name() == "FinanceRate" {
 		rate := record.(models.FinanceRate)
-		err = database.GetDBCon().Create(&rate).Error
+		err = global.DataEngine.Create(&rate).Error
 		return rate, err
 	}
 	if rt.Name() == "FinanceFeeType" {
 		feeType := record.(models.FinanceFeeType)
-		err = database.GetDBCon().Create(&feeType).Error
+		err = global.DataEngine.Create(&feeType).Error
 		return feeType, err
 	}
 	return record, err

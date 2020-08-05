@@ -1,7 +1,7 @@
 package dao
 
 import (
-	"youtuerp/database"
+	"youtuerp/global"
 	"youtuerp/internal/models"
 )
 
@@ -23,7 +23,7 @@ type BaseWarehouse struct {
 
 func (b BaseWarehouse) FindAll(selectKeys []string, orderBy string) ([]models.BaseWarehouse, error) {
 	var records []models.BaseWarehouse
-	sqlCon := database.GetDBCon()
+	sqlCon := global.DataEngine
 	if len(selectKeys) > 0 {
 		sqlCon = sqlCon.Select(selectKeys)
 	}
@@ -35,21 +35,21 @@ func (b BaseWarehouse) FindAll(selectKeys []string, orderBy string) ([]models.Ba
 }
 
 func (b BaseWarehouse) Update(id uint, code models.BaseWarehouse) error {
-	return database.GetDBCon().Model(&models.BaseWarehouse{ID: id}).Updates(code).Error
+	return global.DataEngine.Model(&models.BaseWarehouse{ID: id}).Updates(code).Error
 }
 
 func (b BaseWarehouse) Delete(id uint) error {
-	return database.GetDBCon().Delete(&models.BaseWarehouse{}, "id = ?", id).Error
+	return global.DataEngine.Delete(&models.BaseWarehouse{}, "id = ?", id).Error
 }
 
 func (b BaseWarehouse) Create(code models.BaseWarehouse) (models.BaseWarehouse, error) {
-	err := database.GetDBCon().Create(&code).Error
+	err := global.DataEngine.Create(&code).Error
 	return code, err
 }
 
 func (b BaseWarehouse) Find(per, page int, filter map[string]interface{}, selectKeys []string,
 	orders []string, isTotal bool) (codes []models.BaseWarehouse, total int64, err error) {
-	sqlConn := database.GetDBCon().Model(&models.BaseWarehouse{})
+	sqlConn := global.DataEngine.Model(&models.BaseWarehouse{})
 	if isTotal {
 		if total, err = b.Count(sqlConn, filter); err != nil {
 			return

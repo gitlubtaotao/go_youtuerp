@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"gorm.io/gorm"
 	"sync"
-	"youtuerp/database"
+	"youtuerp/global"
 	"youtuerp/internal/models"
 )
 
@@ -40,7 +40,7 @@ type OrderMasterRepository struct {
 
 func (o OrderMasterRepository) FindMasterByIds(ids []uint, otherKeys ...string) ([]models.ResponseOrderMaster, error) {
 	var orderMasters []models.ResponseOrderMaster
-	sqlConn := database.GetDBCon().Model(&models.OrderMaster{}).Where("order_masters.id IN (?)", ids).Scopes(o.joinExtendInfo)
+	sqlConn := global.DataEngine.Model(&models.OrderMaster{}).Where("order_masters.id IN (?)", ids).Scopes(o.joinExtendInfo)
 	if len(otherKeys) >= 0 {
 		sqlConn = sqlConn.Select(otherKeys)
 	}
@@ -58,7 +58,7 @@ func (o OrderMasterRepository) FindMasterByIds(ids []uint, otherKeys ...string) 
 
 func (o OrderMasterRepository) GetFormerSoNo(orderId uint, formerType string, attr ...map[string]interface{}) (interface{}, error) {
 	var data models.FormerSeaSoNo
-	err := database.GetDBCon().Where(models.FormerSeaSoNo{OrderMasterId: orderId}).Attrs(map[string]interface{}{"order_master_id": orderId}).FirstOrCreate(&data).Error
+	err := global.DataEngine.Where(models.FormerSeaSoNo{OrderMasterId: orderId}).Attrs(map[string]interface{}{"order_master_id": orderId}).FirstOrCreate(&data).Error
 	return data, err
 }
 
@@ -68,7 +68,7 @@ func (o OrderMasterRepository) GetFormerBooking(orderId uint, formerType string,
 		if len(attr) > 0 {
 			return o.createSeaBooking(orderId, attr[0])
 		} else {
-			err = database.GetDBCon().Preload("SeaCapLists").Preload("SeaCargoInfos").First(&booking, "order_master_id = ?", orderId).Error
+			err = global.DataEngine.Preload("SeaCapLists").Preload("SeaCargoInfos").First(&booking, "order_master_id = ?", orderId).Error
 		}
 		return booking, err
 	}
@@ -78,7 +78,7 @@ func (o OrderMasterRepository) GetFormerBooking(orderId uint, formerType string,
 func (o OrderMasterRepository) GetFormerInstruction(orderMasterId uint, formerType interface{}, attr map[string]interface{}) (models.FormerSeaInstruction, error) {
 	attr["order_master_id"] = orderMasterId
 	var data models.FormerSeaInstruction
-	err := database.GetDBCon().Where(models.FormerSeaInstruction{OrderMasterId: orderMasterId, Type: formerType.(string)}).Preload("SeaCapLists").Preload("SeaCargoInfos").Attrs(attr).FirstOrCreate(&data).Error
+	err := global.DataEngine.Where(models.FormerSeaInstruction{OrderMasterId: orderMasterId, Type: formerType.(string)}).Preload("SeaCapLists").Preload("SeaCargoInfos").Attrs(attr).FirstOrCreate(&data).Error
 	return data, err
 }
 
@@ -87,12 +87,12 @@ func (o OrderMasterRepository) DeleteMaster(id uint) error {
 }
 
 func (o OrderMasterRepository) ChangeStatus(id uint, status string) error {
-	return database.GetDBCon().Model(&models.OrderMaster{ID: id}).Updates(map[string]interface{}{"status": status}).Error
+	return global.DataEngine.Model(&models.OrderMaster{ID: id}).Updates(map[string]interface{}{"status": status}).Error
 }
 
 func (o OrderMasterRepository) FirstMaster(id uint, load ...string) (models.OrderMaster, error) {
 	var order models.OrderMaster
-	sqlConn := database.GetDBCon().Model(&models.OrderMaster{})
+	sqlConn := global.DataEngine.Model(&models.OrderMaster{})
 	for i := 0; i < len(load); i++ {
 		sqlConn = sqlConn.Preload(load[i])
 	}
@@ -103,9 +103,9 @@ func (o OrderMasterRepository) FirstMaster(id uint, load ...string) (models.Orde
 func (o OrderMasterRepository) FindMaster(per, page int, filter map[string]interface{}, selectKeys []string,
 	orders []string, isTotal bool) (masters []models.ResponseOrderMaster, total int64, err error) {
 	var rows *sql.Rows
-	sqlConn := database.GetDBCon().Model(&models.OrderMaster{}).Scopes(o.joinExtendInfo)
+	sqlConn := global.DataEngine.Model(&models.OrderMaster{}).Scopes(o.joinExtendInfo)
 	if isTotal {
-		if total, err = o.Count(database.GetDBCon().Model(&models.OrderMaster{}).Scopes(o.joinExtendInfo), filter); err != nil {
+		if total, err = o.Count(global.DataEngine.Model(&models.OrderMaster{}).Scopes(o.joinExtendInfo), filter); err != nil {
 			return
 		}
 	}
@@ -134,7 +134,7 @@ func (o OrderMasterRepository) joinExtendInfo(db *gorm.DB) *gorm.DB {
 
 func (o OrderMasterRepository) UpdateMaster(id uint, order models.OrderMaster) error {
 	var record models.OrderMaster
-	sqlCon := database.GetDBCon().First(&record, "id = ? ", id)
+	sqlCon := global.DataEngine.First(&record, "id = ? ", id)
 	return sqlCon.Transaction(func(tx *gorm.DB) error {
 		if err := sqlCon.Association("Roles").Replace(order.Roles); err != nil {
 			return err
@@ -149,19 +149,19 @@ func (o OrderMasterRepository) CreateMaster(order models.OrderMaster) (models.Or
 		serialNumber string
 		err          error
 	)
-	tx := database.GetDBCon().Begin()
+	tx := global.DataEngine.Begin()
 	serialNumber, err = NumberSettingRepository{}.GenerateOrderNo(*order.CreatedAt)
 	if err != nil {
 		tx.Rollback()
 		return models.OrderMaster{}, err
 	}
 	order.SerialNumber = serialNumber
-	err = database.GetDBCon().Create(&order).Error
+	err = global.DataEngine.Create(&order).Error
 	if err != nil {
 		tx.Rollback()
 		return models.OrderMaster{}, err
 	}
-	err = database.GetDBCon().Create(&models.OrderExtendInfo{OrderMasterId: order.ID, HblSO: order.SerialNumber}).Error
+	err = global.DataEngine.Create(&models.OrderExtendInfo{OrderMasterId: order.ID, HblSO: order.SerialNumber}).Error
 	if err != nil {
 		tx.Rollback()
 		return models.OrderMaster{}, err
@@ -201,7 +201,7 @@ func (o OrderMasterRepository) createSeaBooking(orderId uint, attr map[string]in
 		}
 		attr["sea_cargo_infos"] = nil
 	}
-	err = database.GetDBCon().Transaction(func(tx *gorm.DB) error {
+	err = global.DataEngine.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Where("order_master_id = ?", orderId).Attrs(attr).FirstOrCreate(&booking).Error; err != nil {
 			return err
 		}

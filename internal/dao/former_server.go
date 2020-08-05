@@ -3,7 +3,7 @@ package dao
 import (
 	"github.com/kataras/golog"
 	"gorm.io/gorm"
-	"youtuerp/database"
+	"youtuerp/global"
 	"youtuerp/internal/models"
 	"youtuerp/pkg/util"
 )
@@ -39,11 +39,11 @@ func (f FormerServer) DeleteOtherServer(id uint, formerType string) error {
 	case "former_trailer_order":
 		return f.deleteFormerTrailerOrder(id)
 	case "former_other_service":
-		return database.GetDBCon().Delete(models.FormerOtherService{}, "id = ?", id).Error
+		return global.DataEngine.Delete(models.FormerOtherService{}, "id = ?", id).Error
 	case "former_warehouse_service":
-		return database.GetDBCon().Delete(models.FormerWarehouseService{}, "id = ?", id).Error
+		return global.DataEngine.Delete(models.FormerWarehouseService{}, "id = ?", id).Error
 	case "former_custom_clearance":
-		return database.GetDBCon().Delete(models.FormerCustomClearance{}, "id = ?", id).Error
+		return global.DataEngine.Delete(models.FormerCustomClearance{}, "id = ?", id).Error
 	}
 	return nil
 }
@@ -82,24 +82,24 @@ func (f FormerServer) UpdateFormerData(formerType string, data models.RenderForm
 }
 
 func (f FormerServer) UpdateExtendInfo(id uint, data models.OrderExtendInfo) error {
-	return database.GetDBCon().Model(&models.OrderExtendInfo{ID: id}).Updates(util.StructToChange(data)).Error
+	return global.DataEngine.Model(&models.OrderExtendInfo{ID: id}).Updates(util.StructToChange(data)).Error
 }
 func (f FormerServer) GetFormerOtherService(orderMasterId uint) ([]models.FormerOtherService, error) {
 	var formerOtherServer []models.FormerOtherService
-	err := database.GetDBCon().Where("order_master_id = ?", orderMasterId).Order("id desc").Find(&formerOtherServer).Error
+	err := global.DataEngine.Where("order_master_id = ?", orderMasterId).Order("id desc").Find(&formerOtherServer).Error
 	return formerOtherServer, err
 }
 
 func (f FormerServer) GetFormerTrailerOrder(orderMasterId uint) ([]models.FormerTrailerOrder, error) {
 	var formerTrailerOrder []models.FormerTrailerOrder
-	sqlConn := database.GetDBCon().Where("order_master_id = ?", orderMasterId).Preload("SeaCapLists").Preload("TrailerCabinetNumbers")
+	sqlConn := global.DataEngine.Where("order_master_id = ?", orderMasterId).Preload("SeaCapLists").Preload("TrailerCabinetNumbers")
 	err := sqlConn.Find(&formerTrailerOrder).Error
 	return formerTrailerOrder, err
 }
 
 //更新货物详情
 func (f FormerServer) UpdateSeaCargoInfo(infos []models.SeaCargoInfo) (interface{}, error) {
-	sqlConn := database.GetDBCon()
+	sqlConn := global.DataEngine
 	var data []models.SeaCargoInfo
 	err := sqlConn.Transaction(func(tx *gorm.DB) error {
 		for _, item := range infos {
@@ -123,25 +123,25 @@ func (f FormerServer) UpdateSeaCargoInfo(infos []models.SeaCargoInfo) (interface
 //获取仓库场装单
 func (f FormerServer) GetFormerWarehouseService(orderMasterId uint) ([]models.FormerWarehouseService, error) {
 	var formerWarehouseService []models.FormerWarehouseService
-	err := database.GetDBCon().Where("order_master_id = ?", orderMasterId).Order("id desc").Find(&formerWarehouseService).Error
+	err := global.DataEngine.Where("order_master_id = ?", orderMasterId).Order("id desc").Find(&formerWarehouseService).Error
 	return formerWarehouseService, err
 }
 
 func (f FormerServer) GetFormerCustomClearance(orderMasterId uint) ([]models.FormerCustomClearance, error) {
 	var formerCustomerClearance []models.FormerCustomClearance
-	err := database.GetDBCon().Where("order_master_id = ?", orderMasterId).Order("id desc").Find(&formerCustomerClearance).Error
+	err := global.DataEngine.Where("order_master_id = ?", orderMasterId).Order("id desc").Find(&formerCustomerClearance).Error
 	return formerCustomerClearance, err
 }
 
 func (f FormerServer) DeleteCargoInfo(ids []int, formerType string) error {
 	if formerType == "sea_cargo_info" {
-		return database.GetDBCon().Where("id IN (?)", ids).Delete(models.SeaCargoInfo{}).Error
+		return global.DataEngine.Where("id IN (?)", ids).Delete(models.SeaCargoInfo{}).Error
 	}
 	return nil
 }
 
 func (f FormerServer) updateFormerSeaInstruction(data models.RenderFormerData) error {
-	sqlConn := database.GetDBCon()
+	sqlConn := global.DataEngine
 	var record models.FormerSeaInstruction
 	instruction := data.FormerSeaInstruction
 	if err := sqlConn.First(&record, "id = ? ", instruction.ID).Error; err != nil {
@@ -158,7 +158,7 @@ func (f FormerServer) updateFormerSeaInstruction(data models.RenderFormerData) e
 	})
 }
 func (f FormerServer) updateFormerSeaBooking(data models.RenderFormerData) error {
-	sqlConn := database.GetDBCon()
+	sqlConn := global.DataEngine
 	var record models.FormerSeaBook
 	book := data.FormerSeaBook
 	sqlConn = sqlConn.First(&record, "id = ? ", book.ID)
@@ -177,14 +177,14 @@ func (f FormerServer) updateFormerSoNo(formerType string, data models.RenderForm
 	if formerType == "former_sea_so_no" {
 		var soNo = data.FormerSeaSoNo
 		golog.Infof("current time is %v", soNo)
-		return database.GetDBCon().Model(&models.FormerSeaSoNo{ID: soNo.ID}).Updates(util.StructToChange(soNo)).Error
+		return global.DataEngine.Model(&models.FormerSeaSoNo{ID: soNo.ID}).Updates(util.StructToChange(soNo)).Error
 	}
 	return nil
 }
 
 //保存拖车单数据
 func (f FormerServer) saveFormerTrailerOrder(data models.FormerTrailerOrder) (uint, error) {
-	sqlConn := database.GetDBCon()
+	sqlConn := global.DataEngine
 	if data.ID == 0 {
 		err := sqlConn.Create(&data).Error
 		return data.ID, err
@@ -212,7 +212,7 @@ func (f FormerServer) saveFormerTrailerOrder(data models.FormerTrailerOrder) (ui
 
 //删除拖车单
 func (f FormerServer) deleteFormerTrailerOrder(id uint) error {
-	err := database.GetDBCon().Transaction(func(tx *gorm.DB) error {
+	err := global.DataEngine.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Delete(models.FormerTrailerOrder{}, " id = ?", id).Error; err != nil {
 			return err
 		}
@@ -226,30 +226,30 @@ func (f FormerServer) deleteFormerTrailerOrder(id uint) error {
 
 func (f FormerServer) saveFormerOtherService(data models.FormerOtherService) (uint, error) {
 	if data.ID == 0 {
-		err := database.GetDBCon().Create(&data).Error
+		err := global.DataEngine.Create(&data).Error
 		return data.ID, err
 	}
-	err := database.GetDBCon().Model(models.FormerOtherService{ID: data.ID}).Updates(util.StructToChange(data)).Error
+	err := global.DataEngine.Model(models.FormerOtherService{ID: data.ID}).Updates(util.StructToChange(data)).Error
 	return data.ID, err
 }
 
 //保存仓库场装单
 func (f FormerServer) saveFormerWarehouseService(data models.FormerWarehouseService) (uint, error) {
 	if data.ID == 0 {
-		err := database.GetDBCon().Create(&data).Error
+		err := global.DataEngine.Create(&data).Error
 		return data.ID, err
 	}
-	err := database.GetDBCon().Model(models.FormerWarehouseService{ID: data.ID}).Updates(util.StructToChange(data)).Error
+	err := global.DataEngine.Model(models.FormerWarehouseService{ID: data.ID}).Updates(util.StructToChange(data)).Error
 	return data.ID, err
 }
 
 //保存对应的报关单
 func (f FormerServer) saveFormerCustomClearance(data models.FormerCustomClearance) (uint, error) {
 	if data.ID == 0 {
-		err := database.GetDBCon().Create(&data).Error
+		err := global.DataEngine.Create(&data).Error
 		return data.ID, err
 	}
-	err := database.GetDBCon().Model(models.FormerCustomClearance{ID: data.ID}).Updates(util.StructToChange(data)).Error
+	err := global.DataEngine.Model(models.FormerCustomClearance{ID: data.ID}).Updates(util.StructToChange(data)).Error
 	return data.ID, err
 }
 

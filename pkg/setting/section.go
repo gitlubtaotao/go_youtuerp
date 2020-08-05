@@ -2,9 +2,12 @@ package setting
 
 import "time"
 
-type AppServiceSettings struct {
+type AppSettingS struct {
+	TokenSecret    string
+	PerPage        string
+	AllowedOrigins []string
+	ExpireTime     time.Duration
 }
-
 type DatabaseSettingS struct {
 	DBType       string
 	Username     string
@@ -13,13 +16,17 @@ type DatabaseSettingS struct {
 	DBName       string
 	TablePrefix  string
 	Charset      string
+	Collation    string
 	ParseTime    bool
 	MaxIdleConns int
 	MaxOpenConns int
 }
 
 type ServerSettingS struct {
-	ReadTimeout time.Duration
+	ReadTimeout  time.Duration
+	WriteTimeout time.Duration
+	RunMode      string
+	HttpPort     string
 }
 
 type QiniuUploadSettingS struct {

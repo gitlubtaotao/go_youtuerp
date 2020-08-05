@@ -3,7 +3,7 @@ package dao
 import (
 	"database/sql"
 	"gorm.io/gorm"
-	"youtuerp/database"
+	"youtuerp/global"
 	"youtuerp/internal/models"
 )
 
@@ -17,7 +17,7 @@ type SelectRepository struct {
 }
 
 func (s *SelectRepository) FirstRecord(tableName string, filter map[string]interface{}, selectKeys []string) (selectResult []models.ReadSelectResult, err error) {
-	sqlCon := database.GetDBCon().Table(tableName)
+	sqlCon := global.DataEngine.Table(tableName)
 	var rows *sql.Rows
 	if len(selectKeys) == 0 {
 		selectKeys = []string{"id", "name"}
@@ -36,7 +36,7 @@ func (s *SelectRepository) FirstRecord(tableName string, filter map[string]inter
 
 func (s *SelectRepository) FindTable(tableName string, name string, scope map[string]interface{},
 	selectKeys []string) (selectResult []models.ReadSelectResult, err error) {
-	sqlCon := database.GetDBCon().Table(tableName)
+	sqlCon := global.DataEngine.Table(tableName)
 	if len(selectKeys) == 0 {
 		selectKeys = []string{"id", "name"}
 	}

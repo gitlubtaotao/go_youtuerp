@@ -2,7 +2,7 @@ package dao
 
 import (
 	"gorm.io/gorm"
-	"youtuerp/database"
+	"youtuerp/global"
 	"youtuerp/internal/models"
 )
 
@@ -26,17 +26,17 @@ type EmployeeRepository struct {
 
 func (e EmployeeRepository) Delete(id uint) error {
 	var readData models.Employee
-	return database.GetDBCon().Find(&readData).Delete(&readData).Error
+	return global.DataEngine.Find(&readData).Delete(&readData).Error
 }
 
 func (e EmployeeRepository) First(id uint) (*models.Employee, error) {
 	var data models.Employee
-	err := database.GetDBCon().First(&data, "id = ?", id).Error
+	err := global.DataEngine.First(&data, "id = ?", id).Error
 	return &data, err
 }
 
 func (e EmployeeRepository) Create(employee models.Employee) (models.Employee, error) {
-	err := database.GetDBCon().Set("gorm:association_autocreate", false).Create(&employee).Error
+	err := global.DataEngine.Set("gorm:association_autocreate", false).Create(&employee).Error
 	if err != nil {
 		return models.Employee{}, err
 	}
@@ -46,9 +46,9 @@ func (e EmployeeRepository) Create(employee models.Employee) (models.Employee, e
 func (e EmployeeRepository) Find(per, page int, filter map[string]interface{},
 	selectKeys []string, order []string, isCount bool) (
 	employees []models.ResponseEmployee, total int64, err error) {
-	sqlCon := database.GetDBCon().Model(&models.Employee{}).Scopes(e.defaultScoped)
+	sqlCon := global.DataEngine.Model(&models.Employee{}).Scopes(e.defaultScoped)
 	if isCount {
-		countCon := database.GetDBCon().Model(&models.Employee{}).Scopes(e.defaultScoped)
+		countCon := global.DataEngine.Model(&models.Employee{}).Scopes(e.defaultScoped)
 		total, err = e.Count(countCon, filter)
 		if err != nil {
 			return
@@ -73,30 +73,30 @@ func (e EmployeeRepository) Find(per, page int, filter map[string]interface{},
 }
 
 func (e EmployeeRepository) UpdateRecordByModel(userId uint, updateModel models.Employee) error {
-	sqlCon := database.GetDBCon().Model(&models.Employee{ID: userId})
+	sqlCon := global.DataEngine.Model(&models.Employee{ID: userId})
 	return sqlCon.Omit("last_sign_in_ip", "last_sign_in_at", "sign_in_count", "created_at", "current_sign_in_at").Updates(updateModel).Error
 }
 
 //通过手机号码和邮箱查询当前用户
 func (e EmployeeRepository) FirstByPhoneAndEmail(phone string, email string) (employee *models.Employee, err error) {
 	var user models.Employee
-	err = database.GetDBCon().Where(&models.Employee{Phone: phone, Email: email}).First(&user).Error
+	err = global.DataEngine.Where(&models.Employee{Phone: phone, Email: email}).First(&user).Error
 	employee = &user
 	return
 }
 
 func (e EmployeeRepository) UpdateColumnByID(employeeID uint, updateColumn map[string]interface{}) error {
 	user := models.Employee{ID: employeeID}
-	return database.GetDBCon().Model(&user).Updates(updateColumn).Error
+	return global.DataEngine.Model(&user).Updates(updateColumn).Error
 }
 
 func (e EmployeeRepository) UpdateColumn(employee *models.Employee, updateColumn map[string]interface{}) error {
-	return database.GetDBCon().Model(&employee).Updates(updateColumn).Error
+	return global.DataEngine.Model(&employee).Updates(updateColumn).Error
 }
 
 func (e EmployeeRepository) FirstByPhoneOrEmail(account string) (employee *models.Employee, err error) {
 	var user models.Employee
-	err = database.GetDBCon().Scopes(e.defaultScoped).Where("users.phone = ?", account).Or("users.email = ?", account).First(&user).Error
+	err = global.DataEngine.Scopes(e.defaultScoped).Where("users.phone = ?", account).Or("users.email = ?", account).First(&user).Error
 	employee = &user
 	return
 }

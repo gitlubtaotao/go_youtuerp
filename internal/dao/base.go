@@ -4,7 +4,7 @@ import (
 	"gorm.io/gorm"
 	"reflect"
 	"strings"
-	"youtuerp/database"
+	"youtuerp/global"
 )
 
 var RexGrep = [...]string{"gt", "gtEq", "lt", "ltEq", "in",
@@ -61,15 +61,15 @@ type crud struct {
 }
 
 func (c crud) Delete(value interface{}, id uint) error {
-	return database.GetDBCon().Delete(value, "id = ?", id).Error
+	return global.DataEngine.Delete(value, "id = ?", id).Error
 }
 
 func (c crud) First(value interface{}, id uint) error {
-	return database.GetDBCon().First(value, "id = ?", id).Error
+	return global.DataEngine.First(value, "id = ?", id).Error
 }
 
 func (c crud) Create(value interface{}) error {
-	return database.GetDBCon().Create(value).Error
+	return global.DataEngine.Create(value).Error
 }
 
 func (c crud) Where(sqlCon *gorm.DB, filter map[string]interface{}, selectKeys []string, funcs ...func(*gorm.DB) *gorm.DB) *gorm.DB {

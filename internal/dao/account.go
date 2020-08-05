@@ -2,7 +2,7 @@ package dao
 
 import (
 	"gorm.io/gorm"
-	"youtuerp/database"
+	"youtuerp/global"
 	"youtuerp/internal/models"
 )
 
@@ -26,7 +26,7 @@ func (a AccountRepository) Delete(id uint) error {
 	if err != nil {
 		return err
 	}
-	return database.GetDBCon().Delete(&account).Error
+	return global.DataEngine.Delete(&account).Error
 }
 
 func (a AccountRepository) UpdateById(id uint, updateContent models.Account) (models.Account, error) {
@@ -34,45 +34,45 @@ func (a AccountRepository) UpdateById(id uint, updateContent models.Account) (mo
 	if err != nil {
 		return account, err
 	}
-	err = database.GetDBCon().Model(&account).Updates(updateContent).Error
+	err = global.DataEngine.Model(&account).Updates(updateContent).Error
 	return account, err
 }
 
 func (a AccountRepository) First(id uint) (models.Account, error) {
 	var data models.Account
-	err := database.GetDBCon().First(&data, id).Error
+	err := global.DataEngine.First(&data, id).Error
 	return data, err
 }
 
 func (a AccountRepository) FindByOa(per, page int, filter map[string]interface{}, selectKeys []string,
 	order []string) (accounts []models.Account, total int64, err error) {
-	sqlCon := database.GetDBCon().Model(&models.Account{})
+	sqlCon := global.DataEngine.Model(&models.Account{})
 	sqlCon = sqlCon.Scopes(a.defaultOaScoped)
 	accounts, err = a.FindRecord(sqlCon, per, page, filter, selectKeys, order)
 	if err != nil {
 		return
 	}
-	countCon := database.GetDBCon().Model(&models.Account{}).Scopes(a.defaultOaScoped)
+	countCon := global.DataEngine.Model(&models.Account{}).Scopes(a.defaultOaScoped)
 	total, err = a.Count(countCon, filter)
 	return
 }
 
 func (a AccountRepository) FindByCrm(per, page int, filter map[string]interface{}, selectKeys []string,
 	orders []string) (accounts []models.Account, total int64, err error) {
-	sqlCon := database.GetDBCon().Model(&models.Account{})
+	sqlCon := global.DataEngine.Model(&models.Account{})
 	sqlCon = sqlCon.Scopes(a.defaultCrmScoped)
 	accounts, err = a.FindRecord(sqlCon, per, page, filter, selectKeys, orders)
 	if err != nil {
 		return
 	}
-	countCon := database.GetDBCon().Model(&models.Account{}).Scopes(a.defaultCrmScoped)
+	countCon := global.DataEngine.Model(&models.Account{}).Scopes(a.defaultCrmScoped)
 	total, err = a.Count(countCon, filter)
 	return
 }
 
 //创建银行账户信息
 func (a AccountRepository) Create(account models.Account) (models.Account, error) {
-	err := database.GetDBCon().Set("gorm:association_autocreate", false).Create(&account).Error
+	err := global.DataEngine.Set("gorm:association_autocreate", false).Create(&account).Error
 	if err != nil {
 		return models.Account{}, err
 	}

@@ -21,7 +21,32 @@ test:
   dsn: root:qweqwe123@tcp(127.0.0.1:3306)/go_youtuerp_test?charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=true&loc=Local
   env: test
 
-Server:
 App:
+  TokenSecret: HBss*4222JK45QOL
+  PerPage: 30
+  AllowedOrigins:
+    - "http://localhost:9528"
+    - "*"
+  ExpireTime: 1000
+
+Server:
+  HttpPort: 10.0.2.15:8080
+  ReadTimeout: 60
+  WriteTimeout: 60
 Database:
+  DBType: mysql
+  Username: root
+  Password: qweqwe123
+  Host: 127.0.0.1
+  DBName: go_youtuerp
+  TablePrefix: ""
+  Collation: utf8mb4_general_ci
+  Charset: utf8mb4
+  ParseTime: true
+  MaxIdleConns: 10
+  MaxOpenConns: 30
 Qiniu:
+  QiniuAccessKey: eod8fVA_L4wDR7yOwzdYfOblLp4pCvflQF5BS8JC
+  QiniuSecretKey: wsFuW0M4obMFvO9K6GVVTlDWjzVi3doJPrDj5eZh
+  QiniuFileServer:  http://taotao.bb-link.top/
+  QiniuBucket:  wblog-taotao

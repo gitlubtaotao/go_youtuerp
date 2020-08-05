@@ -2,7 +2,6 @@ package dao
 
 import (
 	"gorm.io/gorm"
-	"youtuerp/database"
 	"youtuerp/internal/models"
 	"youtuerp/pkg/util"
 )
@@ -22,7 +21,7 @@ func (c CrmUser) Delete(id uint) error {
 	return c.crud.Delete(&models.CrmContact{}, id)
 }
 func (c CrmUser) Update(id uint, user models.CrmContact) error {
-	return database.GetDBCon().Model(&models.CrmContact{ID: id}).Updates(util.StructToChange(user)).Error
+	return global.DataEngine.Model(&models.CrmContact{ID: id}).Updates(util.StructToChange(user)).Error
 }
 
 func (c CrmUser) Find(per, page int, filter map[string]interface{}, selectKeys []string,
@@ -36,7 +35,7 @@ func (c CrmUser) Find(per, page int, filter map[string]interface{}, selectKeys [
 }
 
 func (c CrmUser) Create(user models.CrmContact) (models.CrmContact, error) {
-	err := database.GetDBCon().Create(&user).Error
+	err := global.DataEngine.Create(&user).Error
 	if err != nil {
 		return models.CrmContact{}, err
 	}

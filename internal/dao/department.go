@@ -2,7 +2,7 @@ package dao
 
 import (
 	"gorm.io/gorm"
-	"youtuerp/database"
+	"youtuerp/global"
 	"youtuerp/internal/models"
 )
 
@@ -20,11 +20,11 @@ type DepartmentRepository struct {
 
 func (d DepartmentRepository) Delete(id uint) error {
 	var readData models.Department
-	return database.GetDBCon().Find(&readData).Delete(&readData).Error
+	return global.DataEngine.Find(&readData).Delete(&readData).Error
 }
 
 func (d DepartmentRepository) Create(department models.Department) (models.Department, error) {
-	err := database.GetDBCon().Set("gorm:association_autocreate", false).Create(&department).Error
+	err := global.DataEngine.Set("gorm:association_autocreate", false).Create(&department).Error
 	if err != nil {
 		return models.Department{}, err
 	}
@@ -33,7 +33,7 @@ func (d DepartmentRepository) Create(department models.Department) (models.Depar
 
 func (d DepartmentRepository) Find(per, page int, filter map[string]interface{}, selectKeys []string,
 	order []string, isCount bool) (departments []interface{}, total int64, err error) {
-	sqlCon := database.GetDBCon().Model(&models.Department{}).Scopes(d.defaultScope)
+	sqlCon := global.DataEngine.Model(&models.Department{}).Scopes(d.defaultScope)
 	selectKeys = []string{
 		"departments.id",
 		"departments.created_at",
@@ -44,7 +44,7 @@ func (d DepartmentRepository) Find(per, page int, filter map[string]interface{},
 		"departments.user_company_id",
 	}
 	if isCount {
-		countCon := database.GetDBCon().Model(&models.Department{}).Scopes(d.defaultScope).Scopes(d.Ransack(filter))
+		countCon := global.DataEngine.Model(&models.Department{}).Scopes(d.defaultScope).Scopes(d.Ransack(filter))
 		if err = countCon.Count(&total).Error; err != nil {
 			return
 		}
@@ -63,12 +63,12 @@ func (d DepartmentRepository) Find(per, page int, filter map[string]interface{},
 
 func (d DepartmentRepository) First(id uint) (department *models.Department, err error) {
 	var data models.Department
-	err = database.GetDBCon().First(&data, "id = ?", id).Error
+	err = global.DataEngine.First(&data, "id = ?", id).Error
 	return &data, err
 }
 
 func (d DepartmentRepository) Update(id uint, updateData models.Department) error {
-	return database.GetDBCon().Model(&models.Department{ID: id}).Updates(updateData).Error
+	return global.DataEngine.Model(&models.Department{ID: id}).Updates(updateData).Error
 }
 
 func (d DepartmentRepository) defaultScope(db *gorm.DB) *gorm.DB {

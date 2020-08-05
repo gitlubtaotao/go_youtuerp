@@ -9,7 +9,6 @@ import (
 	"os"
 	"runtime/trace"
 	"time"
-	"youtuerp/admin/routers"
 	"youtuerp/conf"
 	"youtuerp/global"
 )
@@ -29,24 +28,27 @@ func main() {
 
 //初始化app
 func NewAppInfo() error {
-	if err := setupSetting(); err != nil {
-		return err
-	}
 	global.NewIrisAppEngine()
 	// loading router
-	routers.DefaultIrisRoute(global.IrisAppEngine)
+	//routers.DefaultIrisRoute(global.IrisAppEngine)
 	//加载数据库操作
-	if err := setupDBEngine(); err != nil {
-		return err
-	}
-	if err := global.NewRedisEngine(); err != nil {
-		return err
-	}
 	//国际化翻译
 	if err := setupI18nEngine(); err != nil {
 		return err
 	}
 	return nil
+}
+
+func init() {
+	if err := setupSetting(); err != nil {
+		panic(err)
+	}
+	if err := setupDBEngine(); err != nil {
+		panic(err)
+	}
+	if err := global.NewRedisEngine(); err != nil {
+		panic(err)
+	}
 }
 
 //Golang 性能测试 (3) 协程追踪术
@@ -65,6 +67,9 @@ func jsonOutput(l *golog.Log) bool {
 }
 
 func setupSetting() error {
+	if err := global.SetupCommonSetting(); err != nil {
+		return err
+	}
 	configEnv := flag.String("env", "development", "set env development or production")
 	flag.Parse()
 	return conf.NewSysConfig(*configEnv)

@@ -10,11 +10,11 @@ import (
 )
 
 var (
-	DataEngine         *gorm.DB                     // database engine
-	RedisEngine        *redis.Client                // redis engine
-	IrisAppEngine      *iris.Application            // iris app engine
-	RedSetting         = redis2.NewRedis()          // redis setting instance
-	AppServiceSetting  *setting.AppServiceSettings  // app service setting
+	DataEngine         *gorm.DB            // database engine
+	RedisEngine        *redis.Client       // redis engine
+	IrisAppEngine      *iris.Application   // iris app engine
+	RedSetting         = redis2.NewRedis() // redis setting instance
+	AppSetting         *setting.AppSettingS
 	ServerSetting      *setting.ServerSettingS      // server setting
 	DatabaseSetting    *setting.DatabaseSettingS    // database setting
 	QiNiuUploadSetting *setting.QiniuUploadSettingS // qiniu upload setting
@@ -28,13 +28,13 @@ func SetupCommonSetting() error {
 	if err = set.ReadSection("Server", &ServerSetting); err != nil {
 		return err
 	}
-	if err = set.ReadSection("App", &AppServiceSetting); err != nil {
-		return err
-	}
 	if err = set.ReadSection("Database", &DatabaseSetting); err != nil {
 		return err
 	}
-	if err = set.ReadSection("Email", &QiNiuUploadSetting); err != nil {
+	if err = set.ReadSection("Qiniu", &QiNiuUploadSetting); err != nil {
+		return err
+	}
+	if err = set.ReadSection("App", &AppSetting); err != nil {
 		return err
 	}
 	ServerSetting.ReadTimeout *= time.Second

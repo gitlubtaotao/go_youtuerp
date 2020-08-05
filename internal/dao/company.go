@@ -2,7 +2,6 @@ package dao
 
 import (
 	"gorm.io/gorm"
-	"youtuerp/database"
 	"youtuerp/internal/models"
 )
 
@@ -26,7 +25,7 @@ type CompanyRepository struct {
 }
 
 func (c CompanyRepository) FirstCompanyByRelated(id uint, related ...string) (models.UserCompany, error) {
-	sqlCon := database.GetDBCon()
+	sqlCon := global.DataEngine
 	var company models.UserCompany
 	for _, re := range related {
 		sqlCon = sqlCon.Preload(re)
@@ -37,21 +36,21 @@ func (c CompanyRepository) FirstCompanyByRelated(id uint, related ...string) (mo
 
 func (c CompanyRepository) DeleteCompany(id uint) error {
 	var readData models.UserCompany
-	return database.GetDBCon().Find(&readData).Delete(&readData).Error
+	return global.DataEngine.Find(&readData).Delete(&readData).Error
 }
 
 func (c CompanyRepository) UpdateCompany(id uint, readData models.UserCompany) error {
-	return database.GetDBCon().Model(&models.UserCompany{ID: id}).Updates(readData).Error
+	return global.DataEngine.Model(&models.UserCompany{ID: id}).Updates(readData).Error
 }
 
 func (c CompanyRepository) FirstCompany(id uint) (models.UserCompany, error) {
 	var readData models.UserCompany
-	err := database.GetDBCon().First(&readData, id).Error
+	err := global.DataEngine.First(&readData, id).Error
 	return readData, err
 }
 
 func (c CompanyRepository) CreateCompany(company models.UserCompany) (models.UserCompany, error) {
-	err := database.GetDBCon().Create(&company).Error
+	err := global.DataEngine.Create(&company).Error
 	return company, err
 }
 
@@ -65,12 +64,12 @@ func (c CompanyRepository) DefaultScope(temp *gorm.DB) *gorm.DB {
 func (c *CompanyRepository) FindCompany(per, page int, filters map[string]interface{},
 	selectKeys []string, orders []string,
 	isCount bool) (companies []models.UserCompany, total int64, err error) {
-	sqlCon := database.GetDBCon().Model(&models.UserCompany{}).Scopes(c.DefaultScope)
+	sqlCon := global.DataEngine.Model(&models.UserCompany{}).Scopes(c.DefaultScope)
 	if len(selectKeys) > 0 {
 		selectKeys = []string{"user_companies.*"}
 	}
 	if isCount {
-		countCon := database.GetDBCon().Model(&models.UserCompany{}).Scopes(c.DefaultScope)
+		countCon := global.DataEngine.Model(&models.UserCompany{}).Scopes(c.DefaultScope)
 		if total, err = c.Count(countCon, filters); err != nil {
 			return
 		}

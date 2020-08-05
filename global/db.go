@@ -1,13 +1,13 @@
 package global
 
 import (
-	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"gorm.io/gorm/schema"
 	"log"
 	"os"
 	"time"
-	"youtuerp/conf"
+	"youtuerp/pkg/database"
 )
 
 //global database connection
@@ -25,24 +25,31 @@ func NewDBEngine() error {
 			Colorful:      false,       // Disable color
 		},
 	)
-	var err error
-	DataEngine, err = gorm.Open(mysql.New(mysql.Config{
-		DSN:               conf.Configuration.DSN,
-		DefaultStringSize: 256,
-	}), &gorm.Config{
-		Logger:      newLogger,
+	var (
+		dialect gorm.Dialector
+		err     error
+	)
+	if DatabaseSetting.DBType == "mysql" {
+		dialect = database.MysqlDBDialect(DatabaseSetting)
+	}
+	DataEngine, err = gorm.Open(dialect, &gorm.Config{
 		PrepareStmt: true,
+		Logger:      newLogger,
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix:   DatabaseSetting.TablePrefix,
+			SingularTable: false,
+		},
 	})
 	if err != nil {
 		return err
 	}
-	sqlDB, err := DataEngine.DB()
-	if err != nil {
+	if sqlDB, err := DataEngine.DB(); err != nil {
 		return err
+	} else {
+		sqlDB.SetMaxIdleConns(DatabaseSetting.MaxIdleConns)
+		sqlDB.SetMaxOpenConns(DatabaseSetting.MaxOpenConns)
+		sqlDB.SetConnMaxLifetime(time.Hour)
 	}
-	sqlDB.SetMaxOpenConns(1200)
-	sqlDB.SetMaxIdleConns(100)
-	sqlDB.SetConnMaxLifetime(time.Hour)
 	return nil
 }
 

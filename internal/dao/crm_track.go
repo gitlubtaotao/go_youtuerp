@@ -2,7 +2,7 @@ package dao
 
 import (
 	"database/sql"
-	"youtuerp/database"
+	"youtuerp/global"
 	"youtuerp/internal/models"
 )
 
@@ -16,14 +16,14 @@ type CrmTrack struct {
 }
 
 func (c CrmTrack) Create(track models.CrmTrack) (models.CrmTrack, error) {
-	err := database.GetDBCon().Create(&track).Error
+	err := global.DataEngine.Create(&track).Error
 	return track, err
 }
 
 func (c CrmTrack) Find(per, page int, filter map[string]interface{}, selectKeys []string,
 	orders []string, isCount bool) (tracks []models.CrmTrack, total int64, err error) {
 	var rows *sql.Rows
-	sqlCon := database.GetDBCon().Model(&models.CrmTrack{})
+	sqlCon := global.DataEngine.Model(&models.CrmTrack{})
 	if isCount {
 		if total, err = c.Count(sqlCon, filter); err != nil {
 			return

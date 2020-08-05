@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"youtuerp/database"
+	"youtuerp/global"
 	"youtuerp/internal/models"
 )
 
@@ -30,19 +30,19 @@ type NumberSettingRepository struct {
 
 //查询历史流水号规则
 func (n NumberSettingRepository) FindOrCreateHistory(attr models.NumberSettingHistory) (record models.NumberSettingHistory, err error) {
-	err = database.GetDBCon().FirstOrCreate(&record, attr).Error
+	err = global.DataEngine.FirstOrCreate(&record, attr).Error
 	return record, err
 }
 
 func (n NumberSettingRepository) UpdateNumberHistory(history models.NumberSettingHistory, attr map[string]interface{}) error {
-	return database.GetDBCon().Model(&history).Updates(attr).Error
+	return global.DataEngine.Model(&history).Updates(attr).Error
 }
 
 func (n NumberSettingRepository) Search(attr models.NumberSetting, order string) (result models.NumberSetting, err error) {
 	if order == "" {
 		order = "id desc"
 	}
-	err = database.GetDBCon().Where(&attr).Order(order).First(&result).Error
+	err = global.DataEngine.Where(&attr).Order(order).First(&result).Error
 	return
 }
 
@@ -53,9 +53,9 @@ func (n NumberSettingRepository) Delete(id uint) error {
 func (n NumberSettingRepository) Find(per, page int, filter map[string]interface{}, selectKeys []string, order []string, isCount bool) (numberSettings []models.ResponseNumberSetting,
 	total int64, err error) {
 	var rows *sql.Rows
-	sqlCon := database.GetDBCon().Model(&models.NumberSetting{}).Scopes(n.defaultJoin)
+	sqlCon := global.DataEngine.Model(&models.NumberSetting{}).Scopes(n.defaultJoin)
 	if isCount {
-		totalCon := database.GetDBCon().Model(&models.NumberSetting{}).Scopes(n.defaultJoin)
+		totalCon := global.DataEngine.Model(&models.NumberSetting{}).Scopes(n.defaultJoin)
 		if total, err = n.Count(totalCon, filter); err != nil {
 			return
 		}
@@ -86,7 +86,7 @@ func (n NumberSettingRepository) Create(numberSetting models.NumberSetting) (mod
 
 //对当前current_number进行更新
 func (n NumberSettingRepository) UpdateNumber(setting models.NumberSetting, attr map[string]interface{}) error {
-	return database.GetDBCon().Model(&setting).Updates(attr).Error
+	return global.DataEngine.Model(&setting).Updates(attr).Error
 }
 
 type searchNumber func(numberSetting models.NumberSetting, create time.Time) (int, error)
