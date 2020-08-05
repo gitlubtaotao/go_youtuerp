@@ -3,9 +3,9 @@ package services
 import (
 	"strconv"
 	"sync"
-	"youtuerp/conf"
 	"youtuerp/internal/dao"
 	"youtuerp/internal/models"
+	"youtuerp/pkg/enumerize"
 	"youtuerp/redis"
 )
 
@@ -19,8 +19,8 @@ type ICompanyService interface {
 	Create(company models.UserCompany) (models.UserCompany, error)
 	Update(id uint, readData models.UserCompany) error
 	Delete(id uint) error
-	ShowTransportType(enum conf.Enum, value interface{}) string
-	TransportTypeArrays(enum conf.Enum) []map[string]interface{}
+	ShowTransportType(enum enumerize.Enumerize, value interface{}) string
+	TransportTypeArrays(enum enumerize.Enumerize) []map[string]interface{}
 }
 
 type CompanyService struct {
@@ -86,11 +86,11 @@ func (c *CompanyService) Create(company models.UserCompany) (models.UserCompany,
 	return data, err
 }
 
-func (c *CompanyService) ShowTransportType(enum conf.Enum, value interface{}) string {
+func (c *CompanyService) ShowTransportType(enum enumerize.Enumerize, value interface{}) string {
 	return enum.DefaultText("user_companies_company_type.", value)
 }
 
-func (c *CompanyService) TransportTypeArrays(enum conf.Enum) []map[string]interface{} {
+func (c *CompanyService) TransportTypeArrays(enum enumerize.Enumerize) []map[string]interface{} {
 	data := make([]map[string]interface{}, 3)
 	for _, value := range []int{1, 2, 3, 4} {
 		data = append(data, map[string]interface{}{

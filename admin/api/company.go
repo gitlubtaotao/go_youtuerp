@@ -3,15 +3,15 @@ package api
 import (
 	"github.com/kataras/iris/v12"
 	"net/http"
-	"youtuerp/conf"
 	"youtuerp/internal/models"
 	"youtuerp/internal/services"
+	"youtuerp/pkg/enumerize"
 )
 
 type CompanyController struct {
 	ctx     iris.Context
 	service services.ICompanyService
-	enum    conf.Enum
+	enum    enumerize.Enumerize
 	BaseApi
 }
 
@@ -126,7 +126,7 @@ func (c *CompanyController) Show(ctx iris.Context) {
 
 func (c *CompanyController) Before(ctx iris.Context) {
 	c.service = services.NewCompanyService()
-	c.enum = conf.NewEnum(ctx.GetLocale())
+	c.enum = enumerize.NewEnum(ctx.GetLocale())
 	c.ctx = ctx
 	ctx.Next()
 }

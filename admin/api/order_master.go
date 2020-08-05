@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strings"
 	"sync"
-	"youtuerp/conf"
 	"youtuerp/internal/models"
 	"youtuerp/internal/services"
+	"youtuerp/pkg/enumerize"
 )
 
 type OrderMaster struct {
@@ -17,7 +17,7 @@ type OrderMaster struct {
 	companyService  services.ICompanyService
 	employeeService services.IEmployeeService
 	mu              sync.Mutex
-	enum            conf.Enum
+	enum            enumerize.Enumerize
 }
 
 func (o *OrderMaster) GetColumn(ctx iris.Context) {
@@ -224,7 +224,7 @@ func (o *OrderMaster) Before(ctx iris.Context) {
 	o.service = services.NewOrderMasterService()
 	o.companyService = services.NewCompanyService()
 	o.employeeService = services.NewEmployeeService()
-	o.enum = conf.NewEnum(ctx.GetLocale())
+	o.enum = enumerize.NewEnum(ctx.GetLocale())
 	ctx.Next()
 }
 

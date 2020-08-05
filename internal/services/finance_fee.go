@@ -4,16 +4,16 @@ import (
 	"errors"
 	"github.com/kataras/golog"
 	"time"
-	"youtuerp/conf"
 	"youtuerp/internal/dao"
 	"youtuerp/internal/models"
+	"youtuerp/pkg/enumerize"
 	"youtuerp/pkg/util"
 	"youtuerp/redis"
 )
 
 type IFinanceFee interface {
 	//对返回前端的费用进行预处理
-	HandleFeesShow(fee interface{}, enum conf.Enum) map[string]interface{}
+	HandleFeesShow(fee interface{}, enum enumerize.Enumerize) map[string]interface{}
 	FindFinanceFees(per, page int, filter map[string]interface{},
 		selectKeys []string, orders []string) ([]models.ResponseFinanceFee, int64, error)
 	/*将查询到的历史费用复制到对应的订单中
@@ -54,7 +54,7 @@ type FinanceFee struct {
 	repo dao.IFinanceFee
 }
 
-func (f FinanceFee) HandleFeesShow(fee interface{}, enum conf.Enum) map[string]interface{} {
+func (f FinanceFee) HandleFeesShow(fee interface{}, enum enumerize.Enumerize) map[string]interface{} {
 	data := util.StructToMap(fee)
 	data["pay_or_receive"] = enum.DefaultText("finance_fees_pay_or_receive.", data["pay_or_receive"].(string))
 	data["pay_type_id"] = f.baseDataFindFast(models.CIQType, data["pay_type_id"])

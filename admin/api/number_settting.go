@@ -3,9 +3,9 @@ package api
 import (
 	"fmt"
 	"github.com/kataras/iris/v12"
-	"youtuerp/conf"
 	"youtuerp/internal/models"
 	"youtuerp/internal/services"
+	"youtuerp/pkg/enumerize"
 )
 
 type NumberSetting struct {
@@ -25,7 +25,7 @@ func (n *NumberSetting) Get(ctx iris.Context) {
 		return
 	}
 	dataArray := make([]map[string]interface{}, 0)
-	enum := conf.Enum{Locale: ctx.GetLocale()}
+	enum := enumerize.Enumerize{Locale: ctx.GetLocale()}
 	fmt.Print(ctx.GetLocale().GetMessage("clear_rule"))
 	for _, v := range numberSettings {
 		result, _ := n.StructToMap(v, ctx)

@@ -4,9 +4,9 @@ import (
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"strconv"
-	"youtuerp/conf"
 	"youtuerp/internal/models"
 	"youtuerp/internal/services"
+	"youtuerp/pkg/enumerize"
 )
 
 type CrmClue struct {
@@ -149,7 +149,7 @@ func (c *CrmClue) handlerGetParams() map[string]interface{} {
 }
 
 func (c *CrmClue) handleClue(clue models.CrmClue) (data map[string]interface{}, err error) {
-	enum := conf.Enum{Locale: c.ctx.GetLocale()}
+	enum := enumerize.Enumerize{Locale: c.ctx.GetLocale()}
 	data, err = c.StructToMap(clue, c.ctx)
 	if err != nil {
 		return

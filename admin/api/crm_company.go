@@ -4,9 +4,9 @@ import (
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"strings"
-	"youtuerp/conf"
 	"youtuerp/internal/models"
 	"youtuerp/internal/services"
+	"youtuerp/pkg/enumerize"
 )
 
 type CrmCompany struct {
@@ -196,7 +196,7 @@ func (c *CrmCompany) Before(ctx iris.Context) {
 }
 
 func (c *CrmCompany) handleCompany(company models.CrmCompany) (data map[string]interface{}, err error) {
-	enum := conf.Enum{Locale: c.ctx.GetLocale()}
+	enum := enumerize.Enumerize{Locale: c.ctx.GetLocale()}
 	data, err = c.StructToMap(company, c.ctx)
 	if err != nil {
 		return

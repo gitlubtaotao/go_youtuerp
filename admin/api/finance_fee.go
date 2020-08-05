@@ -6,16 +6,16 @@ import (
 	"net/http"
 	"sync"
 	"time"
-	"youtuerp/conf"
 	"youtuerp/internal/models"
 	"youtuerp/internal/services"
+	"youtuerp/pkg/enumerize"
 )
 
 type FinanceFee struct {
 	BaseApi
 	service services.IFinanceFee
 	ctx     iris.Context
-	enum    conf.Enum
+	enum    enumerize.Enumerize
 }
 
 //复制费用
@@ -340,7 +340,7 @@ func (f *FinanceFee) handlerSearchFinanceFee(readStruct SearchFinanceFee) map[st
 
 func (f *FinanceFee) Before(ctx iris.Context) {
 	f.service = services.NewFinanceFee()
-	f.enum = conf.Enum{Locale: ctx.GetLocale()}
+	f.enum = enumerize.Enumerize{Locale: ctx.GetLocale()}
 	f.ctx = ctx
 	ctx.Next()
 }

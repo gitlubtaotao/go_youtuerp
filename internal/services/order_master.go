@@ -6,20 +6,20 @@ import (
 	"reflect"
 	"strconv"
 	"time"
-	"youtuerp/conf"
 	"youtuerp/internal/dao"
 	"youtuerp/internal/models"
+	"youtuerp/pkg/enumerize"
 	"youtuerp/pkg/util"
 	"youtuerp/redis"
 )
 
 type IOrderMasterService interface {
 	//获取订单数据
-	FindMasterByIndex(per, page int, filter map[string]interface{}, selectKeys []string, orders []string, enum conf.Enum) ([]map[string]interface{}, int64, error)
+	FindMasterByIndex(per, page int, filter map[string]interface{}, selectKeys []string, orders []string, enum enumerize.Enumerize) ([]map[string]interface{}, int64, error)
 	//查询订单信息，不需要进行total的统计
 	FindMasterNoTotal(per, page int, filter map[string]interface{}, selectKeys []string, orders []string) ([]models.ResponseOrderMaster, int64, error)
 	//前端显示订单信息预处理
-	HandlerOrderMasterShow(order interface{}, enum conf.Enum) map[string]interface{}
+	HandlerOrderMasterShow(order interface{}, enum enumerize.Enumerize) map[string]interface{}
 	//处理港口显示
 	ShowPort(transportType interface{}, portId interface{}) string
 	//处理承运方显示
@@ -33,11 +33,11 @@ type IOrderMasterService interface {
 	//删除订单
 	DeleteMaster(id uint) error
 	//显示订单的费用状态
-	ShowFinanceStatus(enum conf.Enum, field string, value interface{}) string
+	ShowFinanceStatus(enum enumerize.Enumerize, field string, value interface{}) string
 	//显示订单的运输类型
-	ShowTransport(enum conf.Enum, order interface{}) string
+	ShowTransport(enum enumerize.Enumerize, order interface{}) string
 	//显示订单的状态
-	ShowStatus(enum conf.Enum, value interface{}) string
+	ShowStatus(enum enumerize.Enumerize, value interface{}) string
 	//更改订单的状态
 	ChangeStatus(id uint, status string) error
 	//更新订单信息
@@ -63,7 +63,7 @@ type OrderMasterService struct {
 	BaseService
 }
 
-func (o OrderMasterService) FindMasterByIndex(per, page int, filter map[string]interface{}, selectKeys []string, orders []string, enum conf.Enum) ([]map[string]interface{}, int64, error) {
+func (o OrderMasterService) FindMasterByIndex(per, page int, filter map[string]interface{}, selectKeys []string, orders []string, enum enumerize.Enumerize) ([]map[string]interface{}, int64, error) {
 	orderMasters, total, err := o.repo.FindMaster(per, page, filter, selectKeys, orders, true)
 	if err != nil {
 		return []map[string]interface{}{}, 0, err
@@ -105,7 +105,7 @@ func (o OrderMasterService) ShowCarrier(transportType interface{}, carrierId int
 	return red.HGetValue(tableName+key, carrierId, "name")
 }
 
-func (o OrderMasterService) HandlerOrderMasterShow(order interface{}, enum conf.Enum) map[string]interface{} {
+func (o OrderMasterService) HandlerOrderMasterShow(order interface{}, enum enumerize.Enumerize) map[string]interface{} {
 	data := util.StructToMap(order)
 	data["cut_off_day"] = toolTime.InterfaceFormat(data["cut_off_day"], "zh-CN")
 	data["departure"] = toolTime.InterfaceFormat(data["departure"], "zh-CN")
@@ -182,18 +182,18 @@ func (o OrderMasterService) FirstMaster(id uint, load ...string) (models.OrderMa
 	return o.repo.FirstMaster(id, load...)
 }
 
-func (o OrderMasterService) ShowFinanceStatus(enum conf.Enum, field string, value interface{}) string {
+func (o OrderMasterService) ShowFinanceStatus(enum enumerize.Enumerize, field string, value interface{}) string {
 	if value == "" {
 		value = models.FinanceStatusUnfinished
 	}
 	return enum.DefaultText(field+".", value)
 }
 
-func (o OrderMasterService) ShowStatus(enum conf.Enum, value interface{}) string {
+func (o OrderMasterService) ShowStatus(enum enumerize.Enumerize, value interface{}) string {
 	return enum.DefaultText("order_masters_status.", value)
 }
 
-func (o OrderMasterService) ShowTransport(enum conf.Enum, value interface{}) string {
+func (o OrderMasterService) ShowTransport(enum enumerize.Enumerize, value interface{}) string {
 	var (
 		TransportType uint
 		MainTransport uint

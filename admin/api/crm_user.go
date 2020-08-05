@@ -4,16 +4,16 @@ import (
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"sync"
-	"youtuerp/conf"
 	"youtuerp/internal/models"
 	"youtuerp/internal/services"
+	"youtuerp/pkg/enumerize"
 )
 
 type CrmUser struct {
 	BaseApi
 	service services.ICrmUser
 	ctx     iris.Context
-	enum    conf.Enum
+	enum    enumerize.Enumerize
 	mu      sync.Mutex
 }
 
@@ -96,7 +96,7 @@ func (c *CrmUser) Delete(ctx iris.Context) {
 func (c *CrmUser) Before(ctx iris.Context) {
 	c.service = services.NewCrmUser()
 	c.ctx = ctx
-	c.enum = conf.Enum{Locale: c.ctx.GetLocale()}
+	c.enum = enumerize.Enumerize{Locale: c.ctx.GetLocale()}
 	ctx.Next()
 }
 

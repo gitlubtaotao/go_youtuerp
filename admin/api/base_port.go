@@ -4,9 +4,9 @@ import (
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"sync"
-	"youtuerp/conf"
 	"youtuerp/internal/models"
 	"youtuerp/internal/services"
+	"youtuerp/pkg/enumerize"
 )
 
 type BasePort struct {
@@ -14,7 +14,7 @@ type BasePort struct {
 	service services.IBasePort
 	ctx     iris.Context
 	mu      sync.Mutex
-	enum    conf.Enum
+	enum    enumerize.Enumerize
 }
 
 func (b *BasePort) GetColumn(ctx iris.Context) {
@@ -90,7 +90,7 @@ func (b *BasePort) Delete(ctx iris.Context) {
 func (b *BasePort) Before(ctx iris.Context) {
 	b.service = services.NewBasePort()
 	b.ctx = ctx
-	b.enum = conf.Enum{Locale: ctx.GetLocale()}
+	b.enum = enumerize.Enumerize{Locale: ctx.GetLocale()}
 	ctx.Next()
 }
 
