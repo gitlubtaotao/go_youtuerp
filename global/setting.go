@@ -10,11 +10,12 @@ import (
 )
 
 var (
-	DataEngine         *gorm.DB            // database engine
-	RedisEngine        *redis.Client       // redis engine
-	IrisAppEngine      *iris.Application   // iris app engine
-	RedSetting         = redis2.NewRedis() // redis setting instance
-	AppSetting         *setting.AppSettingS
+	DataEngine    *gorm.DB            // database engine
+	RedisEngine   *redis.Client       // redis engine
+	IrisAppEngine *iris.Application   // iris app engine
+	RedSetting    = redis2.NewRedis() // redis setting instance
+
+	AppSetting         *setting.AppSettingS         // app setting
 	ServerSetting      *setting.ServerSettingS      // server setting
 	DatabaseSetting    *setting.DatabaseSettingS    // database setting
 	QiNiuUploadSetting *setting.QiniuUploadSettingS // qiniu upload setting

@@ -7,6 +7,7 @@ type AppSettingS struct {
 	PerPage        string
 	AllowedOrigins []string
 	ExpireTime     time.Duration
+	Env            string
 }
 type DatabaseSettingS struct {
 	DBType       string

@@ -5,7 +5,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"sync"
 	"time"
-	"youtuerp/conf"
+	"youtuerp/global"
 )
 
 type ISessionService interface {
@@ -30,21 +30,21 @@ func (s *SessionService) ValidatePassword(password string, hashPassword string) 
 
 //通过jwt 插件生成对于的token
 func (s *SessionService) JwtGenerateToken(data map[string]interface{}) (tokenString string, err error) {
-	exp := conf.Configuration.ExpireTime
-	s.sy.Lock()
-	defer s.sy.Unlock()
+	exp := global.AppSetting.ExpireTime
 	mapClaims := jwt.MapClaims{
 		"iss": "youtuerp",
 		// 签发时间
-		"iat":         time.Now().Unix(),
+		"iat": time.Now().Unix(),
 		"exp": time.Now().Add(time.Minute * time.Duration(exp)).Unix(),
 	}
+	s.sy.Lock()
+	defer s.sy.Unlock()
 	for k, v := range data {
 		mapClaims[k] = v
 	}
 	token := jwt.NewTokenWithClaims(jwt.SigningMethodHS256, mapClaims)
 	// 使用密码签名并获取完整的编码令牌作为字符串
-	secret := conf.Configuration.TokenSecret
+	secret := global.AppSetting.TokenSecret
 	tokenString, err = token.SignedString([]byte(secret))
 	return
 }

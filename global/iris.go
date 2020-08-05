@@ -6,8 +6,6 @@ import (
 	"github.com/kataras/iris/v12/context"
 	"github.com/kataras/iris/v12/middleware/logger"
 	"github.com/kataras/iris/v12/versioning"
-	"strings"
-	"youtuerp/conf"
 )
 
 var allowMethods = []string{iris.MethodGet, iris.MethodPost, iris.MethodPatch,
@@ -23,9 +21,8 @@ func NewIrisAppEngine() {
 }
 
 func setAllowedMethod() context.Handler {
-	allowedOrigins := strings.Split(conf.Configuration.AllowedOrigins, ",")
 	crs := cors.New(cors.Options{
-		AllowedOrigins:   allowedOrigins,
+		AllowedOrigins:   AppSetting.AllowedOrigins,
 		AllowedHeaders:   []string{"*"},
 		AllowedMethods:   allowMethods,
 		AllowCredentials: true,

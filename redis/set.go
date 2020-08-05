@@ -2,9 +2,6 @@ package redis
 
 import (
 	"github.com/kataras/golog"
-	"youtuerp/internal/dao"
-	"youtuerp/internal/models"
-	"youtuerp/pkg/util"
 )
 
 //保存公司redis信息
@@ -56,18 +53,19 @@ func (r Redis) HDeleteRecord(table string, id interface{}, field ...string) erro
 }
 
 func (r Redis) findRecord(tableName string, filter map[string]interface{}, selectKey []string) (data []map[string]interface{}, err error) {
-	repo := dao.NewSelectRepository()
-	var result []models.ReadSelectResult
-	result, err = repo.FirstRecord(tableName, filter, selectKey)
-	if err != nil {
-		return
-	}
-	r.sy.Lock()
-	for _, v := range result {
-		data = append(data, util.StructToMap(v))
-	}
-	r.sy.Unlock()
-	return data, nil
+	//repo := dao.NewSelectRepository()
+	//var result []models.ReadSelectResult
+	//result, err = repo.FirstRecord(tableName, filter, selectKey)
+	//if err != nil {
+	//	return
+	//}
+	//r.sy.Lock()
+	//for _, v := range result {
+	//	data = append(data, util.StructToMap(v))
+	//}
+	//r.sy.Unlock()
+	//return data, nil
+	return nil, nil
 }
 
 func HSetValue(table string, id interface{}, value map[string]interface{}) {

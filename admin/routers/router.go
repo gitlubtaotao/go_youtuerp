@@ -6,7 +6,7 @@ import (
 	"github.com/kataras/iris/v12/context"
 	"net/http"
 	"youtuerp/admin/api"
-	"youtuerp/conf"
+	"youtuerp/global"
 )
 
 type Routers struct {
@@ -62,7 +62,7 @@ func (r *Routers) jwtAccess() *jwt.Middleware {
 		// 通过 "token" URL参数提取。
 		Extractor: jwt.FromAuthHeader,
 		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
-			return []byte(conf.Configuration.TokenSecret), nil
+			return []byte(global.AppSetting.TokenSecret), nil
 		},
 		ErrorHandler: func(ctx context.Context, err error) {
 			if err == nil {

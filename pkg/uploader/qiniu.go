@@ -6,7 +6,7 @@ import (
 	"github.com/qiniu/api.v7/v7/storage"
 	"mime/multipart"
 	"time"
-	"youtuerp/conf"
+	"youtuerp/global"
 )
 
 type IQiNiuUploader interface {
@@ -36,7 +36,7 @@ type QiNiuUploader struct {
 
 func NewQiNiuUploaderDefault() QiNiuUploader {
 	zone := &storage.ZoneHuanan
-	config := conf.Configuration
+	config := global.QiNiuUploadSetting
 	return NewQiNiuUploader(config.QiniuBucket,
 		config.QiniuFileServer, zone, false,
 		false, 7200)
@@ -119,7 +119,7 @@ func (d *QiNiuUploader) BucketManager() *storage.BucketManager {
 }
 
 func (d *QiNiuUploader) newMac() (mac *qbox.Mac) {
-	return qbox.NewMac(conf.Configuration.QiniuAccessKey, conf.Configuration.QiniuSecretKey)
+	return qbox.NewMac(global.QiNiuUploadSetting.QiniuAccessKey, global.QiNiuUploadSetting.QiniuSecretKey)
 }
 
 func (d *QiNiuUploader) storageConfig() storage.Config {

@@ -10,7 +10,6 @@ import (
 	"runtime/trace"
 	"time"
 	"youtuerp/admin/routers"
-	"youtuerp/conf"
 	"youtuerp/global"
 )
 
@@ -24,7 +23,7 @@ func main() {
 		panic(err)
 	}
 	config := iris.WithConfiguration(iris.YAML("../config/iris.yaml"))
-	global.IrisAppEngine.Run(iris.Addr(":8082"), config, iris.WithoutServerError(iris.ErrServerClosed))
+	global.IrisAppEngine.Run(iris.Addr(global.ServerSetting.HttpPort), config, iris.WithoutServerError(iris.ErrServerClosed))
 }
 
 //初始化app
@@ -73,7 +72,8 @@ func setupSetting() error {
 	}
 	configEnv := flag.String("env", "development", "set env development or production")
 	flag.Parse()
-	return conf.NewSysConfig(*configEnv)
+	global.AppSetting.Env = *configEnv
+	return nil
 }
 
 // set database engine
@@ -101,7 +101,7 @@ func setupI18nEngine() error {
 
 // setup iris log
 func setupIrisLogger() error {
-	if conf.Configuration.Env == "dev" {
+	if global.AppSetting.Env == "development" {
 		global.IrisAppEngine.Logger().SetLevel("debug")
 	} else {
 		global.IrisAppEngine.Logger().SetLevel("error")
