@@ -4,7 +4,6 @@ import (
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"sync"
-	"youtuerp/global"
 	"youtuerp/internal/models"
 	"youtuerp/internal/services"
 )
@@ -111,6 +110,6 @@ func (a *Invoice) handlerGetParams() map[string]interface{} {
 func (a *Invoice) handlerData(account models.Invoice) map[string]interface{} {
 	data, _ := a.StructToMap(account, a.ctx)
 	data["user_company_id_value"] = data["user_company_id"]
-	data["user_company_id"] = global.RedSetting.HGetCrm(data["user_company_id"], "name_nick")
+	data["user_company_id"] = RedSetting.HGetCrm(data["user_company_id"], "name_nick")
 	return data
 }

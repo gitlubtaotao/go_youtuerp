@@ -4,7 +4,6 @@ import (
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"sync"
-	"youtuerp/global"
 	"youtuerp/internal/models"
 	"youtuerp/internal/services"
 )
@@ -104,6 +103,6 @@ func (b *BaseCodeController) handleParams() map[string]interface{} {
 func (b *BaseCodeController) handleData(code models.BaseDataCode) map[string]interface{} {
 	data, _ := b.StructToMap(code, b.ctx)
 	data["code_name_value"] = data["code_name"]
-	data["code_name"] = global.RedSetting.HGetValue("base_data_levels", data["code_name"], "name")
+	data["code_name"] = RedSetting.HGetValue("base_data_levels", data["code_name"], "name")
 	return data
 }

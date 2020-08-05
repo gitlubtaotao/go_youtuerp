@@ -22,7 +22,7 @@ type renderError struct {
 }
 
 var (
-	red = redis.Redis{}
+	RedSetting = redis.NewRedis() // redis setting instance
 )
 
 func (b *BaseApi) RenderSuccessJson(ctx iris.Context, data interface{}) {

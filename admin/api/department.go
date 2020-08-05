@@ -3,7 +3,6 @@ package api
 
 import (
 	"github.com/kataras/iris/v12"
-	"youtuerp/global"
 	"youtuerp/internal/models"
 	"youtuerp/internal/services"
 )
@@ -103,7 +102,7 @@ func (d *Department) Delete(ctx iris.Context) {
 
 func (d *Department) handlerDataShow(department interface{}) map[string]interface{} {
 	data, _ := d.StructToMap(department, d.ctx)
-	data["user_companies_name_nick"] = global.RedSetting.HGetCompany(data["user_company_id"], "name_nick")
+	data["user_companies_name_nick"] = RedSetting.HGetCompany(data["user_company_id"], "name_nick")
 	return data
 }
 func (d *Department) handlerGetParams() map[string]interface{} {

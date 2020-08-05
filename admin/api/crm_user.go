@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"sync"
 	"youtuerp/conf"
-	"youtuerp/global"
 	"youtuerp/internal/models"
 	"youtuerp/internal/services"
 )
@@ -113,7 +112,7 @@ func (c *CrmUser) handleData(user models.CrmContact) map[string]interface{} {
 	data["sex_value"] = data["sex"]
 	data["sex"] = c.enum.DefaultText("users_sex.", data["sex"])
 	data["user_company_id_value"] = data["user_company_id"]
-	data["user_company_id"] = global.RedSetting.HGetCrm(data["user_company_id"], "name_nick")
+	data["user_company_id"] = RedSetting.HGetCrm(data["user_company_id"], "name_nick")
 	return data
 }
 

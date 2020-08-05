@@ -4,7 +4,6 @@ import (
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"sync"
-	"youtuerp/global"
 	"youtuerp/internal/models"
 	"youtuerp/internal/services"
 )
@@ -121,9 +120,9 @@ func (a *AccountApi) handlerData(account models.Account, ty string) map[string]i
 	data, _ := a.StructToMap(account, a.ctx)
 	data["user_company_id_value"] = data["user_company_id"]
 	if ty == "oa" {
-		data["user_company_id"] = global.RedSetting.HGetCompany(data["user_company_id"], "name_nick")
+		data["user_company_id"] = RedSetting.HGetCompany(data["user_company_id"], "name_nick")
 	} else {
-		data["user_company_id"] = global.RedSetting.HGetCrm(data["user_company_id"], "name_nick")
+		data["user_company_id"] = RedSetting.HGetCrm(data["user_company_id"], "name_nick")
 	}
 	return data
 }

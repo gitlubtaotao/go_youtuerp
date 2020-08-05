@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strings"
 	"youtuerp/conf"
-	"youtuerp/global"
 	"youtuerp/internal/models"
 	"youtuerp/internal/services"
 )
@@ -210,11 +209,11 @@ func (c *CrmCompany) handleCompany(company models.CrmCompany) (data map[string]i
 	accountPeriod := data["account_period"]
 	roles := data["roles"].([]models.Role)
 	for i, v := range roles {
-		roles[i].UserName = global.RedSetting.HGetRecord("users", v.UserId, "name")
+		roles[i].UserName = RedSetting.HGetRecord("users", v.UserId, "name")
 		roles[i].Name = enum.DefaultText("roles_name.", v.Name)
 	}
 	data["roles"] = roles
-	data["parent_id"] = global.RedSetting.HGetCompany(data["parent_id"], "name_nick")
+	data["parent_id"] = RedSetting.HGetCompany(data["parent_id"], "name_nick")
 	data["account_period"] = enum.DefaultText("user_companies_account_period.", accountPeriod)
 	data["account_period_value"] = accountPeriod
 	return data, err

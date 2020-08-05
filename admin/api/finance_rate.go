@@ -7,7 +7,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"youtuerp/global"
 	"youtuerp/internal/models"
 	"youtuerp/internal/services"
 	"youtuerp/pkg/util"
@@ -100,11 +99,11 @@ func (f *FinanceRate) handleData(feeType models.FinanceRate) map[string]interfac
 		return map[string]interface{}{}
 	}
 	data["finance_currency_id_value"] = data["finance_currency_id"]
-	data["finance_currency_id"] = global.RedSetting.HGetValue("base_data_codesFinanceCurrency", data["finance_currency_id"], "")
+	data["finance_currency_id"] = RedSetting.HGetValue("base_data_codesFinanceCurrency", data["finance_currency_id"], "")
 	data["user_id_value"] = data["user_id"]
-	data["user_id"] = global.RedSetting.HGetRecord(models.User{}.TableName(), data["user_id"], "name")
+	data["user_id"] = RedSetting.HGetRecord(models.User{}.TableName(), data["user_id"], "name")
 	data["company_id_value"] = data["company_id"]
-	data["company_id"] = global.RedSetting.HGetCompany(data["company_id"], "")
+	data["company_id"] = RedSetting.HGetCompany(data["company_id"], "")
 	return data
 }
 

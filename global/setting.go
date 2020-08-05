@@ -6,15 +6,12 @@ import (
 	"gorm.io/gorm"
 	"time"
 	"youtuerp/pkg/setting"
-	redis2 "youtuerp/redis"
 )
 
 var (
-	DataEngine    *gorm.DB            // database engine
-	RedisEngine   *redis.Client       // redis engine
-	IrisAppEngine *iris.Application   // iris app engine
-	RedSetting    = redis2.NewRedis() // redis setting instance
-
+	DataEngine         *gorm.DB                     // database engine
+	RedisEngine        *redis.Client                // redis engine
+	IrisAppEngine      *iris.Application            // iris app engine
 	AppSetting         *setting.AppSettingS         // app setting
 	ServerSetting      *setting.ServerSettingS      // server setting
 	DatabaseSetting    *setting.DatabaseSettingS    // database setting

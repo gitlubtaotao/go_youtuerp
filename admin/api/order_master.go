@@ -6,7 +6,6 @@ import (
 	"strings"
 	"sync"
 	"youtuerp/conf"
-	"youtuerp/global"
 	"youtuerp/internal/models"
 	"youtuerp/internal/services"
 )
@@ -265,9 +264,9 @@ func (o *OrderMaster) handlerOrderInfo(order models.OrderMaster) map[string]inte
 	data, _ := o.StructToMap(order, o.ctx)
 	data["transport_type_text"] = o.service.ShowTransport(o.enum, order)
 	data["status_text"] = o.service.ShowStatus(o.enum, order.Status)
-	data["instruction_name"] = global.RedSetting.HGetCrm(order.InstructionId, "")
-	data["operation_name"] = global.RedSetting.HGetValue("users", order.OperationId, "")
-	data["salesman_name"] = global.RedSetting.HGetValue("users", order.SalesmanId, "")
+	data["instruction_name"] = RedSetting.HGetCrm(order.InstructionId, "")
+	data["operation_name"] = RedSetting.HGetValue("users", order.OperationId, "")
+	data["salesman_name"] = RedSetting.HGetValue("users", order.SalesmanId, "")
 	return data
 }
 

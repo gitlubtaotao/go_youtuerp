@@ -4,7 +4,6 @@ import (
 	"github.com/kataras/iris/v12"
 	"net/http"
 	"sync"
-	"youtuerp/global"
 	"youtuerp/internal/models"
 	"youtuerp/internal/services"
 )
@@ -110,7 +109,7 @@ func (f *FinanceFeeType) handleData(feeType models.FinanceFeeType) map[string]in
 		return map[string]interface{}{}
 	}
 	data["finance_currency_id_value"] = data["finance_currency_id"]
-	data["finance_currency_id"] = global.RedSetting.HGetRecord("base_data_codes", data["finance_currency_id"], "")
+	data["finance_currency_id"] = RedSetting.HGetRecord("base_data_codes", data["finance_currency_id"], "")
 	return data
 }
 
